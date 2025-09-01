@@ -1,0 +1,146 @@
+/* Trip Card Component (scoped) */
+/* Only affects markup inside [data-trip-card] */
+[data-trip-card] {
+  /* Component tokens */
+  --tc-font: 'Geologica', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --tc-text: #212529;
+  --tc-muted: #374151;
+  --tc-bg: #ffffff;
+  --tc-border: #e0e7ee;
+  --tc-shadow: 0 4px 8px rgba(0,0,0,0.04);
+  --tc-radius: 10px;
+  --tc-accent: #0d9488;
+  --tc-accent-hover: #0f766e;
+  --tc-card-img-h: 220px;
+  --tc-gap: 20px;
+
+  font-family: var(--tc-font);
+  color: var(--tc-text);
+  display: block;
+}
+
+[data-trip-card] *, 
+[data-trip-card] *::before, 
+[data-trip-card] *::after {
+  box-sizing: border-box;
+}
+
+/* Optional container to limit width per instance */
+[data-trip-card] .tpc-wrapper {
+  max-width: var(--tc-maxw, 700px); /* override per instance via inline style if needed */
+  width: 100%;
+  padding-left: 10px;
+}
+
+/* Section title (scoped) */
+[data-trip-card] .tpc-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--tc-text);
+  margin: 0 0 20px 0;
+}
+
+/* Card */
+[data-trip-card] .tpc-card {
+  display: flex;
+  background: var(--tc-bg);
+  border: 1px solid var(--tc-border);
+  border-radius: var(--tc-radius);
+  overflow: hidden;
+  box-shadow: var(--tc-shadow);
+  margin-bottom: 20px;
+}
+
+/* Image */
+[data-trip-card] .tpc-image-wrap {
+  width: 40%;
+}
+[data-trip-card] .tpc-image {
+  display: block;
+  width: 100%;
+  height: var(--tc-card-img-h);
+  object-fit: cover;
+}
+
+/* Details */
+[data-trip-card] .tpc-details {
+  width: 60%;
+  padding: var(--tc-gap);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header (title + options) */
+[data-trip-card] .tpc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+[data-trip-card] .tpc-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--tc-text);
+  margin: 0;
+}
+/* Options button (dots) */
+[data-trip-card] .tpc-options {
+  background: transparent;
+  border: 0;
+  padding: 0 5px;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+/* Meta text */
+[data-trip-card] .tpc-date {
+  font-size: 14px;
+  color: var(--tc-muted);
+  margin: 0 0 8px 0;
+}
+[data-trip-card] .tpc-desc {
+  font-size: 14px;
+  color: var(--tc-muted);
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+/* Footer */
+[data-trip-card] .tpc-footer {
+  margin-top: auto; /* push button to bottom */
+  text-align: right;
+}
+
+/* Status button */
+[data-trip-card] .tpc-status {
+  background: var(--tc-accent);
+  color: #fff;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+[data-trip-card] .tpc-status:hover {
+  background: var(--tc-accent-hover);
+}
+
+/* Optional: small responsive tweak */
+@media (max-width: 580px) {
+  [data-trip-card] .tpc-card {
+    flex-direction: column;
+  }
+  [data-trip-card] .tpc-image-wrap,
+  [data-trip-card] .tpc-details {
+    width: 100%;
+  }
+  [data-trip-card] .tpc-image {
+    height: 200px;
+  }
+}

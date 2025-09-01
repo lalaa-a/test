@@ -1,0 +1,51 @@
+<?php
+
+$GLOBALS['ASSETS'] = ['css'=>[], 'js'=>[], 'names'=>[]];
+
+function addAssets($model,$name) {
+    if (in_array($name.'_'.$model, $GLOBALS['ASSETS']['names'])) return;
+    
+    // File system path
+    $basePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$model/$name";
+    
+    // Web URL path
+    $baseUrl = "/test/public/components/$model/$name";
+
+    // check config.json for deps
+    $cfg = "$basePath/config.json";
+
+    if (file_exists($cfg)) {
+        $conf = json_decode(file_get_contents($cfg), true);
+        foreach ($conf['dependencies'] ?? [] as $key=>$value) addAssets($key,$value);
+    }
+
+    echo "<!-- File exists: " . (file_exists("$basePath/$name.css") ? 'YES' : 'NO') . " -->\n";
+    
+    // Check using file system path, but store web URL
+    if (file_exists("$basePath/$name.css")) $GLOBALS['ASSETS']['css'][] = "$baseUrl/$name.css";
+    if (file_exists("$basePath/$name.js"))  $GLOBALS['ASSETS']['js'][]  = "$baseUrl/$name.js";
+
+    $GLOBALS['ASSETS']['names'][] = $name.'_'.$model;
+}
+
+function renderComponent($model,$name, $props = []) {
+    
+    addAssets($model,$name);
+    extract($props);
+    
+    // Use file system path for including PHP files
+    $filePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$model/$name/$name.php";
+    if (file_exists($filePath)) {
+        include $filePath;
+    } else {
+        echo "<!-- Component not found: $filePath -->";
+    }
+}
+
+function printAssets() {
+    foreach ($GLOBALS['ASSETS']['css'] as $href) echo "<link rel='stylesheet' href='$href'>\n";
+    foreach ($GLOBALS['ASSETS']['js'] as $src)   echo "<script src='$src' defer></script>\n";
+}
+
+function getAssets() { return $GLOBALS['ASSETS']; }
+function resetAssets(){ $GLOBALS['ASSETS']=['css'=>[], 'js'=>[], 'names'=>[]]; }

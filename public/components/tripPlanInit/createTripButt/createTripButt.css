@@ -1,0 +1,92 @@
+/* Create Trip Button Component (scoped) */
+/* Only affects elements inside [data-cta="create-trip"] */
+[data-cta="create-trip"] {
+  /* component tokens (override per instance if needed) */
+  --ctb-font: 'Geologica', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ctb-ink: #111111;              /* text color */
+  --ctb-border: #cfd4d8;           /* outline color */
+  --ctb-hover-bg: #f4fafb;         /* subtle hover background */
+  --ctb-focus: #9ACBD0;            /* focus ring + accent */
+  --ctb-radius: 12px;
+  --ctb-height: 60px;
+  --ctb-width: min(90vw, 680px);   /* wide but not full-width */
+  --ctb-font-size: clamp(16px, 2.2vw, 22px);
+  --ctb-gap: 12px;                 /* space between + and text */
+
+  display: block;
+  font-family: var(--ctb-font);
+  color: var(--ctb-ink);
+}
+
+[data-cta="create-trip"] *,
+[data-cta="create-trip"] *::before,
+[data-cta="create-trip"] *::after {
+  box-sizing: border-box;
+}
+
+[data-cta="create-trip"] .ctb-wrap {
+  display: flex;
+  justify-content: center;   /* center the button horizontally */
+  align-items: center;
+  margin: 24px;            /* spacing around component */
+}
+
+
+/* The button */
+[data-cta="create-trip"] .ctb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ctb-gap);
+  width: var(--ctb-width);
+  height: var(--ctb-height);
+  padding: 0 24px;
+  background: #fff;
+  color: var(--ctb-ink);
+  border: 1px solid var(--ctb-border);
+  border-radius: var(--ctb-radius);
+  font: 600 var(--ctb-font-size) var(--ctb-font);
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .18s ease, border-color .18s ease, transform .06s ease;
+  appearance: none;
+}
+
+/* The plus symbol (decorative) */
+[data-cta="create-trip"] .ctb-btn .ctb-plus {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 1.1em; /* slightly bigger than text */
+  line-height: 1;
+  color: var(--ctb-ink);
+}
+
+/* Hover / active / focus */
+[data-cta="create-trip"] .ctb-btn:hover {
+  background: var(--ctb-hover-bg);
+  border-color: var(--ctb-focus);
+}
+[data-cta="create-trip"] .ctb-btn:active {
+  transform: translateY(1px);
+}
+[data-cta="create-trip"] .ctb-btn:focus-visible {
+  outline: 3px solid var(--ctb-focus);
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+[data-cta="create-trip"] .ctb-btn[disabled],
+[data-cta="create-trip"] .ctb-btn[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Motion reduction respect */
+@media (prefers-reduced-motion: reduce) {
+  [data-cta="create-trip"] .ctb-btn {
+    transition: none;
+  }
+}
