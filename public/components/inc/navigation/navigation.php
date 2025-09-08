@@ -7,7 +7,7 @@
                     <img src="http://localhost:3845/assets/b439af1b1a9cf8f1adfbeac27d2a8020e9fe5636.png" alt="Logo">
                 </div>
                 <div class="nav-buttons">
-                    <button class="nav-btn" data-hover-color="#9ACBD0" onclick="<?php echo APP_ROOT.'/User/Trips.php'?> ">Trips</button>
+                    <button id="tripsButton" class="nav-btn" data-hover-color="#9ACBD0">Trips</button>
                     <button class="nav-btn" data-hover-color="#9ACBD0">Help</button>
                     <button class="nav-btn" data-hover-color="#9ACBD0">About us</button>
                 </div>

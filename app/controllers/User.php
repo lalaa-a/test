@@ -1,5 +1,5 @@
 <?php
-    class Home extends Controller{
+    class User extends Controller{
         /*
         private $userModel;
         public function __construct() {
