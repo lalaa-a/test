@@ -6,7 +6,6 @@
     <title>Document</title>
 
     <style>
-
         body {
             padding: 0 150px; /* adds 40px left and right margin */
             border: 0;
@@ -14,7 +13,6 @@
             background: #fff;
             color: #111;
         }
-
     </style>
 
     <?php

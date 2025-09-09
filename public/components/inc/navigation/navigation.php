@@ -21,9 +21,9 @@
         <div class="second-nav">
             <div>
                 <nav class="nav-links">
-                    <a href="#" class="nav-link" data-underline-color="#9ACBD0">Home</a>
+                    <a href="#" class="nav-link" data-underline-color="#9ACBD0">Homee</a>
                     <a href="#" class="nav-link" data-underline-color="#9ACBD0">Destinations</a>
-                    <a href="#" class="nav-link" data-underline-color="#9ACBD0">Drivers</a>
+                    <a href="components/driver/driver.php" class="nav-link" data-underline-color="#9ACBD0">Drivers</a>
                     <a href="#" class="nav-link" data-underline-color="#9ACBD0">Guides</a>
                     <a href="#" class="nav-link" data-underline-color="#9ACBD0">Packages</a>
                     <a href="#" class="nav-link" data-underline-color="#9ACBD0">Trending List</a>
