@@ -1,0 +1,119 @@
+/* Scoped styles: everything under #adp only */
+#adp { all: initial; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+#adp * { box-sizing: border-box; font: inherit; color: inherit; }
+#adp {
+  --adp-bg: #ffffff;
+  --adp-surface: #f6f9f9;
+  --adp-accent: #0f766e;
+  --adp-muted: #a7b8b8;
+  --adp-input-bg: #cde3e5;
+  --adp-border: #dfe7e7;
+  --adp-danger: #d92d20;
+  --adp-radius: 12px;
+  --adp-shadow: 0 10px 30px rgba(2, 24, 27, .15);
+  --adp-radius:24px;
+  color: #0a0f0f;
+  
+    
+}
+
+/* Overlay + panel shell */
+#adp .adp-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility .25s ease;
+  z-index: 1000;
+}
+#adp .adp-panel {
+  position: fixed; top: 0; right: 0;
+  height: 100vh;
+  width: min(520px, 100vw);
+  background: var(--adp-bg);
+  box-shadow: var(--adp-shadow);
+  transform: translateX(100%);
+  transition: transform .35s cubic-bezier(.22,.61,.36,1);
+  display: flex; flex-direction: column;
+  z-index: 1001;
+  border-left: 1px solid var(--adp-border);
+  border-top-left-radius: var(--adp-radius);
+  border-bottom-left-radius: var(--adp-radius);
+}
+
+/* Open state */
+#adp.adp-open .adp-overlay { opacity: 1; visibility: visible; }
+#adp.adp-open .adp-panel { transform: translateX(0); }
+
+/* Header */
+#adp .adp-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--adp-border); }
+#adp .adp-title { font-weight: 800; font-size: 22px; margin: 0; }
+#adp .adp-icon-btn { border: 0; background: transparent; font-size: 28px; line-height: 1; cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+#adp .adp-icon-btn:hover { background: var(--adp-surface); }
+
+/* Body layout */
+#adp .adp-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#adp .adp-form { padding: 18px 22px 0; }
+#adp .adp-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#adp .adp-field { margin-bottom: 14px; }
+#adp .adp-field label { display: block; margin: 0 0 6px; font-weight: 600; font-size: 14px; }
+#adp .adp-input {
+  width: 100%; border: 0; outline: none;
+  background: var(--adp-input-bg); padding: 12px 12px; border-radius: 10px;
+}
+#adp .adp-input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+#adp textarea.adp-input { resize: vertical; min-height: 72px; }
+#adp .adp-input:focus { outline: 2px solid var(--adp-accent); background: #def1f2; }
+
+#adp .adp-input--pill { border-radius: 999px; padding-left: 38px; }
+#adp .adp-search-wrap { position: relative; }
+#adp .adp-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .7; }
+
+#adp .adp-error { color: var(--adp-danger); font-size: 12px; min-height: 16px; padding-top: 4px; }
+#adp .adp-invalid .adp-input { outline: 2px solid var(--adp-danger); background: #ffecec; }
+
+/* Section title */
+#adp .adp-section-title { padding: 12px 22px 8px; font-weight: 700; }
+
+/* Scrollable card area */
+#adp .adp-card-list {
+  flex: 1; overflow: auto;
+  padding: 6px 22px 18px; background: var(--adp-bg);
+  min-height: 0;
+}
+
+/* Card */
+#adp .adp-card {
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 14px;
+  padding: 10px; border: 1px solid var(--adp-border); border-radius: var(--adp-radius);
+  margin-bottom: 12px; align-items: center;
+}
+#adp .adp-card-img {
+  width: 96px; height: 72px; border-radius: 10px; background-size: cover; background-position: center;
+}
+#adp .adp-card-body { min-width: 0; }
+#adp .adp-card-title { font-size: 15px; font-weight: 700; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#adp .adp-card-sub { font-size: 13px; color: #334; opacity: .85; }
+#adp .adp-card-menu { border: 0; background: transparent; font-size: 22px; cursor: pointer; padding: 4px 6px; border-radius: 8px; color: #444; }
+#adp .adp-card-menu:hover { background: var(--adp-surface); }
+
+/* Footer */
+#adp .adp-footer {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 16px 22px; border-top: 1px solid var(--adp-border); background: var(--adp-bg);
+}
+#adp .adp-btn {
+  border: 0; cursor: pointer; padding: 12px 22px; border-radius: 999px; font-weight: 800; letter-spacing: .3px;
+}
+#adp .adp-btn--primary { background: var(--adp-accent); color: white; }
+#adp .adp-btn--primary:hover { filter: brightness(0.95); }
+#adp .adp-btn--ghost { background: transparent; color: #0b2120; text-decoration: underline; }
+
+/* Small screens */
+@media (max-width: 480px) {
+  #adp .adp-row-2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+}

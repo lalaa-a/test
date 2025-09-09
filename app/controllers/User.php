@@ -10,6 +10,19 @@
         public function trips() {
             $this->view('Trips');
         }
+
+        public function plannedTrip() {
+            $this->view('PlannedTrip/PlannedTrip');
+        }
+
+        public function plannedTripSaves(){
+            $this->view('PlannedTrip/PlannedTripSaves');
+        }
+
+        public function plannedTripItinerary(){
+            $this->view('PlannedTrip/PlannedTripItinerary');
+        }
+
     }
 
 
