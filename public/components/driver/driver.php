@@ -7,6 +7,15 @@ error_reporting(E_ALL);
 // Define APP_ROOT constant
 define('APP_ROOT', dirname(__DIR__, 3) . '/app');
 
+// Include database connection
+require_once 'database.php';
+
+// Get data from database
+$trendingDrivers = getTrendingDrivers(); // Get ALL trending drivers automatically
+$licensedDrivers = getAllDrivers(6);
+$reviewedDrivers = getReviewedDrivers(6);
+$touristDrivers = getTouristDrivers(6);
+
 // Public base URL for assets/images (adjust if needed)
 $BASE_URL = '/test';
 ?>
@@ -76,357 +85,138 @@ $BASE_URL = '/test';
         <section class="drivers-section">
             <h2 class="section-title">Trending Drivers</h2>
             <div class="drivers-row">
-                    <div class="drivers-container">
+                <div class="drivers-container">
+                    <?php foreach($trendingDrivers as $driver): ?>
                     <div class="driver-card">
-                        <div class="driver-badge top-rated">Top Rated</div>
+                        <?php if($driver['badge_type'] !== 'none'): ?>
+                            <div class="driver-badge <?php echo $driver['badge_type']; ?>">
+                                <?php echo ($driver['badge_type'] === 'top-rated') ? 'Top Rated' : 'Most Booked'; ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/85d14703779dbe008f621b5c9aa61934f86a364c.png" alt="John Doe">
+                            <img src="<?php echo htmlspecialchars($driver['image_url']); ?>" alt="<?php echo htmlspecialchars($driver['name']); ?>">
                         </div>
                         <div class="driver-info">
-                            <h3 class="driver-name">John Doe</h3>
+                            <h3 class="driver-name"><?php echo htmlspecialchars($driver['name']); ?></h3>
                             <div class="driver-rating">
                                 <span class="star">★</span>
-                                <span class="rating">4.9</span>
-                                <span class="reviews">(124 reviews)</span>
+                                <span class="rating"><?php echo $driver['rating']; ?></span>
+                                <span class="reviews">(<?php echo $driver['total_reviews']; ?> reviews)</span>
                             </div>
                             <p class="driver-description">
-                                Experienced driver with a comfortable sedan. Knows all the best routes and hidden gems. Fluent in English.
+                                <?php echo htmlspecialchars($driver['description']); ?>
                             </p>
                             <button class="select-driver-btn">Select Driver</button>
                         </div>
                     </div>
-                    <div class="driver-card">
-                        <div class="driver-badge top-rated">Top Rated</div>
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/d84cc254159082188feff2d34dfc6e9238320fe8.png" alt="Jane Smith">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Jane Smith</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.8</span>
-                                <span class="reviews">(86 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Friendly and reliable driver with a spacious van, perfect for families or large groups. Safety is my priority.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-badge most-booked">Most Booked</div>
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/dc44eecc642e9be7da61c724fd4b46f41efac2cd.png" alt="Kumar Fernando">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Kumar Fernando</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">5.0</span>
-                                <span class="reviews">(210 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Your local guide on wheels! I'll not only drive you but also share stories about our beautiful country.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/05290308ee16b71bd5e5c1bb8463f0e3cb324862.png" alt="Saman Perera">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Saman Perera</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.7</span>
-                                <span class="reviews">(95 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Punctual and professional driver with a modern, air-conditioned car for your ultimate comfort.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/fcc7a2a5ab3d9e00eb348299ffb0b305a88f7e4b.png" alt="Nimal Silva">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Nimal Silva</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.9</span>
-                                <span class="reviews">(158 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Passionate about travel and culture. I offer customized tours to make your journey unforgettable.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/5505e7f18c3390dbecb39dafd7e71849786c4ad6.png" alt="Rohan Jayasuriya">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Rohan Jayasuriya</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.8</span>
-                                <span class="reviews">(112 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Wildlife enthusiast and experienced safari driver. Let's explore the national parks together!
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </section>
 
-    <!-- Example: One drivers section (repeat structure for Trending / Licensed / Reviewed / Tourist) -->
+    <!-- All Drivers Section -->
     <section class="drivers-section">
-            <h2 class="section-title">All Drivers</h2>
-            <h3 class="subsection-title">Licensed Drivers</h3>
-            <div class="drivers-container-grid">
-                <div class="driver-card">
-                    <div class="driver-avatar">
-                        <img src="http://localhost:3845/assets/85d14703779dbe008f621b5c9aa61934f86a364c.png" alt="John Doe">
+        <h2 class="section-title">All Drivers</h2>
+        
+        <!-- Licensed Drivers Subsection -->
+        <h3 class="subsection-title">Licensed Drivers</h3>
+        <div class="drivers-container-grid">
+            <?php foreach($licensedDrivers as $driver): ?>
+            <div class="driver-card">
+                <?php if($driver['badge_type'] !== 'none'): ?>
+                    <div class="driver-badge <?php echo $driver['badge_type']; ?>">
+                        <?php echo ($driver['badge_type'] === 'top-rated') ? 'Top Rated' : 'Most Booked'; ?>
                     </div>
-                    <div class="driver-info">
-                        <h3 class="driver-name">John Doe</h3>
-                        <div class="driver-rating">
-                            <span class="star">★</span>
-                            <span class="rating">4.9</span>
-                            <span class="reviews">(124 reviews)</span>
-                        </div>
-                        <p class="driver-description">
-                            Experienced driver with a comfortable sedan. Knows all the best routes and hidden gems. Fluent in English.
-                        </p>
-                        <button class="select-driver-btn">Select Driver</button>
-                    </div>
+                <?php endif; ?>
+                <div class="driver-avatar">
+                    <img src="<?php echo htmlspecialchars($driver['image_url']); ?>" alt="<?php echo htmlspecialchars($driver['name']); ?>">
                 </div>
-                <div class="driver-card">
-                    <div class="driver-avatar">
-                        <img src="http://localhost:3845/assets/d84cc254159082188feff2d34dfc6e9238320fe8.png" alt="Jane Smith">
+                <div class="driver-info">
+                    <h3 class="driver-name"><?php echo htmlspecialchars($driver['name']); ?></h3>
+                    <div class="driver-rating">
+                        <span class="star">★</span>
+                        <span class="rating"><?php echo $driver['rating']; ?></span>
+                        <span class="reviews">(<?php echo $driver['total_reviews']; ?> reviews)</span>
                     </div>
-                    <div class="driver-info">
-                        <h3 class="driver-name">Jane Smith</h3>
-                        <div class="driver-rating">
-                            <span class="star">★</span>
-                            <span class="rating">4.8</span>
-                            <span class="reviews">(86 reviews)</span>
-                        </div>
-                        <p class="driver-description">
-                            Friendly and reliable driver with a spacious van, perfect for families or large groups. Safety is my priority.
-                        </p>
-                        <button class="select-driver-btn">Select Driver</button>
-                    </div>
-                </div>
-                <div class="driver-card">
-                    <div class="driver-avatar">
-                        <img src="http://localhost:3845/assets/dc44eecc642e9be7da61c724fd4b46f41efac2cd.png" alt="Kumar Fernando">
-                    </div>
-                    <div class="driver-info">
-                        <h3 class="driver-name">Kumar Fernando</h3>
-                        <div class="driver-rating">
-                            <span class="star">★</span>
-                            <span class="rating">5.0</span>
-                            <span class="reviews">(210 reviews)</span>
-                        </div>
-                        <p class="driver-description">
-                            Your local guide on wheels! I'll not only drive you but also share stories about our beautiful country.
-                        </p>
-                        <button class="select-driver-btn">Select Driver</button>
-                    </div>
-                </div>
-                <div class="driver-card">
-                    <div class="driver-avatar">
-                        <img src="images/driver-jane-smith-198.png" alt="Maria Rodriguez">
-                    </div>
-                    <div class="driver-info">
-                        <h3 class="driver-name">Maria Rodriguez</h3>
-                        <div class="driver-rating">
-                            <span class="star">★</span>
-                            <span class="rating">4.7</span>
-                            <span class="reviews">(156 reviews)</span>
-                        </div>
-                        <p class="driver-description">
-                            Multilingual guide specializing in cultural tours. Drives a luxury SUV and knows the best local restaurants and shopping spots.
-                        </p>
-                        <button class="select-driver-btn">Select Driver</button>
-                    </div>
+                    <p class="driver-description">
+                        <?php echo htmlspecialchars($driver['description']); ?>
+                    </p>
+                    <button class="select-driver-btn">Select Driver</button>
                 </div>
             </div>
-            <button class="see-more-btn" onclick="window.location.href='LicensedDriver.html'">
-                See More
-                <img src="http://localhost:3845/assets/34fa6f5128ca8c6bd1292e82ea9ddd3a9d87a8e4.svg" alt="Arrow" class="arrow-icon">
-            </button>
-        </section>
+            <?php endforeach; ?>
+        </div>
+                <button class="see-more-btn" onclick="window.location.href='licensedDrivers/licensedDriver.php'">
+            See More
+            <img src="../driver/images/arrow-2-225.svg" alt="Arrow" class="arrow-icon">
+        </button>
 
-        <!-- Reviewed Drivers Section -->
-        <section class="drivers-section">
-            <h2 class="section-title">Reviewed Drivers</h2>
-                <div class="drivers-row">
-                <div class="drivers-container-grid">
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/85d14703779dbe008f621b5c9aa61934f86a364c.png" alt="John Doe">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">John Doe</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.9</span>
-                                <span class="reviews">(124 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Experienced driver with a comfortable sedan. Knows all the best routes and hidden gems. Fluent in English.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
+        <!-- Reviewed Drivers Subsection -->
+        <h3 class="subsection-title">Reviewed Drivers</h3>
+        <div class="drivers-container-grid">
+            <?php foreach($reviewedDrivers as $driver): ?>
+            <div class="driver-card">
+                <?php if($driver['badge_type'] !== 'none'): ?>
+                    <div class="driver-badge <?php echo $driver['badge_type']; ?>">
+                        <?php echo ($driver['badge_type'] === 'top-rated') ? 'Top Rated' : 'Most Booked'; ?>
                     </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/d84cc254159082188feff2d34dfc6e9238320fe8.png" alt="Jane Smith">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Jane Smith</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.8</span>
-                                <span class="reviews">(86 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Friendly and reliable driver with a spacious van, perfect for families or large groups. Safety is my priority.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/dc44eecc642e9be7da61c724fd4b46f41efac2cd.png" alt="Kumar Fernando">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Kumar Fernando</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">5.0</span>
-                                <span class="reviews">(210 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Your local guide on wheels! I'll not only drive you but also share stories about our beautiful country.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="images/driver-jane-smith-198.png" alt="Maria Rodriguez">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Maria Rodriguez</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.7</span>
-                                <span class="reviews">(156 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Multilingual guide specializing in cultural tours. Drives a luxury SUV and knows the best local restaurants and shopping spots.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
+                <?php endif; ?>
+                <div class="driver-avatar">
+                    <img src="<?php echo htmlspecialchars($driver['image_url']); ?>" alt="<?php echo htmlspecialchars($driver['name']); ?>">
                 </div>
-                <button class="see-more-btn" onclick="window.location.href='ReviewedDriver.html'">
-                    See More
-                    <img src="http://localhost:3845/assets/34fa6f5128ca8c6bd1292e82ea9ddd3a9d87a8e4.svg" alt="Arrow" class="arrow-icon">
-                </button>
+                <div class="driver-info">
+                    <h3 class="driver-name"><?php echo htmlspecialchars($driver['name']); ?></h3>
+                    <div class="driver-rating">
+                        <span class="star">★</span>
+                        <span class="rating"><?php echo $driver['rating']; ?></span>
+                        <span class="reviews">(<?php echo $driver['total_reviews']; ?> reviews)</span>
+                    </div>
+                    <p class="driver-description">
+                        <?php echo htmlspecialchars($driver['description']); ?>
+                    </p>
+                    <button class="select-driver-btn">Select Driver</button>
+                </div>
             </div>
-        </section>
+            <?php endforeach; ?>
+        </div>
+        <button class="see-more-btn" onclick="window.location.href='reviewedDrivers/reviewedDriver.php'">
+            See More
+            <img src="../driver/images/arrow-2-225.svg" alt="Arrow" class="arrow-icon">
+        </button>
 
-        <!-- Tourist Drivers Section -->
-        <section class="drivers-section">
-            <h2 class="section-title">Tourist Drivers</h2>
-            <div class="drivers-row">
-                <div class="drivers-container-grid">
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/85d14703779dbe008f621b5c9aa61934f86a364c.png" alt="John Doe">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">John Doe</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.9</span>
-                                <span class="reviews">(124 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Experienced driver with a comfortable sedan. Knows all the best routes and hidden gems. Fluent in English.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
+        <!-- Tourist Drivers Subsection -->
+        <h3 class="subsection-title">Tourist Drivers</h3>
+        <div class="drivers-container-grid">
+            <?php foreach($touristDrivers as $driver): ?>
+            <div class="driver-card">
+                <?php if($driver['badge_type'] !== 'none'): ?>
+                    <div class="driver-badge <?php echo $driver['badge_type']; ?>">
+                        <?php echo ($driver['badge_type'] === 'top-rated') ? 'Top Rated' : 'Most Booked'; ?>
                     </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/d84cc254159082188feff2d34dfc6e9238320fe8.png" alt="Jane Smith">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Jane Smith</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.8</span>
-                                <span class="reviews">(86 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Friendly and reliable driver with a spacious van, perfect for families or large groups. Safety is my priority.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="http://localhost:3845/assets/dc44eecc642e9be7da61c724fd4b46f41efac2cd.png" alt="Kumar Fernando">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Kumar Fernando</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">5.0</span>
-                                <span class="reviews">(210 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Your local guide on wheels! I'll not only drive you but also share stories about our beautiful country.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
-                    <div class="driver-card">
-                        <div class="driver-avatar">
-                            <img src="images/driver-jane-smith-198.png" alt="Maria Rodriguez">
-                        </div>
-                        <div class="driver-info">
-                            <h3 class="driver-name">Maria Rodriguez</h3>
-                            <div class="driver-rating">
-                                <span class="star">★</span>
-                                <span class="rating">4.7</span>
-                                <span class="reviews">(156 reviews)</span>
-                            </div>
-                            <p class="driver-description">
-                                Multilingual guide specializing in cultural tours. Drives a luxury SUV and knows the best local restaurants and shopping spots.
-                            </p>
-                            <button class="select-driver-btn">Select Driver</button>
-                        </div>
-                    </div>
+                <?php endif; ?>
+                <div class="driver-avatar">
+                    <img src="<?php echo htmlspecialchars($driver['image_url']); ?>" alt="<?php echo htmlspecialchars($driver['name']); ?>">
                 </div>
-                <button class="see-more-btn" onclick="window.location.href='ReviewedDriver.html'">
-                    See More
-                    <img src="http://localhost:3845/assets/34fa6f5128ca8c6bd1292e82ea9ddd3a9d87a8e4.svg" alt="Arrow" class="arrow-icon">
-                </button>
+                <div class="driver-info">
+                    <h3 class="driver-name"><?php echo htmlspecialchars($driver['name']); ?></h3>
+                    <div class="driver-rating">
+                        <span class="star">★</span>
+                        <span class="rating"><?php echo $driver['rating']; ?></span>
+                        <span class="reviews">(<?php echo $driver['total_reviews']; ?> reviews)</span>
+                    </div>
+                    <p class="driver-description">
+                        <?php echo htmlspecialchars($driver['description']); ?>
+                    </p>
+                    <button class="select-driver-btn">Select Driver</button>
+                </div>
             </div>
-        </section>
+            <?php endforeach; ?>
+        </div>
+        <button class="see-more-btn" onclick="window.location.href='TouristDriver.html'">
+            See More
+            <img src="../driver/images/arrow-2-225.svg" alt="Arrow" class="arrow-icon">
+        </button>
+    </section>
   </main>
 
   <?php renderComponent('inc','footer',[]); ?>
