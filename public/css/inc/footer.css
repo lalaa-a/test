@@ -1,81 +1,136 @@
-/* Reset and base styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* tripingoo-footer.css */
+/* Everything is scoped to the attribute selector below to avoid leaks */
+[data-footer="tripingoo"] {
+  /* Local design tokens (component-scoped) */
+  --tgf-bg: rgba(154, 203, 208, 0.6);
+  --tgf-ink: #0f3e41;
+  --tgf-ring: 48px;
+  --tgf-maxw: 1200px;
+  --tgf-pad-y: 28px;
+  --tgf-pad-x: 24px;
+
+  font-family: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--tgf-bg);
+  color: var(--tgf-ink);
+  padding: var(--tgf-pad-y) var(--tgf-pad-x);
 }
 
-html, body {
-    min-height: 100%;
+[data-footer="tripingoo"] .tgf-container {
+  max-width: var(--tgf-maxw);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 
-body {
-    font-family: 'Geologica', sans-serif;
-    line-height: 1.6;
-    color: #000000;
-    background-color: #ffffff;
-    display: flex;
+/* Left: logo stacked over tagline */
+[data-footer="tripingoo"] .tgf-left {
+  display: flex;
+  flex-direction: column; /* tagline under logo */
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 280px;
+}
+
+[data-footer="tripingoo"] .tgf-logo {
+  height: 38px;
+  width: auto;
+}
+
+[data-footer="tripingoo"] .tgf-tagline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--tgf-ink);
+  white-space: normal;
+  max-width: 520px;
+}
+
+/* Right: groups */
+[data-footer="tripingoo"] .tgf-right {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+[data-footer="tripingoo"] .tgf-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+[data-footer="tripingoo"] .tgf-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tgf-ink);
+  white-space: nowrap;
+}
+
+/* Circular icon buttons */
+[data-footer="tripingoo"] .tgf-icons {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+[data-footer="tripingoo"] .tgf-icon {
+  width: var(--tgf-ring);
+  height: var(--tgf-ring);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--tgf-ink);
+  border-radius: 999px;
+  color: var(--tgf-ink);
+  background: transparent;
+  text-decoration: none;
+  transition: transform .15s ease, background-color .15s ease;
+}
+
+[data-footer="tripingoo"] .tgf-icon:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+[data-footer="tripingoo"] .tgf-icon:focus-visible {
+  outline: 3px solid rgba(15, 62, 65, 0.35);
+  outline-offset: 2px;
+}
+
+[data-footer="tripingoo"] .tgf-icon img,
+[data-footer="tripingoo"] .tgf-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+[data-footer="tripingoo"] .tgf-icon svg {
+  fill: currentColor;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  [data-footer="tripingoo"] .tgf-container {
     flex-direction: column;
-    min-height: 100vh;
-    position: relative;
-}
-
-/* Footer */
-.footer {
-    background: rgba(154, 203, 208, 0.6);
-    padding: 40px 160px;
-    margin-top: auto;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.footer-logo img {
-    height: 58px;
-    width: auto;
-}
-
-.footer-text p {
-    font-size: 15px;
-    font-weight: 400;
-    color: #000000;
-    max-width: 300px;
-}
-
-.social-links {
-    display: flex;
-    gap: 40px;
-}
-
-.social-section {
+    gap: 12px;
     text-align: center;
-}
-
-.social-section p {
-    font-size: 15px;
-    font-weight: 400;
-    color: #000000;
-    margin-bottom: 15px;
-}
-
-.social-icons {
-    display: flex;
-    gap: 10px;
+  }
+  [data-footer="tripingoo"] .tgf-left {
+    align-items: center;
+    text-align: center;
+  }
+  [data-footer="tripingoo"] .tgf-right {
     justify-content: center;
-}
-
-.social-icons img {
-    width: 50px;
-    height: 50px;
-}
-
-.footer-rights p {
-    font-size: 15px;
-    font-weight: 400;
-    color: #000000;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  [data-footer="tripingoo"] .tgf-group {
+    justify-content: center;
+  }
+  [data-footer="tripingoo"] .tgf-tagline {
+    max-width: 90%;
+  }
 }
