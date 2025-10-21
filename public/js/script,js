@@ -1,0 +1,137 @@
+document.addEventListener('DOMContentLoaded', function () {
+  const nav = document.querySelector('.nav');
+  if (nav) {
+    nav.addEventListener('click', function (e) {
+      const link = e.target.closest('a');
+      if (!link) return;
+      for (const a of nav.querySelectorAll('.nav__link')) a.classList.remove('is-active');
+      link.classList.add('is-active');
+      e.preventDefault();
+    });
+  }
+
+  // Add click handlers to all cards
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      const destinationId = this.getAttribute('data-destination-id');
+      if (destinationId) {
+        window.location.href = `index.php?url=DestinationDetails/index/${destinationId}`;
+      }
+    });
+  });
+
+  // Add click handlers to favorite buttons to prevent card click
+  const favButtons = document.querySelectorAll('.fav-btn');
+  favButtons.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleFavorite(this);
+      
+      // Get destination data from the card
+      const card = this.closest('.card');
+      const destinationId = card.getAttribute('data-destination-id');
+      const destinationName = card.getAttribute('data-destination-name');
+      const cardTitle = card.querySelector('.card__title').textContent;
+      const cardBadge = card.querySelector('.card__badge').textContent;
+      const cardImage = card.querySelector('.card__image').src;
+      
+      // Create destination object
+      const destination = {
+        id: destinationId,
+        name: cardTitle,
+        location: cardBadge,
+        image: cardImage
+      };
+      
+      // Set current destination and show popup
+      if (window.TripPopup) {
+        window.TripPopup.setCurrentDestination(destination);
+        window.TripPopup.show();
+      }
+    });
+  });
+
+  const input = document.getElementById('searchInput');
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        alert('Searching for: ' + input.value.trim());
+      }
+    });
+  }
+
+  // Horizontal scroll functionality with arrow controls
+  const scrollContainers = document.querySelectorAll('.scroll-container');
+  
+  scrollContainers.forEach(container => {
+    const leftArrow = container.querySelector('.scroll-left');
+    const rightArrow = container.querySelector('.scroll-right');
+    const cardRow = container.querySelector('.card-row');
+    
+    if (!leftArrow || !rightArrow || !cardRow) return;
+    
+    // Function to update arrow states
+    function updateArrowStates() {
+      const scrollLeft = cardRow.scrollLeft;
+      const maxScroll = cardRow.scrollWidth - cardRow.clientWidth;
+      
+      leftArrow.disabled = scrollLeft <= 0;
+      rightArrow.disabled = scrollLeft >= maxScroll - 1; // -1 for rounding issues
+    }
+    
+    // Left arrow click
+    leftArrow.addEventListener('click', function() {
+      const cardWidth = cardRow.querySelector('.card').offsetWidth;
+      const gap = parseInt(getComputedStyle(cardRow).gap) || 28;
+      const scrollAmount = cardWidth + gap;
+      
+      cardRow.scrollBy({
+        left: -scrollAmount,
+        behavior: 'smooth'
+      });
+    });
+    
+    // Right arrow click
+    rightArrow.addEventListener('click', function() {
+      const cardWidth = cardRow.querySelector('.card').offsetWidth;
+      const gap = parseInt(getComputedStyle(cardRow).gap) || 28;
+      const scrollAmount = cardWidth + gap;
+      
+      cardRow.scrollBy({
+        left: scrollAmount,
+        behavior: 'smooth'
+      });
+    });
+    
+    // Update arrow states on scroll
+    cardRow.addEventListener('scroll', updateArrowStates);
+    
+    // Add smooth scrolling behavior
+    cardRow.style.scrollBehavior = 'smooth';
+    
+    // Add momentum scrolling for better mobile experience
+    cardRow.style.webkitOverflowScrolling = 'touch';
+    
+    // Add scroll snap behavior
+    cardRow.style.scrollSnapType = 'x mandatory';
+    
+    // Initial state
+    updateArrowStates();
+  });
+});
+
+// Toggle favorite function
+function toggleFavorite(button) {
+  const icon = button.querySelector('i');
+  if (icon.classList.contains('fa-regular')) {
+    icon.classList.remove('fa-regular');
+    icon.classList.add('fa-solid');
+    icon.style.color = 'red';
+  } else {
+    icon.classList.remove('fa-solid');
+    icon.classList.add('fa-regular');
+    icon.style.color = '#444';
+  }
+}
