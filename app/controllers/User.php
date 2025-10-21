@@ -1,5 +1,5 @@
 <?php
-    class Home extends Controller{
+    class User extends Controller{
         /*
         private $userModel;
         public function __construct() {
@@ -10,6 +10,19 @@
         public function trips() {
             $this->view('Trips');
         }
+
+        public function plannedTrip() {
+            $this->view('PlannedTrip/PlannedTrip');
+        }
+
+        public function plannedTripSaves(){
+            $this->view('PlannedTrip/PlannedTripSaves');
+        }
+
+        public function plannedTripItinerary(){
+            $this->view('PlannedTrip/PlannedTripItinerary');
+        }
+
     }
 
 
