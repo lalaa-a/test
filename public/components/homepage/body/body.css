@@ -1,0 +1,352 @@
+/* Hero Section */
+.hero-section {
+    margin-top: 20px;
+    height: 552px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-left: 160px;
+    margin-right: 160px;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.21);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.hero-title {
+    color: #ffffff;
+    font-size: 80px;
+    font-weight: 500;
+    margin-bottom: 40px;
+    text-shadow: 4px 4px 4px #000000;
+    max-width: 803px;
+    line-height: 1.2;
+}
+
+.create-now-btn {
+    background: #ffffff;
+    border: none;
+    border-radius: 75px;
+    padding: 15px 30px;
+    font-family: 'Geologica', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.52);
+    transition: transform 0.3s ease;
+}
+
+.create-now-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Section titles */
+.section-title {
+    font-size: 40px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 60px;
+    color: #000000;
+}
+
+/* Services Section */
+.services-section {
+    padding: 80px 160px;
+    background: #ffffff;
+}
+
+.services-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.service-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    height: 474px;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.card-image {
+    height: 256px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to bottom, transparent 0%, #112f38 100%);
+    color: #ffffff;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.card-overlay h3 {
+    font-size: 30px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.card-overlay p {
+    font-size: 16px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.card-btn {
+    background: #ffffff;
+    border: none;
+    border-radius: 75px;
+    padding: 10px 20px;
+    font-family: 'Geologica', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease;
+    width: 120px;
+    height: 40px;
+}
+
+.card-btn:hover {
+    background-color: #9ACBD0 !important;
+}
+
+/* Business Section */
+.business-section {
+    padding: 80px 160px;
+    background: #ffffff;
+}
+
+.business-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.business-card {
+    background: rgba(154, 203, 208, 0.5);
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 314px;
+}
+
+.business-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.business-image {
+    width: 317px;
+    height: 237px;
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.business-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.business-content {
+    flex: 1;
+}
+
+.business-content h3 {
+    font-size: 25px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.business-content p {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: #000000;
+}
+
+.business-btn {
+    background: #ffffff;
+    border: none;
+    border-radius: 75px;
+    padding: 10px 20px;
+    font-family: 'Geologica', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease;
+    width: 120px;
+    height: 40px;
+}
+
+.business-btn:hover {
+    background-color: #9ACBD0 !important;
+}
+
+/* Packages Section */
+.packages-section {
+    padding: 80px 160px;
+    background: #ffffff;
+}
+
+.packages-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.packages-scroll {
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    padding: 20px 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.packages-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.package-card {
+    flex-shrink: 0;
+    width: 448px;
+    height: 616px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.package-card:hover {
+    transform: scale(1.05);
+}
+
+.package-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Community Section */
+.community-section {
+    padding: 80px 160px;
+    background: #ffffff;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stat-card {
+    background: rgba(154, 203, 208, 0.6);
+    border-radius: 10px;
+    padding: 20px 10px;
+    text-align: center;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    height: 154px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card h3 {
+    font-size: 70px;
+    font-weight: 500;
+    color: #000000;
+    margin-bottom: 10px;
+    line-height: 1;
+}
+
+.stat-card p {
+    font-size: 30px;
+    font-weight: 300;
+    color: #000000;
+    line-height: 1;
+}
+
+/* Journey Section */
+.journey-section {
+    padding: 80px 160px;
+    background: #f2efe7;
+    text-align: center;
+    border-radius: 10px;
+    margin: 0 160px;
+}
+
+.journey-text {
+    font-size: 24px;
+    font-weight: 200;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.journey-subtext {
+    font-size: 24px;
+    font-weight: 500;
+    color: #000000;
+}

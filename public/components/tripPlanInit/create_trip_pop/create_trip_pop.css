@@ -1,0 +1,364 @@
+/* create-trip-form.css */
+/* Scoped: applies only inside [data-trip-form="create"] */
+[data-trip-form="create"] {
+  --tf-font: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --tf-ink: #0e1213;
+  --tf-muted: #6b7280;
+  --tf-accent: #006a71;
+  --tf-accent-2: #9ACBD0;
+  --tf-border: #0e696f;
+  --tf-surface: #ffffff;
+  --tf-input-bg: rgba(154, 203, 208, 0.25);
+  --tf-pill: 9999px;
+  --tf-shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+  --ctf-cal-size: min(90%, 420px); /* calendar width/height (square). Override per instance */
+  --ctf-label-gap: 8px;            /* gap between label text and input/textarea */
+
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: var(--tf-surface);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible; /* keep toast visible */
+}
+
+[data-trip-form="create"] * { box-sizing: border-box; }
+
+/* Thin divider at component very top */
+[data-trip-form="create"] .ctf-bar { height: 1px; background: #0e696f30; }
+
+/* Form padding with safe-area */
+[data-trip-form="create"] .ctf-form {
+  padding: 24px 24px max(24px, env(safe-area-inset-bottom));
+}
+
+/* Divider above the "Create a trip" title (with spacing above/below) */
+[data-trip-form="create"] .ctf-form::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #0e696f30;
+  margin-top: 16px;   /* space above the line */
+  margin-bottom: 18px;/* space between the line and the title */
+}
+
+[data-trip-form="create"] .ctf-title {
+  margin: 8px 0 20px;
+  font-weight: 800;
+  font-size: 28px;
+}
+
+/* Labels and fields */
+[data-trip-form="create"] .ctf-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tf-ink);
+}
+
+/* Increased gap between label text and the field */
+[data-trip-form="create"] .ctf-label > .ctf-input,
+[data-trip-form="create"] .ctf-label > .ctf-textarea {
+  margin-top: var(--ctf-label-gap);
+}
+
+[data-trip-form="create"] .ctf-input,
+[data-trip-form="create"] .ctf-textarea {
+  width: 100%;
+  background: var(--tf-input-bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: 500 15px var(--tf-font);
+  color: var(--tf-ink);
+  outline: none;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+[data-trip-form="create"] .ctf-input:focus,
+[data-trip-form="create"] .ctf-textarea:focus {
+  border-color: var(--tf-accent);
+  background: #eaf6f7;
+}
+
+[data-trip-form="create"] .ctf-field { margin-top: 18px; }
+[data-trip-form="create"] .ctf-field-title {
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Calendar container (square: width = height), centered and sized */
+[data-trip-form="create"] .ctf-calendar {
+  border: 1px solid var(--tf-border);
+  border-radius: 10px;
+  padding: 14px;
+
+  width: var(--ctf-cal-size);
+  margin: 0 auto;          /* center horizontally */
+
+  aspect-ratio: 1 / 1;     /* height = width */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header + weekdays keep natural height */
+[data-trip-form="create"] .ctf-cal-header,
+[data-trip-form="create"] .ctf-weekdays { flex: none; }
+
+[data-trip-form="create"] .ctf-cal-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  margin-bottom: 10px;
+  column-gap: 8px;
+}
+
+[data-trip-form="create"] .ctf-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  color: var(--tf-accent);
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+}
+[data-trip-form="create"] .ctf-nav:hover { background: #eaf6f7; border-color: var(--tf-accent-2); }
+[data-trip-form="create"] .ctf-nav:focus-visible { outline: 3px solid var(--tf-accent-2); outline-offset: 2px; }
+
+[data-trip-form="create"] .ctf-cal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+[data-trip-form="create"] .ctf-select {
+  appearance: none;
+  background: #f7fbfc;
+  border: 1px solid #cfe5e8;
+  color: var(--tf-ink);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font: 600 14px var(--tf-font);
+  cursor: pointer;
+}
+[data-trip-form="create"] .ctf-select:focus-visible { outline: 3px solid var(--tf-accent-2); outline-offset: 2px; }
+
+[data-trip-form="create"] .ctf-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 8px 0 6px;
+  padding: 0 4px;
+  color: var(--tf-muted);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Grid fills the remaining calendar height */
+[data-trip-form="create"] .ctf-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr; /* equal row heights */
+  gap: 6px;
+  padding: 4px;
+}
+
+/* Day cells */
+[data-trip-form="create"] .ctf-day {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tf-ink);
+  font: 600 14px var(--tf-font);
+  cursor: pointer;
+}
+[data-trip-form="create"] .ctf-day.is-outside { color: #c0c6cf; font-weight: 500; }
+[data-trip-form="create"] .ctf-day.is-inrange { background: #e3f1f3; }
+[data-trip-form="create"] .ctf-day.is-start,
+[data-trip-form="create"] .ctf-day.is-end {
+  background: var(--tf-accent-2);
+  border-color: var(--tf-accent);
+  color: #0b2b2e;
+}
+[data-trip-form="create"] .ctf-day:hover { border-color: var(--tf-accent-2); background: #f2fbfc; }
+
+/* Actions under calendar: Clear / Apply, with spacing before footer line */
+[data-trip-form="create"] .ctf-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;     /* space below calendar */
+  margin-bottom: 16px;  /* space before footer's top border line */
+}
+[data-trip-form="create"] .ctf-link {
+  background: none;
+  border: none;
+  color: var(--tf-ink);
+  text-decoration: underline;
+  cursor: pointer;
+  font: 600 14px var(--tf-font);
+  padding: 6px 8px;
+}
+[data-trip-form="create"] .ctf-btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--tf-pill);
+  font: 700 14px var(--tf-font);
+  cursor: pointer;
+  color: #fff;
+  background: var(--tf-accent);
+}
+[data-trip-form="create"] .ctf-btn[disabled] { opacity: .6; cursor: not-allowed; }
+[data-trip-form="create"] .ctf-btn:hover:not([disabled]) { filter: brightness(0.95); }
+
+/* Footer with divider above Create Trip and extra spacing */
+[data-trip-form="create"] .ctf-footer {
+  margin-top: 20px;                 /* space above the line */
+  border-top: 1px solid #0e696f30;  /* line above Create Trip */
+  padding-top: 18px;                /* space between line and buttons */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Cancel (secondary) */
+[data-trip-form="create"] .ctf-cancel {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--tf-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font: 700 16px var(--tf-font);
+  cursor: pointer;
+  padding: 6px 2px;
+  border-radius: 8px; /* for focus ring */
+  transition: color .15s ease, background-color .15s ease;
+}
+[data-trip-form="create"] .ctf-cancel:hover { color: #006a71; }
+[data-trip-form="create"] .ctf-cancel:focus-visible { outline: 3px solid var(--tf-accent-2); outline-offset: 2px; }
+
+/* Create Trip (primary) */
+[data-trip-form="create"] .ctf-submit {
+  padding: 12px 22px;
+  border-radius: 9999px;
+  background: #006a71;
+  color: #fff;
+  font: 700 15px var(--tf-font);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,106,113,0.18);
+  transition: transform .05s ease, filter .15s ease, background-color .15s ease;
+}
+[data-trip-form="create"] .ctf-submit:hover { filter: brightness(0.96); background: #0f766e; }
+[data-trip-form="create"] .ctf-submit:active { transform: translateY(1px); }
+[data-trip-form="create"] .ctf-submit:focus-visible { outline: 3px solid var(--tf-accent-2); outline-offset: 2px; }
+
+/* Toast: ALWAYS visible even when scrolled (fixed to the drawer panel) */
+[data-trip-form="create"] .ctf-toast {
+  position: fixed;                 /* fixed inside transformed drawer panel */
+  top: 12px;
+  left: 50%;
+  transform: translate(-50%, -12px);
+  background: #0b7b82;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: var(--tf-shadow);
+  font: 700 14px var(--tf-font);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .25s ease, opacity .25s ease;
+  z-index: 100000; /* above panel contents */
+}
+[data-trip-form="create"] .ctf-toast.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  [data-trip-form="create"] .ctf-toast { transition: none; }
+}
+
+/* Small screens */
+@media (max-width: 520px) {
+  [data-trip-form="create"] .ctf-form { padding: 18px 16px 16px; }
+  [data-trip-form="create"] .ctf-footer { padding-top: 16px; }
+}
+
+
+/* Slide-in Drawer (scoped) */
+[data-trip-drawer="ctf"] {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none; /* enabled when open */
+  display: block;
+}
+
+[data-trip-drawer="ctf"] .ctd-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.28);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+[data-trip-drawer="ctf"] .ctd-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--ctd-width, min(720px, 100%));
+  height: 100dvh; /* modern, safe on mobile */
+  max-height: 100dvh;
+  background: #fff;
+
+  /* Make the panel its own scroll container */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+
+  transform: translateX(100%);
+  transition: transform .32s ease;
+  box-shadow: -16px 0 48px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+}
+
+[data-trip-drawer="ctf"] .ctd-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #d7e3e5;
+  background: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  color: #0f3e41;
+}
+
+/* Open state */
+[data-trip-drawer="ctf"].is-open { pointer-events: auto; }
+[data-trip-drawer="ctf"].is-open .ctd-overlay { opacity: 1; }
+[data-trip-drawer="ctf"].is-open .ctd-panel { transform: translateX(0); }

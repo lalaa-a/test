@@ -1,0 +1,93 @@
+/* Trip Hero Card (scoped) */
+/* Only affects elements inside [data-hero-trip] */
+[data-hero-trip] {
+  /* Design tokens (override per instance on the wrapper if needed) */
+  --thc-font: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --thc-width: min(100%, 640px);  /* overall card width */
+  --thc-aspect: 64 / 35;          /* 640x350 look */
+  --thc-radius: 22px;             /* rounded corners */
+  --thc-pad: 20px;                /* inner text padding */
+  --thc-text: #ffffff;
+  --thc-shadow: 0 3px 20px rgba(0,0,0,.25); /* text shadow for readability */
+  --thc-grad-from: rgba(0,0,0,.65);
+  --thc-grad-mid: rgba(0,0,0,.30);
+  --thc-grad-to: rgba(0,0,0,0);
+
+  position: relative;
+  display: block;
+  width: var(--thc-width);
+  aspect-ratio: var(--thc-aspect);
+  border-radius: var(--thc-radius);
+  overflow: hidden;
+  font-family: var(--thc-font);
+  color: var(--thc-text);
+  isolation: isolate; /* keep effects contained */
+}
+
+/* Background image */
+[data-hero-trip] .thc-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Readability gradient overlay */
+[data-hero-trip]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--thc-grad-from) 0%,
+    var(--thc-grad-mid) 40%,
+    var(--thc-grad-to) 80%
+  );
+  z-index: 0;
+}
+
+/* Text content (bottom-left) */
+[data-hero-trip] .thc-content {
+  position: absolute;
+  left: var(--thc-pad);
+  right: var(--thc-pad);
+  bottom: var(--thc-pad);
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  text-shadow: var(--thc-shadow);
+}
+
+/* Title */
+[data-hero-trip] .thc-title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.08;
+  /* Scales nicely from mobile to desktop */
+  font-size: clamp(22px, 5.2vw, 44px);
+}
+
+/* Date row */
+[data-hero-trip] .thc-date {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: clamp(13px, 2.4vw, 18px);
+}
+
+/* Calendar icon */
+[data-hero-trip] .thc-icon {
+  width: 1.25em;
+  height: 1.25em;
+  color: currentColor;
+  flex: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
+}
+
+/* Responsive tweaks */
+@media (max-width: 420px) {
+  [data-hero-trip] { --thc-pad: 16px; }
+}
