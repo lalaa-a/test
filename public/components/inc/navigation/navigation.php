@@ -8,8 +8,9 @@
                 </div>
                 <div class="nav-buttons">
                     <button id="tripsButton" class="nav-btn" data-hover-color="#9ACBD0">Trips</button>
-                    <button class="nav-btn" data-hover-color="#9ACBD0">Help</button>
-                    <button class="nav-btn" data-hover-color="#9ACBD0">About us</button>
+                    
+                    <!--    <button class="nav-btn" data-hover-color="#9ACBD0">Help</button> -->
+                    <button class="nav-btn" data-hover-color="#9ACBD0" onclick="window.location.href='<?php echo URL_ROOT; ?>/User/aboutUs'">About us</button>
                 </div>
                 
                 <?php if (isLoggedIn()): ?>

@@ -1,7 +1,7 @@
 <article data-trip-preview style="margin-top:20px;margin-bottom:20px;" data-trip-id="<?php echo isset($tripId) ? 'trip-' . $tripId : 'default-' . uniqid(); ?>">
   <div class="tpp-media">
     <img
-      src="<?php echo htmlspecialchars($image ?? 'https://images.unsplash.com/photo-1558808047-8934d8794047?q=80&w=1200&auto=format&fit=crop'); ?>"
+      src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png"
       alt="<?php echo htmlspecialchars($name ?? 'Trip'); ?>"
       loading="lazy"
     />

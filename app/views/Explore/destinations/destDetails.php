@@ -764,14 +764,14 @@
         <!-- Image Gallery -->
         <section class="image-gallery">
             <div class="main-image">
-                <img src="  https://placehold.co/800x400/1f2937/ffffff?text=Sigiriya+Rock+Fortress" alt="Sigiriya Rock Fortress">
+                <img src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png" alt="Sigiriya Rock Fortress">
             </div>
             <div class="side-images">
                 <div class="side-image">
-                    <img src="  https://placehold.co/400x192/1f2937/ffffff?text=Lion's+Paw+Entrance" alt="Lion's Paw Entrance">
+                    <img src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png" alt="Lion's Paw Entrance">
                 </div>
                 <div class="side-image">
-                    <img src="  https://placehold.co/400x192/1f2937/ffffff?text=Group+Photo+at+Sigiriya" alt="Group Photo at Sigiriya">
+                    <img src="<?php echo IMG_ROOT; ?>/explore/destinations/rangiri.png" alt="Group Photo at Sigiriya">
                 </div>
             </div>
         </section>
@@ -936,7 +936,7 @@
                         <p>Climbing further brings you to the impressive Lion's Paw Terrace, the gateway to the summit. From here, the final ascent takes you to the royal palace ruins at the top, where breathtaking 360° views of the jungle and villages stretch as far as the eye can see.</p>
                     </div>
                     <div class="map-container">
-                        <img src="  https://placehold.co/600x300/1f2937/ffffff?text=Sigiriya+Map" alt="Sigiriya Location Map">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png" alt="Sigiriya Location Map">
                     </div>
                 </div>
             </div>
@@ -947,7 +947,7 @@
                 <div class="guides-grid">
                     <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JD" alt="John Doe">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="John Doe">
                         </div>
                         <h3 class="guide-name">John Doe</h3>
                         <div class="guide-rating">
@@ -961,7 +961,7 @@
                     </div>
                     <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JS" alt="Jane Smith">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="Jane Smith">
                         </div>
                         <h3 class="guide-name">Jane Smith</h3>
                         <div class="guide-rating">
@@ -975,7 +975,7 @@
                     </div>
                      <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JD" alt="John Doe">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="John Doe">
                         </div>
                         <h3 class="guide-name">John Doe</h3>
                         <div class="guide-rating">
@@ -990,7 +990,7 @@
 
                      <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JD" alt="John Doe">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="John Doe">
                         </div>
                         <h3 class="guide-name">John Doe</h3>
                         <div class="guide-rating">
@@ -1005,7 +1005,7 @@
 
                      <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JD" alt="John Doe">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="John Doe">
                         </div>
                         <h3 class="guide-name">John Doe</h3>
                         <div class="guide-rating">
@@ -1020,7 +1020,7 @@
 
                      <div class="guide-card">
                         <div class="guide-avatar">
-                            <img src="  https://placehold.co/80x80/1f2937/ffffff?text=JD" alt="John Doe">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/adams.png" alt="John Doe">
                         </div>
                         <h3 class="guide-name">John Doe</h3>
                         <div class="guide-rating">

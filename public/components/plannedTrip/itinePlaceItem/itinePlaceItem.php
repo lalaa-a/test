@@ -3,7 +3,7 @@
 $title   = $title   ?? 'bandarayaike';
 $from    = $from    ?? '9.00 am';
 $to      = $to      ?? '9.10 am';
-$img     = $img     ?? 'https://images.unsplash.com/photo-1573455494057-2d243b526f1a?q=80&w=600&auto=format&fit=crop';
+$img     = $img     ??  IMG_ROOT.'/explore/destinations/kandy.jpg';
 $rating  = $rating  ?? '4.6';
 $dots    = $dots    ?? 4; // 0..5 filled dots
 $desc    = $desc    ?? 'Some details about the place';

@@ -5,7 +5,10 @@
         </div>
         <div class="hero-overlay">
             <h1 class="hero-title">Plan Your Way Through Sri-lanka's Wonders.</h1>
-            <button class="create-now-btn">Create Now</button>
+            
+            <a href="<?php echo URL_ROOT."/user/trips"?>">
+                <button class="create-now-btn">Create Now</button>
+            </a>
         </div>
     </div>
 
@@ -20,7 +23,9 @@
                 <div class="card-overlay">
                     <h3>Explore Destinations</h3>
                     <p>Explore thousands of travel destinations through our website</p>
-                    <button class="card-btn" data-hover-color="#9ACBD0">Explore</button>
+                    <a href="<?php echo URL_ROOT.'/User/allDestinations'?>">
+                        <button class="card-btn" data-hover-color="#9ACBD0">Explore</button>
+                    </a>
                 </div>
             </div>
             
@@ -29,9 +34,11 @@
                     <img src="<?php echo IMG_ROOT?>/homepage/image.png" alt="Contact Drivers">
                 </div>
                 <div class="card-overlay">
-                    <h3>Contact Drivers</h3>
+                    <h3>View Drivers</h3>
                     <p>Explore thousands of travel destinations through our website</p>
-                    <button class="card-btn" data-hover-color="#9ACBD0">Contact</button>
+                    <a href="<?php echo URL_ROOT.'/DriverController'?>">
+                        <button class="card-btn" data-hover-color="#9ACBD0">View</button>
+                    </a>
                 </div>
             </div>
             
@@ -40,9 +47,11 @@
                     <img src="<?php echo IMG_ROOT?>/homepage/a64a9f50303e91a7b3dcd7cd8a0ed659 (1).jpeg" alt="Contact Guides">
                 </div>
                 <div class="card-overlay">
-                    <h3>Contact Guides</h3>
+                    <h3>View Guides</h3>
                     <p>Explore thousands of travel destinations through our website</p>
-                    <button class="card-btn" data-hover-color="#9ACBD0">Contact</button>
+                    <a href="<?php echo URL_ROOT.'/GuideController'?>">
+                        <button class="card-btn" data-hover-color="#9ACBD0">View</button>
+                    </a>
                 </div>
             </div>
             
@@ -53,7 +62,9 @@
                 <div class="card-overlay">
                     <h3>Plan Itinerary</h3>
                     <p>Explore thousands of travel destinations through our website</p>
-                    <button class="card-btn" data-hover-color="#9ACBD0">Plan</button>
+                    <a href="<?php echo URL_ROOT.'/User/trips'?>">
+                        <button class="card-btn" data-hover-color="#9ACBD0">Plan</button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -70,7 +81,9 @@
                 <div class="business-content">
                     <h3>I'm a Driver</h3>
                     <p>Show travelers Sri Lanka safely and comfortably. Get listed, get booked, and grow your earnings.</p>
-                    <button class="business-btn" data-hover-color="#9ACBD0">Register</button>
+                    <a href="<?php echo URL_ROOT.'/User/register'?>">
+                        <button class="business-btn" data-hover-color="#9ACBD0">Register</button>
+                    </a>
                 </div>
             </div>
             
@@ -81,7 +94,9 @@
                 <div class="business-content">
                     <h3>I'm a Guide</h3>
                     <p>Share your local knowledge and help tourists discover hidden gems. Connect with travelers and offer unforgettable tours.</p>
-                    <button class="business-btn" data-hover-color="#9ACBD0">Register</button>
+                    <a href="<?php echo URL_ROOT.'/User/register'?>">
+                        <button class="business-btn" data-hover-color="#9ACBD0">Register</button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -92,15 +107,25 @@
         <h2 class="section-title">Discover Our Exclusive Travel Packages</h2>
         <div class="packages-container">
             <div class="packages-scroll">
-                <div class="package-card">
-                    <img src="<?php echo IMG_ROOT?>/homepage/chathura-anuradha-subasinghe-_6yYs9bY3PQ-unsplash.jpg" alt="Galle Fort">
-                </div>
-                <div class="package-card">
-                    <img src="<?php echo IMG_ROOT?>/homepage/sidath-vimukthi-YoUOsPo0Rok-unsplash.jpg" alt="Sri Lanka">
-                </div>
-                <div class="package-card">
-                    <img src="<?php echo IMG_ROOT?>/homepage/general-safari-1024x634.jpg" alt="Safari">
-                </div>
+
+                <a href="<?php echo URL_ROOT.'/User/packages'?>">
+                    <div class="package-card">
+                        <img src="<?php echo IMG_ROOT?>/homepage/chathura-anuradha-subasinghe-_6yYs9bY3PQ-unsplash.jpg" alt="Galle Fort">
+                    </div>
+                </a>
+                
+                <a href="<?php echo URL_ROOT.'/User/packages'?>">
+                    <div class="package-card">
+                        <img src="<?php echo IMG_ROOT?>/homepage/sidath-vimukthi-YoUOsPo0Rok-unsplash.jpg" alt="Sri Lanka">
+                    </div>
+                </a>
+
+                <a href="<?php echo URL_ROOT.'/User/packages'?>">
+                    <div class="package-card">
+                        <img src="<?php echo IMG_ROOT?>/homepage/general-safari-1024x634.jpg" alt="Safari">
+                    </div>
+                </a>
+
             </div>
         </div>
     </section>

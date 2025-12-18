@@ -79,6 +79,98 @@
       box-sizing: border-box;
     }
 
+    /* Search container */
+    .ds-search-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .ds-search-container input {
+      padding-right: 40px;
+    }
+
+    .ds-search-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    /* Search results */
+    .ds-search-results {
+      margin-top: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      display: none;
+    }
+
+    .ds-search-results.active {
+      display: block;
+    }
+
+    .ds-search-result-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .ds-search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .ds-search-result-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .ds-search-result-item.selected {
+      background-color: #e8f4f5;
+      border-left: 3px solid #006A71;
+    }
+
+    .ds-result-name {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .ds-result-details {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .ds-result-location,
+    .ds-result-specialty {
+      display: inline-block;
+      background: #f0f8f8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+
+    .ds-result-location {
+      color: #006A71;
+    }
+
+    .ds-result-specialty {
+      color: #008080;
+    }
+
+    /* No results message */
+    .ds-no-results {
+      padding: 16px;
+      text-align: center;
+      color: #666;
+      font-style: italic;
+    }
+
     textarea {
       resize: vertical;
       min-height: 70px;

@@ -45,17 +45,16 @@
             border-right: 1px solid #e9ecef;
         }
         .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-        }
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
+            justify-content: center;
+        }
+        
+        .sidebar-logo {
+            width: 100px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            
         }
         .sidebar-menu {
             list-style: none;
@@ -122,6 +121,13 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .logout-btn {
             background: #dc3545;
@@ -821,7 +827,16 @@
             .sidebar {
                 width: 70px;
             }
-            .sidebar-header h2 span,
+            .sidebar-header {
+                padding: 15px 10px;
+            }
+            .logo-container {
+                padding: 10px;
+            }
+            .sidebar-logo {
+                width: 35px;
+                height: 35px;
+            }
             .sidebar-menu a span {
                 display: none;
             }
@@ -853,13 +868,136 @@
                 max-width: 85%;
             }
         }
+
+        /* Itinerary Details Styles */
+        .itinerary-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-card h3 i {
+            font-size: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .info-item strong {
+            min-width: 120px;
+            color: #374151;
+        }
+        
+        .info-item span {
+            color: #6b7280;
+            flex: 1;
+        }
+        
+        .guide-info, .driver-info {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .guide-avatar, .driver-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .guide-details, .driver-details {
+            flex: 1;
+        }
+        
+        .guide-card {
+            border-left: 4px solid #28a745;
+        }
+        
+        .driver-card {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-confirmed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        @media (max-width: 768px) {
+            .itinerary-info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .guide-info, .driver-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .info-item {
+                justify-content: center;
+            }
+            
+            .info-item strong {
+                min-width: auto;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2><i class="fas fa-globe-americas"></i> <span>Travel Admin</span></h2>
+            <div>
+                <img src="<?php echo IMG_ROOT.'/logo/logo design 1(2).png'?>" alt="Logo" class="sidebar-logo">
+            </div>
         </div>
         <ul class="sidebar-menu">
             <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
@@ -882,8 +1020,15 @@
                 <?php
                 $user = getLoggedInUser();
                 $firstInitial = !empty($user['fullname']) ? strtoupper(substr($user['fullname'], 0, 1)) : 'A';
+                $profilePhoto = $user['profile_photo'] ?? null;
                 ?>
-                <div class="user-avatar"><?= $firstInitial ?></div>
+                <div class="user-avatar">
+                    <?php if (!empty($profilePhoto) && file_exists(ROOT_PATH.'/public/'.$user['profile_photo'])): ?>
+                        <img src="<?=URL_ROOT.'/public/'.$user['profile_photo']?>" alt="Profile Photo">
+                    <?php else: ?>
+                        <?= $firstInitial ?>
+                    <?php endif; ?>
+                </div>
                 <span><?= htmlspecialchars($user['fullname'] ?? 'Admin User') ?></span>
                 <button class="logout-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/user/logout'">Logout</button>
             </div>
@@ -903,7 +1048,7 @@
                     <div class="stat-icon earnings">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
-                    <div class="stat-number">$247,890</div>
+                    <div class="stat-number">Rs. 37,183,500</div>
                     <div class="stat-label">Total Earnings</div>
                 </div>
                 <div class="stat-card">
@@ -933,7 +1078,7 @@
                             <div class="notification-time">2 hours ago</div>
                         </div>
                         <div class="notification-content">
-                            John Doe reports payment went through but no confirmation received for itinerary ITN-001.
+                            chiran reports payment went through but no confirmation received for itinerary ITN-001.
                         </div>
                         <div class="notification-actions">
                             <button class="btn btn-primary btn-sm">View Details</button>
@@ -946,7 +1091,7 @@
                             <div class="notification-time">5 hours ago</div>
                         </div>
                         <div class="notification-content">
-                            Jane Smith needs assistance updating her guide profile information and certification documents.
+                            sewmini needs assistance updating her guide profile information and certification documents.
                         </div>
                         <div class="notification-actions">
                             <button class="btn btn-primary btn-sm">View Details</button>
@@ -959,7 +1104,7 @@
                             <div class="notification-time">1 day ago</div>
                         </div>
                         <div class="notification-content">
-                            Mike Johnson submitted new vehicle registration documents for verification as a driver.
+                            chiran submitted new vehicle registration documents for verification as a driver.
                         </div>
                         <div class="notification-actions">
                             <button class="btn btn-primary btn-sm">View Details</button>
@@ -972,7 +1117,7 @@
                             <div class="notification-time">1 day ago</div>
                         </div>
                         <div class="notification-content">
-                            Sarah Wilson requests cancellation of itinerary ITN-005 due to personal emergency.
+                            akila requests cancellation of itinerary ITN-005 due to personal emergency.
                         </div>
                         <div class="notification-actions">
                             <button class="btn btn-primary btn-sm">View Details</button>
@@ -1004,8 +1149,8 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>John Doe</td>
-                            <td>john@example.com</td>
+                            <td>chiran sandeepa</td>
+                            <td>chiran@gmail.com </td>
                             <td>Traveller</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
@@ -1013,8 +1158,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Jane Smith</td>
-                            <td>jane@example.com</td>
+                            <td>sewmini oshadi</td>
+                            <td>sewmini@gmail.com</td>
                             <td>Guide</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
@@ -1022,8 +1167,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Mike Johnson</td>
-                            <td>mike@example.com</td>
+                            <td>ransara geeneth</td>
+                            <td>ransara@gmail.com</td>
                             <td>Driver</td>
                             <td><span class="status-badge status-banned">Banned</span></td>
                             <td>
@@ -1059,30 +1204,30 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Sarah Wilson</td>
-                                <td>sarah@example.com</td>
+                                <td>akila</td>
+                                <td>akila@gmail.com</td>
                                 <td>Guide</td>
                                 <td>License, ID, Certificate</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm view-profile" data-user="sarah">View Details</button>
+                                    <button class="btn btn-primary btn-sm view-profile" data-user="akila">View Details</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>David Brown</td>
-                                <td>david@example.com</td>
+                                <td>chiran</td>
+                                <td>chiran@example.com</td>
                                 <td>Driver</td>
                                 <td>License, ID, Certificate</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm view-profile" data-user="david">View Details</button>
+                                    <button class="btn btn-primary btn-sm view-profile" data-user="chiran">View Details</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Emma Thompson</td>
-                                <td>emma@example.com</td>
+                                <td>ridma sandamini</td>
+                                <td>ridma@gmail.com</td>
                                 <td>Guide</td>
                                 <td>License, ID, Certificate</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm view-profile" data-user="emma">View Details</button>
+                                    <button class="btn btn-primary btn-sm view-profile" data-user="ridma">View Details</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1133,31 +1278,31 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>John Doe</td>
+                                <td>ransara geeneth</td>
                                 <td class="help-message-content">Payment issue with itinerary ITN-001 - payment went through but no confirmation received.</td>
                                 <td>2 hours ago</td>
                                 <td><span class="status-badge status-replied-by-moderator">Replied</span></td>
-                                <td>Lisa Chen (Support)</td>
+                                <td>kasun (Support)</td>
                                 <td>
-                                    <button class="btn btn-info btn-sm view-help-chat" data-user="john">View Chat</button>
+                                    <button class="btn btn-info btn-sm view-help-chat" data-user="ransara">View Chat</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Jane Smith</td>
+                                <td>pevindi</td>
                                 <td class="help-message-content">Need help updating guide profile information and certification documents.</td>
                                 <td>5 hours ago</td>
                                 <td><span class="status-badge status-pending">Pending</span></td>
                                 <td>-</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm view-help-chat" data-user="jane">Reply</button>
+                                    <button class="btn btn-primary btn-sm view-help-chat" data-user="pevindi">Reply</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Mike Johnson</td>
+                                <td>lalinda</td>
                                 <td class="help-message-content">Submitted vehicle registration documents for driver verification.</td>
                                 <td>1 day ago</td>
                                 <td><span class="status-badge status-replied-by-moderator">Replied</span></td>
-                                <td>Alex Johnson (Content)</td>
+                                <td>lalinda ravishan (Content)</td>
                                 <td>
                                     <button class="btn btn-info btn-sm view-help-chat" data-user="mike">View Chat</button>
                                 </td>
@@ -1190,13 +1335,13 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>Sarah Wilson</td>
+                                <td>chanupa</td>
                                 <td class="help-message-content">Request cancellation of itinerary ITN-005 due to personal emergency.</td>
                                 <td>1 day ago</td>
                                 <td><span class="status-badge status-replied-by-moderator">Investigated</span></td>
-                                <td>Alex Johnson (Content)</td>
+                                <td>chanupa dulnuwan (Content)</td>
                                 <td>
-                                    <button class="btn btn-info btn-sm view-help-chat" data-user="sarah">View Details</button>
+                                    <button class="btn btn-info btn-sm view-help-chat" data-user="akila">View Details</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1218,28 +1363,28 @@
                         <div class="chat-list" id="staffChatList">
                             <div class="chat-item active" data-staff="alex">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Alex Johnson</div>
+                                    <div class="chat-item-name">sewmini oshadi</div>
                                     <div class="chat-item-time">Online</div>
                                 </div>
                                 <div class="chat-item-preview">Content Moderator</div>
                             </div>
-                            <div class="chat-item" data-staff="lisa">
+                            <div class="chat-item" data-staff="kasun">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Lisa Chen</div>
+                                    <div class="chat-item-name">kasun</div>
                                     <div class="chat-item-time">2h ago</div>
                                 </div>
                                 <div class="chat-item-preview">Support Moderator</div>
                             </div>
-                            <div class="chat-item" data-staff="michael">
+                            <div class="chat-item" data-staff="tharindu">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Michael Rodriguez</div>
+                                    <div class="chat-item-name">kasun</div>
                                     <div class="chat-item-time">1d ago</div>
                                 </div>
                                 <div class="chat-item-preview">Business Manager</div>
                             </div>
-                            <div class="chat-item" data-staff="emma">
+                            <div class="chat-item" data-staff="ridma">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Emma Wilson</div>
+                                    <div class="chat-item-name">ridma sandamini</div>
                                     <div class="chat-item-time">3d ago</div>
                                 </div>
                                 <div class="chat-item-preview">Operations Manager</div>
@@ -1250,7 +1395,7 @@
                         <div class="chat-header">
                             <div class="chat-avatar">A</div>
                             <div class="chat-header-info">
-                                <h3>Alex Johnson</h3>
+                                <h3>vihanga tharushan</h3>
                                 <p>Content Moderator - Online</p>
                             </div>
                         </div>
@@ -1318,7 +1463,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="modDob">Date of Birth *</label>
-                            <input type="date" id="modDob" name="dob" required>
+                            <input type="date" id="modDob" name="dob" max="" required>
                         </div>
                         <div class="form-group">
                             <label for="modGender">Gender *</label>
@@ -1380,24 +1525,136 @@
         <div class="dashboard-content" id="itineraries">
             <div class="card">
                 <div class="card-header">
-                    <h2>View Itinerary</h2>
+                    <h2>View Itinerary Details</h2>
                 </div>
                 <div class="form-group">
                     <label for="itineraryNumber">Itinerary Number</label>
                     <div class="search-box">
                         <input type="text" id="itineraryNumber" placeholder="Enter itinerary number (e.g., ITN-001)">
-                        <button class="btn btn-primary">Search</button>
+                        <button class="btn btn-primary" id="searchItineraryBtn">Search</button>
                     </div>
                 </div>
+                
+                <!-- Loading indicator -->
+                <div id="itineraryLoading" style="display: none; text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--primary);"></i>
+                    <p>Searching itinerary...</p>
+                </div>
+                
+                <!-- Error message -->
+                <div id="itineraryError" style="display: none; padding: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; margin-top: 15px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorMessage">Itinerary not found</span>
+                </div>
+                
+                <!-- Itinerary Details -->
                 <div id="itineraryDetails" style="display: none;">
-                    <h3>Itinerary Details - ITN-001</h3>
-                    <p><strong>Traveller:</strong> John Doe</p>
-                    <p><strong>Duration:</strong> 7 days</p>
-                    <p><strong>Destinations:</strong> Paris, Rome, Barcelona</p>
-                    <p><strong>Guide:</strong> Sarah Wilson</p>
-                    <p><strong>Driver:</strong> David Brown</p>
-                    <p><strong>Total Cost:</strong> $2,500</p>
-                    <p><strong>Status:</strong> Confirmed</p>
+                    <div class="itinerary-info-grid">
+                        <!-- Basic Information Card -->
+                        <div class="info-card">
+                            <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                            <div class="info-item">
+                                <strong>Itinerary Number:</strong>
+                                <span id="displayItineraryNumber">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Traveller:</strong>
+                                <span id="displayTravellerName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Email:</strong>
+                                <span id="displayTravellerEmail">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Duration:</strong>
+                                <span id="displayDuration">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Destinations:</strong>
+                                <span id="displayDestinations">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Total Cost:</strong>
+                                <span id="displayTotalCost">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Status:</strong>
+                                <span id="displayStatus" class="status-badge">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Created Date:</strong>
+                                <span id="displayCreatedDate">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Guide Information Card -->
+                        <div class="info-card guide-card">
+                            <h3><i class="fas fa-user-tie"></i> Assigned Guide</h3>
+                            <div class="guide-info">
+                                <div class="guide-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="guide-details">
+                                    <div class="info-item">
+                                        <strong>Name:</strong>
+                                        <span id="displayGuideName">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>ID:</strong>
+                                        <span id="displayGuideId">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Phone:</strong>
+                                        <span id="displayGuidePhone">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Email:</strong>
+                                        <span id="displayGuideEmail">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Languages:</strong>
+                                        <span id="displayGuideLanguages">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Driver Information Card -->
+                        <div class="info-card driver-card">
+                            <h3><i class="fas fa-car"></i> Assigned Driver</h3>
+                            <div class="driver-info">
+                                <div class="driver-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="driver-details">
+                                    <div class="info-item">
+                                        <strong>Name:</strong>
+                                        <span id="displayDriverName">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>ID:</strong>
+                                        <span id="displayDriverId">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Phone:</strong>
+                                        <span id="displayDriverPhone">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Email:</strong>
+                                        <span id="displayDriverEmail">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>License Number:</strong>
+                                        <span id="displayDriverLicense">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Vehicle Number:</strong>
+                                        <span id="displayVehicleNumber">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1421,24 +1678,24 @@
                     <tbody>
                         <tr>
                             <td>TXN-001</td>
-                            <td>John Doe</td>
-                            <td>$1,200</td>
+                            <td>ridama</td>
+                            <td>Rs. 180,000</td>
                             <td>Itinerary Booking</td>
                             <td>2024-01-15</td>
                             <td><span class="status-badge status-active">Completed</span></td>
                         </tr>
                         <tr>
                             <td>TXN-002</td>
-                            <td>Jane Smith</td>
-                            <td>$800</td>
+                            <td>pevindi</td>
+                            <td>Rs. 120,000</td>
                             <td>Guide Service</td>
                             <td>2024-01-14</td>
                             <td><span class="status-badge status-active">Completed</span></td>
                         </tr>
                         <tr>
                             <td>TXN-003</td>
-                            <td>Mike Johnson</td>
-                            <td>$450</td>
+                            <td>pevindi</td>
+                            <td>Rs. 67,500</td>
                             <td>Driver Service</td>
                             <td>2024-01-13</td>
                             <td><span class="status-badge status-pending">Pending</span></td>
@@ -1563,7 +1820,115 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Moderator Modal -->
+    <div id="editModeratorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Moderator</h2>
+                <span class="close edit-moderator-close">&times;</span>
+            </div>
+            <form id="editModeratorForm">
+                <input type="hidden" id="editModeratorId" name="id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editFullname">Full Name*</label>
+                        <input type="text" id="editFullname" name="fullname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email*</label>
+                        <input type="email" id="editEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editPhone">Phone*</label>
+                        <input type="tel" id="editPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSecondaryPhone">Secondary Phone</label>
+                        <input type="tel" id="editSecondaryPhone" name="secondary_phone">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editLanguage">Language*</label>
+                        <select id="editLanguage" name="language" required>
+                            <option value="">Select Language</option>
+                            <option value="english">English</option>
+                            <option value="sinhala">Sinhala</option>
+                            <option value="tamil">Tamil</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGender">Gender*</label>
+                        <select id="editGender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDob">Date of Birth*</label>
+                        <input type="date" id="editDob" name="dob" max="" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAccountType">Account Type*</label>
+                        <select id="editAccountType" name="account_type" required>
+                            <option value="">Select Role</option>
+                            <option value="site_moderator">Site Moderator</option>
+                            <option value="business_manager">Business Manager</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editAddress">Address*</label>
+                    <textarea id="editAddress" name="address" rows="3" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEditModerator">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Moderator</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // Set max date for date of birth fields to today
+        function setMaxDateForDOB() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('modDob').setAttribute('max', today);
+            document.getElementById('editDob').setAttribute('max', today);
+        }
+
+        // Call on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setMaxDateForDOB();
+        });
+
+        // Additional client-side validation for date of birth
+        function validateDateOfBirth(dateString) {
+            const dobDate = new Date(dateString);
+            const today = new Date();
+            
+            if (dobDate > today) {
+                return 'Date of birth cannot be in the future';
+            }
+            
+            // Check minimum age (18 years)
+            const minAgeDate = new Date();
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 18);
+            
+            if (dobDate > minAgeDate) {
+                return 'Moderator must be at least 18 years old';
+            }
+            
+            return null; // Valid
+        }
+
         // Tab Navigation
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', function(e) {
@@ -1651,15 +2016,99 @@
             });
         });
         // Itinerary Search
-        document.querySelector('#itineraries .btn-primary').addEventListener('click', function() {
-            const itineraryNumber = document.getElementById('itineraryNumber').value;
-            const itineraryDetails = document.getElementById('itineraryDetails');
-            if (itineraryNumber.trim()) {
-                itineraryDetails.style.display = 'block';
-            } else {
-                alert('Please enter an itinerary number');
+        document.getElementById('searchItineraryBtn').addEventListener('click', function() {
+            searchItinerary();
+        });
+        
+        // Allow Enter key to trigger search
+        document.getElementById('itineraryNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchItinerary();
             }
         });
+        
+        function searchItinerary() {
+            const itineraryNumber = document.getElementById('itineraryNumber').value.trim();
+            const itineraryDetails = document.getElementById('itineraryDetails');
+            const itineraryLoading = document.getElementById('itineraryLoading');
+            const itineraryError = document.getElementById('itineraryError');
+            
+            if (!itineraryNumber) {
+                showItineraryError('Please enter an itinerary number');
+                return;
+            }
+            
+            // Hide previous results and show loading
+            itineraryDetails.style.display = 'none';
+            itineraryError.style.display = 'none';
+            itineraryLoading.style.display = 'block';
+            
+            // Make AJAX request to get itinerary details
+            fetch('<?php echo URL_ROOT; ?>/Admin/getItinerary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    itinerary_number: itineraryNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                itineraryLoading.style.display = 'none';
+                
+                if (data.success) {
+                    displayItineraryDetails(data.data);
+                } else {
+                    showItineraryError(data.message || 'Itinerary not found');
+                }
+            })
+            .catch(error => {
+                itineraryLoading.style.display = 'none';
+                showItineraryError('Error fetching itinerary details. Please try again.');
+                console.error('Error:', error);
+            });
+        }
+        
+        function displayItineraryDetails(data) {
+            // Populate basic information
+            document.getElementById('displayItineraryNumber').textContent = data.itinerary_number;
+            document.getElementById('displayTravellerName').textContent = data.traveller_name;
+            document.getElementById('displayTravellerEmail').textContent = data.traveller_email;
+            document.getElementById('displayDuration').textContent = data.duration;
+            document.getElementById('displayDestinations').textContent = data.destinations;
+            document.getElementById('displayTotalCost').textContent = data.total_cost;
+            document.getElementById('displayCreatedDate').textContent = data.created_date;
+            
+            // Set status with appropriate styling
+            const statusElement = document.getElementById('displayStatus');
+            statusElement.textContent = data.status;
+            statusElement.className = 'status-badge status-' + data.status.toLowerCase();
+            
+            // Populate guide information
+            document.getElementById('displayGuideName').textContent = data.guide_name || 'Not assigned';
+            document.getElementById('displayGuideId').textContent = data.guide_id || '-';
+            document.getElementById('displayGuidePhone').textContent = data.guide_phone || '-';
+            document.getElementById('displayGuideEmail').textContent = data.guide_email || '-';
+            document.getElementById('displayGuideLanguages').textContent = data.guide_languages || '-';
+            
+            // Populate driver information
+            document.getElementById('displayDriverName').textContent = data.driver_name || 'Not assigned';
+            document.getElementById('displayDriverId').textContent = data.driver_id || '-';
+            document.getElementById('displayDriverPhone').textContent = data.driver_phone || '-';
+            document.getElementById('displayDriverEmail').textContent = data.driver_email || '-';
+            document.getElementById('displayDriverLicense').textContent = data.driver_license || '-';
+            document.getElementById('displayVehicleNumber').textContent = data.vehicle_number || '-';
+            
+            // Show the details
+            document.getElementById('itineraryDetails').style.display = 'block';
+        }
+        
+        function showItineraryError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('itineraryError').style.display = 'block';
+            document.getElementById('itineraryDetails').style.display = 'none';
+        }
         // Form submissions
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function(e) {
@@ -1690,9 +2139,9 @@
         const viewProfileButtons = document.querySelectorAll('.view-profile');
         // Mock user data
         const userData = {
-            sarah: {
-                name: "Sarah Wilson",
-                email: "sarah@example.com",
+            akila: {
+                name: "akila ponnamperuma",
+                email: "akila@gmail.com",
                 role: "Guide",
                 phone: "+1 (555) 123-4567",
                 address: "123 Main St, New York, NY 10001",
@@ -1705,9 +2154,9 @@
                     { type: "Certificate", url: "https://placehold.co/300x200/006A71/white?text=Certificate" }
                 ]
             },
-            david: {
-                name: "David Brown",
-                email: "david@example.com",
+            chiran: {
+                name: "chiran",
+                email: "chiran@example.com",
                 role: "Driver",
                 phone: "+1 (555) 987-6543",
                 address: "456 Oak Ave, Los Angeles, CA 90210",
@@ -1720,9 +2169,9 @@
                     { type: "Certificate", url: "https://placehold.co/300x200/006A71/white?text=Professional+Certificate" }
                 ]
             },
-            emma: {
-                name: "Emma Thompson",
-                email: "emma@example.com",
+            ridma: {
+                name: "ridma sandamini",
+                email: "ridma@example.com",
                 role: "Guide",
                 phone: "+1 (555) 456-7890",
                 address: "789 Pine St, Chicago, IL 60601",
@@ -1813,10 +2262,10 @@
         // Mock vehicle data
         const vehicleData = {
             mike: {
-                driverName: "Mike Johnson",
-                driverEmail: "mike@example.com",
+                driverName: "ransara geeneth",
+                driverEmail: "ransara@gamil.com",
                 driverPhone: "+1 (555) 111-2222",
-                driverAddress: "321 Elm St, Miami, FL 33101",
+                driverAddress: "lindagawa watta mattaka",
                 vehicleMake: "Toyota Camry",
                 vehicleYear: "2023",
                 licensePlate: "ABC-123",
@@ -1943,24 +2392,24 @@
         const viewHelpChatButtons = document.querySelectorAll('.view-help-chat');
         // Mock help chat data with complaints and replies
         const helpChatData = {
-            john: {
-                name: "John Doe",
+            lalinda: {
+                name: "lalinda",
                 type: "help",
                 messages: [
                     { sender: "user", text: "Hi, I'm having trouble with my itinerary booking. The payment went through but I didn't receive confirmation.", time: "2 hours ago" },
-                    { sender: "moderator", text: "Hello John! I see your payment was processed. Let me check your booking status right away.", time: "1 hour ago" },
+                    { sender: "moderator", text: "Hello lalinda! I see your payment was processed. Let me check your booking status right away.", time: "1 hour ago" },
                     { sender: "moderator", text: "I found the issue - there was a small delay in our system. Your confirmation email has been sent now.", time: "1 hour ago" }
                 ]
             },
-            jane: {
-                name: "Jane Smith",
+            pevindi: {
+                name: "pevindi",
                 type: "help",
                 messages: [
                     { sender: "user", text: "Hello, I need assistance updating my profile information as a guide.", time: "5 hours ago" }
                 ]
             },
             mike: {
-                name: "Mike Johnson",
+                name: "lalinda",
                 type: "help",
                 messages: [
                     { sender: "user", text: "I've submitted my new vehicle registration documents for verification as a driver.", time: "1 day ago" },
@@ -1975,12 +2424,12 @@
                     { sender: "user", text: "Driver was late by 2 hours for pickup and was very rude during the trip.", time: "1 day ago" }
                 ]
             },
-            sarah: {
-                name: "Sarah Wilson",
+            akila: {
+                name: "akila",
                 type: "complaint",
                 messages: [
                     { sender: "user", text: "I need to request cancellation of itinerary ITN-005 due to a personal emergency.", time: "1 day ago" },
-                    { sender: "moderator", text: "Thank you for reporting this, Sarah. I understand the situation and will process the cancellation immediately.", time: "12 hours ago" },
+                    { sender: "moderator", text: "Thank you for reporting this,akila. I understand the situation and will process the cancellation immediately.", time: "12 hours ago" },
                     { sender: "moderator", text: "Your cancellation has been processed and a refund will be issued within 3-5 business days.", time: "12 hours ago" }
                 ]
             }
@@ -2082,7 +2531,7 @@
         // Mock staff chat data
         const staffChatData = {
             alex: {
-                name: "Alex Johnson",
+                name: "lalinda",
                 role: "Content Moderator",
                 status: "Online",
                 messages: [
@@ -2091,24 +2540,24 @@
                     { sender: "staff", text: "Will do. Also, we have a new content creator application to review.", time: "2 minutes ago" }
                 ]
             },
-            lisa: {
-                name: "Lisa Chen",
+            kasun: {
+                name: "kasun",
                 role: "Support Moderator",
                 messages: [
                     { sender: "staff", text: "We've been getting more help requests about payment issues lately.", time: "2 hours ago" },
                     { sender: "admin", text: "Let's schedule a meeting to discuss this. Can you compile the common issues?", time: "1 hour ago" }
                 ]
             },
-            michael: {
-                name: "Michael Rodriguez",
+            tharindu: {
+                name: "tharindu",
                 role: "Business Manager",
                 messages: [
                     { sender: "staff", text: "The quarterly revenue report is ready for your review.", time: "1 day ago" },
-                    { sender: "admin", text: "Thanks Michael. I'll review it by end of day.", time: "12 hours ago" }
+                    { sender: "admin", text: "Thanks tharindu. I'll review it by end of day.", time: "12 hours ago" }
                 ]
             },
-            emma: {
-                name: "Emma Wilson",
+            ridma: {
+                name: "ridma sanadmini",
                 role: "Operations Manager",
                 messages: [
                     { sender: "staff", text: "We need to discuss the new driver onboarding process.", time: "3 days ago" },
@@ -2235,6 +2684,8 @@
                         <p><strong>License Plate:</strong> ${vehicle.license_plate}</p>
                         <p><strong>Color:</strong> ${vehicle.color}</p>
                         <p><strong>Type:</strong> ${vehicle.vehicle_type}</p>
+                        <p><strong>Seat Count:</strong> ${vehicle.seat_count || 'Not specified'}</p>
+                        <p><strong>Daily Rate:</strong> ${vehicle.daily_rate ? '$' + parseFloat(vehicle.daily_rate).toFixed(2) : 'Not specified'}</p>
                         <p><strong>Submitted:</strong> ${new Date(vehicle.created_at).toLocaleString()}</p>
                     </div>
                 </div>
@@ -2472,6 +2923,9 @@
                             <td>${new Date(moderator.created_at).toLocaleDateString()}</td>
                             <td>${moderator.last_login ? new Date(moderator.last_login).toLocaleDateString() : 'Never'}</td>
                             <td>
+                                <button class="btn btn-sm btn-primary" onclick="editModerator(${moderator.id})" style="margin-right: 5px;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                                 <button class="btn btn-sm btn-danger" onclick="deleteModerator(${moderator.id})">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -2500,6 +2954,13 @@
                 !moderatorData.phone || !moderatorData.language || !moderatorData.dob || 
                 !moderatorData.gender || !moderatorData.address || !moderatorData.account_type) {
                 showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Validate date of birth
+            const dobError = validateDateOfBirth(moderatorData.dob);
+            if (dobError) {
+                showNotification(dobError, 'error');
                 return;
             }
 
@@ -2553,6 +3014,106 @@
                 showNotification('An error occurred while deleting the moderator', 'error');
             });
         }
+
+        // Edit moderator
+        function editModerator(moderatorId) {
+            // Fetch moderator details
+            fetch(`<?= URL_ROOT ?>/Admin/getModerator?id=${moderatorId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.moderator) {
+                    const moderator = data.moderator;
+                    
+                    // Populate the edit form
+                    document.getElementById('editModeratorId').value = moderator.id;
+                    document.getElementById('editFullname').value = moderator.fullname;
+                    document.getElementById('editEmail').value = moderator.email;
+                    document.getElementById('editPhone').value = moderator.phone;
+                    document.getElementById('editSecondaryPhone').value = moderator.secondary_phone || '';
+                    document.getElementById('editLanguage').value = moderator.language;
+                    document.getElementById('editGender').value = moderator.gender;
+                    document.getElementById('editDob').value = moderator.dob;
+                    document.getElementById('editAccountType').value = moderator.account_type;
+                    document.getElementById('editAddress').value = moderator.address;
+                    
+                    // Show the modal
+                    document.getElementById('editModeratorModal').style.display = 'block';
+                } else {
+                    showNotification(data.message || 'Failed to load moderator details', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading moderator:', error);
+                showNotification('An error occurred while loading moderator details', 'error');
+            });
+        }
+
+        // Handle edit moderator form submission
+        document.getElementById('editModeratorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const moderatorData = Object.fromEntries(formData);
+            
+            // Basic validation
+            if (!moderatorData.fullname || !moderatorData.email || !moderatorData.phone || 
+                !moderatorData.language || !moderatorData.dob || !moderatorData.gender || 
+                !moderatorData.address || !moderatorData.account_type) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Validate date of birth
+            const dobError = validateDateOfBirth(moderatorData.dob);
+            if (dobError) {
+                showNotification(dobError, 'error');
+                return;
+            }
+
+            fetch('<?= URL_ROOT ?>/Admin/updateModerator', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(moderatorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Moderator updated successfully!');
+                    document.getElementById('editModeratorModal').style.display = 'none';
+                    loadModerators();
+                } else {
+                    showNotification(data.message || 'Failed to update moderator', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating moderator:', error);
+                showNotification('An error occurred while updating the moderator', 'error');
+            });
+        });
+
+        // Close edit moderator modal
+        document.querySelector('.edit-moderator-close').addEventListener('click', function() {
+            document.getElementById('editModeratorModal').style.display = 'none';
+        });
+
+        document.getElementById('cancelEditModerator').addEventListener('click', function() {
+            document.getElementById('editModeratorModal').style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const editModal = document.getElementById('editModeratorModal');
+            if (event.target === editModal) {
+                editModal.style.display = 'none';
+            }
+        });
 
         // Load moderators when the moderators tab is shown
         document.querySelector('[data-tab="moderators"]').addEventListener('click', function() {

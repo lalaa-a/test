@@ -42,17 +42,17 @@
             border-right: 1px solid #e9ecef;
         }
 
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-            text-align: center;
+        .sidebar-logo {
+            width: 100px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            
         }
 
-        .sidebar-header h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--primary);
+        .sidebar-header {
+            display: flex;
+            justify-content: center;
         }
 
         .sidebar-menu {
@@ -129,6 +129,13 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .logout-btn {
@@ -883,7 +890,16 @@
             .sidebar {
                 width: 70px;
             }
-            .sidebar-header h2,
+
+            .sidebar-header {
+                padding: 15px 10px;
+            }
+
+            .sidebar-logo {
+                width: 35px;
+                height: 35px;
+            }
+            
             .sidebar-menu a span {
                 display: none;
             }
@@ -918,7 +934,9 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Moderator Dashboard</h2>
+            <div>
+                <img src="<?php echo IMG_ROOT.'/logo/logo design 1(2).png'?>" alt="Logo" class="sidebar-logo">
+            </div>
         </div>
         <ul class="sidebar-menu">
             <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
@@ -940,8 +958,15 @@
                 <?php
                 $user = getLoggedInUser();
                 $firstInitial = !empty($user['fullname']) ? strtoupper(substr($user['fullname'], 0, 1)) : 'M';
+                $profilePhoto = $user['profile_photo'] ?? null;
                 ?>
-                <div class="user-avatar"><?= $firstInitial ?></div>
+                <div class="user-avatar">
+                    <?php if (!empty($profilePhoto) && file_exists(ROOT_PATH.'/public/'.$user['profile_photo'])): ?>
+                        <img src="<?=URL_ROOT.'/public/'.$user['profile_photo']?>" alt="Profile Photo">
+                    <?php else: ?>
+                        <?= $firstInitial ?>
+                    <?php endif; ?>
+                </div>
                 <span><?= htmlspecialchars($user['fullname'] ?? 'Site Moderator') ?></span>
                 <button class="logout-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/user/logout'">Logout</button>
             </div>
@@ -992,21 +1017,21 @@
                             <strong>New Place Added</strong>
                             <small>2 hours ago</small>
                         </div>
-                        <p>Added "Eiffel Tower, Paris" to the places database with photos and location details.</p>
+                        <p>Added " galle fort" to the places database with photos and location details.</p>
                     </div>
                     <div style="padding: 15px; border-left: 4px solid #4CAF50; background: #f8f9fa; border-radius: 0 8px 8px 0;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <strong>Package Created</strong>
                             <small>5 hours ago</small>
                         </div>
-                        <p>Created new travel package "European Adventure" with 5 destinations.</p>
+                        <p>Created new travel package " hiking adventure" with 5 destinations.</p>
                     </div>
                     <div style="padding: 15px; border-left: 4px solid #2196F3; background: #f8f9fa; border-radius: 0 8px 8px 0;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <strong>Profile Verified</strong>
                             <small>1 day ago</small>
                         </div>
-                        <p>Verified guide profile for Sarah Wilson with all required documents.</p>
+                        <p>Verified guide profile for ridama with all required documents.</p>
                     </div>
                 </div>
             </div>
@@ -1037,21 +1062,21 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Sarah Wilson</td>
-                                <td>sarah@example.com</td>
+                                <td>ridam</td>
+                                <td>ridma@gmail.com</td>
                                 <td>Guide</td>
                                 <td>License, ID, Certificate</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm" onclick="openProfileModal('sarah')">View Details</button>
+                                    <button class="btn btn-primary btn-sm" onclick="openProfileModal('ridma')">View Details</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td>David Brown</td>
-                                <td>david@example.com</td>
+                                <td>chiran</td>
+                                <td>chiran@gmail.com</td>
                                 <td>Driver</td>
                                 <td>License, ID, Certificate</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm" onclick="openProfileModal('david')">View Details</button>
+                                    <button class="btn btn-primary btn-sm" onclick="openProfileModal('chiran')">View Details</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1072,12 +1097,12 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Mike Johnson</td>
+                                <td>chiran</td>
                                 <td>Toyota Camry 2023</td>
                                 <td>ABC-123</td>
                                 <td>Registration, Insurance</td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm" onclick="openVehicleModal('mike')">View Details</button>
+                                    <button class="btn btn-primary btn-sm" onclick="openVehicleModal('chiran')">View Details</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1122,11 +1147,11 @@
                         </div>
                         <div id="selectedPlaces">
                             <div class="place-item">
-                                <span>Eiffel Tower, Paris</span>
+                                <span>galle fort</span>
                                 <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                             </div>
                             <div class="place-item">
-                                <span>Colosseum, Rome</span>
+                                <span>mirissa </span>
                                 <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1187,12 +1212,12 @@
                 <div class="place-grid">
                     <div class="place-card">
                         <div class="place-image">
-                            Eiffel Tower
+                            galle fort
                         </div>
                         <div class="place-content">
-                            <h3 class="place-title">Eiffel Tower</h3>
-                            <p class="place-location">Paris, France</p>
-                            <p class="place-description">Iconic iron lattice tower on the Champ de Mars in Paris, named after engineer Gustave Eiffel.</p>
+                            <h3 class="place-title">galle fort</h3>
+                            <p class="place-location">galle</p>
+                            <p class="place-description">ancient rock fortress</p>
                             <div class="place-actions">
                                 <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</button>
                                 <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
@@ -1201,12 +1226,12 @@
                     </div>
                     <div class="place-card">
                         <div class="place-image" style="background: linear-gradient(45deg, #4CAF50, #45a049);">
-                            Colosseum
+                            mirissa
                         </div>
                         <div class="place-content">
-                            <h3 class="place-title">Colosseum</h3>
-                            <p class="place-location">Rome, Italy</p>
-                            <p class="place-description">Ancient Roman amphitheater in the center of Rome, used for gladiatorial contests and public spectacles.</p>
+                            <h3 class="place-title">mirissa</h3>
+                            <p class="place-location">matara</p>
+                            <p class="place-description">whale watching.</p>
                             <div class="place-actions">
                                 <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</button>
                                 <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
@@ -1215,12 +1240,12 @@
                     </div>
                     <div class="place-card">
                         <div class="place-image" style="background: linear-gradient(45deg, #2196F3, #1976D2);">
-                            Sagrada Familia
+                            kandy
                         </div>
                         <div class="place-content">
-                            <h3 class="place-title">Sagrada Familia</h3>
-                            <p class="place-location">Barcelona, Spain</p>
-                            <p class="place-description">Large unfinished Roman Catholic minor basilica designed by Antoni Gaudí.</p>
+                            <h3 class="place-title">kandy</h3>
+                            <p class="place-location">kandy city</p>
+                            <p class="place-description">historical kandy city.</p>
                             <div class="place-actions">
                                 <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</button>
                                 <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
@@ -1259,19 +1284,19 @@
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px;">John Doe</td>
+                                <td style="padding: 15px;">ransara</td>
                                 <td style="padding: 15px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Payment issue with itinerary ITN-001 - payment went through but no confirmation received.</td>
                                 <td style="padding: 15px;">2 hours ago</td>
                                 <td style="padding: 15px;">
                                     <span class="status-badge status-replied-by-moderator">Replied</span>
                                 </td>
-                                <td style="padding: 15px;">Lisa Chen (Support)</td>
+                                <td style="padding: 15px;">sewmini (Support)</td>
                                 <td style="padding: 15px;">
                                     <button class="btn btn-info btn-sm" onclick="openHelpChat('john', 'help')">View Chat</button>
                                 </td>
                             </tr>
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px;">Jane Smith</td>
+                                <td style="padding: 15px;">supun</td>
                                 <td style="padding: 15px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Need help updating guide profile information and certification documents.</td>
                                 <td style="padding: 15px;">5 hours ago</td>
                                 <td style="padding: 15px;">
@@ -1279,11 +1304,11 @@
                                 </td>
                                 <td style="padding: 15px;">-</td>
                                 <td style="padding: 15px;">
-                                    <button class="btn btn-help btn-sm" onclick="openHelpChat('jane', 'help')">Reply</button>
+                                    <button class="btn btn-help btn-sm" onclick="openHelpChat('supun', 'help')">Reply</button>
                                 </td>
                             </tr>
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px;">Mike Johnson</td>
+                                <td style="padding: 15px;">chiran</td>
                                 <td style="padding: 15px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Question about driver verification process and required documents.</td>
                                 <td style="padding: 15px;">1 day ago</td>
                                 <td style="padding: 15px;">
@@ -1291,7 +1316,7 @@
                                 </td>
                                 <td style="padding: 15px;">Admin User</td>
                                 <td style="padding: 15px;">
-                                    <button class="btn btn-info btn-sm" onclick="openHelpChat('mike', 'help')">View Chat</button>
+                                    <button class="btn btn-info btn-sm" onclick="openHelpChat('chiran', 'help')">View Chat</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1313,7 +1338,7 @@
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px;">Robert Davis</td>
+                                <td style="padding: 15px;">akila</td>
                                 <td style="padding: 15px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Driver was late by 2 hours for pickup and was very rude during the trip.</td>
                                 <td style="padding: 15px;">1 day ago</td>
                                 <td style="padding: 15px;">
@@ -1325,15 +1350,15 @@
                                 </td>
                             </tr>
                             <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 15px;">Maria Garcia</td>
+                                <td style="padding: 15px;">janani</td>
                                 <td style="padding: 15px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">The guide provided incorrect information about historical sites and seemed unprepared.</td>
                                 <td style="padding: 15px;">3 days ago</td>
                                 <td style="padding: 15px;">
                                     <span class="status-badge status-replied-by-moderator">Investigated</span>
                                 </td>
-                                <td style="padding: 15px;">Alex Johnson (Content)</td>
+                                <td style="padding: 15px;">kasun (Content)</td>
                                 <td style="padding: 15px;">
-                                    <button class="btn btn-info btn-sm" onclick="openHelpChat('maria', 'complaint')">View Details</button>
+                                    <button class="btn btn-info btn-sm" onclick="openHelpChat('janani', 'complaint')">View Details</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -1361,16 +1386,16 @@
                                 </div>
                                 <div class="chat-item-preview">Site Administrator</div>
                             </div>
-                            <div class="chat-item" data-staff="lisa">
+                            <div class="chat-item" data-staff="sewmini">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Lisa Chen</div>
+                                    <div class="chat-item-name">sewmini</div>
                                     <div class="chat-item-time">2h ago</div>
                                 </div>
                                 <div class="chat-item-preview">Support Moderator</div>
                             </div>
                             <div class="chat-item" data-staff="michael">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Michael Rodriguez</div>
+                                    <div class="chat-item-name">pasan</div>
                                     <div class="chat-item-time">1d ago</div>
                                 </div>
                                 <div class="chat-item-preview">Business Manager</div>
@@ -1387,7 +1412,7 @@
                         </div>
                         <div class="chat-messages" id="staffChatMessages">
                             <div class="message admin">
-                                Hi Alex! How are the new travel packages coming along?
+                                Hi kasun! How are the new travel packages coming along?
                                 <div class="message-time">10 minutes ago</div>
                             </div>
                             <div class="message moderator">
@@ -1413,15 +1438,15 @@
                 <form onsubmit="return updateProfile(event)">
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" value="alex_johnson">
+                        <input type="text" id="username" value="akasun">
                     </div>
                     <div class="form-group">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" value="alex@travel.com">
+                        <input type="email" id="email" value="kasun@gmail.com">
                     </div>
                     <div class="form-group">
                         <label for="fullName">Full Name</label>
-                        <input type="text" id="fullName" value="Alex Johnson">
+                        <input type="text" id="fullName" value="kasun">
                     </div>
                     <div class="form-group">
                         <label for="role">Role</label>
@@ -1466,10 +1491,10 @@
                 <div class="profile-details">
                     <div class="detail-group">
                         <h4>Personal Information</h4>
-                        <p><strong>Name:</strong> Sarah Wilson</p>
-                        <p><strong>Email:</strong> sarah@example.com</p>
-                        <p><strong>Phone:</strong> +1 (555) 123-4567</p>
-                        <p><strong>Address:</strong> 123 Main St, New York, NY 10001</p>
+                        <p><strong>Name:</strong> ridam</p>
+                        <p><strong>Email:</strong> ridma@gmail.com</p>
+                        <p><strong>Phone:</strong> +94782498755</p>
+                        <p><strong>Address:</strong> ishuru uyana,rathgama.</p>
                         <p><strong>Role:</strong> Guide</p>
                     </div>
                     <div class="detail-group">
@@ -1521,8 +1546,8 @@
                 <div class="profile-details">
                     <div class="detail-group">
                         <h4>Driver Information</h4>
-                        <p><strong>Name:</strong> Mike Johnson</p>
-                        <p><strong>Email:</strong> mike@example.com</p>
+                        <p><strong>Name:</strong> chiran</p>
+                        <p><strong>Email:</strong> chiran@gamil.com</p>
                         <p><strong>Phone:</strong> +1 (555) 111-2222</p>
                         <p><strong>Address:</strong> 321 Elm St, Miami, FL 33101</p>
                     </div>
@@ -1568,7 +1593,7 @@
     <div id="helpChatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Help Chat - <span id="helpChatUser">John Doe</span></h2>
+                <h2>Help Chat - <span id="helpChatUser">ransara</span></h2>
                 <span class="close" onclick="closeHelpChat()">&times;</span>
             </div>
             <div class="chat-messages" id="helpChatMessages" style="height: 400px; margin-bottom: 20px; background: #f8f9fa; padding: 20px; border-radius: 12px;">
@@ -1735,44 +1760,44 @@
         // Help Chat Data with different reply types
         const helpChatData = {
             john: {
-                name: "John Doe",
+                name: "lalinda",
                 type: "help",
                 messages: [
                     { sender: "user", text: "Hi, I'm having trouble with my itinerary booking. The payment went through but I didn't receive confirmation.", time: "2 hours ago" },
-                    { sender: "other-moderator", text: "Hello John! I see your payment was processed. Let me check your booking status right away.", time: "1 hour ago", moderator: "Lisa Chen" },
-                    { sender: "other-moderator", text: "I found the issue - there was a small delay in our system. Your confirmation email has been sent now.", time: "1 hour ago", moderator: "Lisa Chen" }
+                    { sender: "other-moderator", text: "Hello lalinda! I see your payment was processed. Let me check your booking status right away.", time: "1 hour ago", moderator: "sewmini" },
+                    { sender: "other-moderator", text: "I found the issue - there was a small delay in our system. Your confirmation email has been sent now.", time: "1 hour ago", moderator: "sewminni" }
                 ]
             },
-            jane: {
-                name: "Jane Smith",
+            supun: {
+                name: "supun",
                 type: "help",
                 messages: [
                     { sender: "user", text: "Hello, I need assistance updating my profile information as a guide.", time: "5 hours ago" }
                 ]
             },
-            mike: {
-                name: "Mike Johnson",
+            chiran: {
+                name: "chiran",
                 type: "help",
                 messages: [
                     { sender: "user", text: "Question about driver verification process and required documents.", time: "1 day ago" },
-                    { sender: "admin", text: "Hi Mike! For driver verification, you need to submit your driver's license, vehicle registration, and insurance certificate through your profile.", time: "12 hours ago" },
+                    { sender: "admin", text: "Hi chiran! For driver verification, you need to submit your driver's license, vehicle registration, and insurance certificate through your profile.", time: "12 hours ago" },
                     { sender: "admin", text: "Once submitted, our team will review within 24-48 hours.", time: "12 hours ago" }
                 ]
             },
             robert: {
-                name: "Robert Davis",
+                name: "akila",
                 type: "complaint",
                 messages: [
                     { sender: "user", text: "Driver was late by 2 hours for pickup and was very rude during the trip.", time: "1 day ago" }
                 ]
             },
-            maria: {
-                name: "Maria Garcia",
+            janani: {
+                name: "janani",
                 type: "complaint",
                 messages: [
                     { sender: "user", text: "The guide provided incorrect information about historical sites and seemed unprepared.", time: "3 days ago" },
-                    { sender: "moderator", text: "Thank you for reporting this, Maria. I've investigated the guide's performance and will be providing additional training.", time: "2 days ago", moderator: "Alex Johnson" },
-                    { sender: "moderator", text: "We've also issued you a partial refund for the inconvenience.", time: "2 days ago", moderator: "Alex Johnson" }
+                    { sender: "moderator", text: "Thank you for reporting this, janani. I've investigated the guide's performance and will be providing additional training.", time: "2 days ago", moderator: "kasun" },
+                    { sender: "moderator", text: "We've also issued you a partial refund for the inconvenience.", time: "2 days ago", moderator: "kasun" }
                 ]
             }
         };
@@ -1887,7 +1912,7 @@
                     sender: "moderator",
                     text: messageText,
                     time: currentTime,
-                    moderator: "Alex Johnson"
+                    moderator: "kasun"
                 });
                 
                 // Add message to UI
@@ -1896,7 +1921,7 @@
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message moderator';
                     messageDiv.innerHTML = `
-                        <strong>Alex Johnson:</strong> ${messageText}
+                        <strong>sakun:</strong> ${messageText}
                         <div class="message-time">${currentTime}</div>
                     `;
                     messagesContainer.appendChild(messageDiv);
@@ -1924,7 +1949,7 @@
                             if (statusCell) statusCell.innerHTML = '<span class="status-badge status-replied-by-moderator">Replied</span>';
                         }
                         
-                        if (repliedByCell) repliedByCell.textContent = 'Alex Johnson (Content)';
+                        if (repliedByCell) repliedByCell.textContent = 'kasun (Content)';
                         if (actionCell) actionCell.innerHTML = `<button class="btn btn-info btn-sm" onclick="openHelpChat('${userId}', '${messageType}')">View Chat</button>`;
                     }
                 });
@@ -1971,12 +1996,12 @@
                 role: "Site Administrator",
                 status: "Online",
                 messages: [
-                    { sender: "admin", text: "Hi Alex! How are the new travel packages coming along?", time: "10 minutes ago" },
+                    { sender: "admin", text: "Hi kasun! How are the new travel packages coming along?", time: "10 minutes ago" },
                     { sender: "moderator", text: "Going well! I've added 3 new packages this week.", time: "5 minutes ago" }
                 ]
             },
-            lisa: {
-                name: "Lisa Chen",
+            sewmini: {
+                name: "sewmini",
                 role: "Support Moderator",
                 status: "Last seen 2h ago",
                 messages: [
@@ -1985,7 +2010,7 @@
                 ]
             },
             michael: {
-                name: "Michael Rodriguez",
+                name: "pasan",
                 role: "Business Manager",
                 status: "Last seen 1d ago",
                 messages: [

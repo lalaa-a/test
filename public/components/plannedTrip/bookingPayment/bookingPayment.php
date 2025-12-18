@@ -20,15 +20,15 @@
         </div>
         <div class="bp-summary-item">
           <span>Driver Service:</span>
-          <span id="bpDriverCost">$225.00</span>
+          <span id="bpDriverCost">Rs. 33,750.00</span>
         </div>
         <div class="bp-summary-item">
           <span>Platform Fee:</span>
-          <span>$15.00</span>
+          <span>Rs. 2,250.00</span>
         </div>
         <div class="bp-summary-item total">
           <span>Total Amount:</span>
-          <span id="bpTotalAmount">$240.00</span>
+          <span id="bpTotalAmount">Rs. 36,000.00</span>
         </div>
       </section>
 
@@ -68,7 +68,7 @@
 
         <div class="bp-field">
           <label for="bp-cardholder">Cardholder Name</label>
-          <input type="text" id="bp-cardholder" name="cardholder" placeholder="John Doe" autocomplete="cc-name">
+          <input type="text" id="bp-cardholder" name="cardholder" placeholder="Lalinda" autocomplete="cc-name">
           <div class="bp-error" aria-live="polite"></div>
         </div>
       </fieldset>

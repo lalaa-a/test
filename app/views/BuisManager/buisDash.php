@@ -39,17 +39,19 @@
             border-right: 1px solid #e9ecef;
             overflow-y: auto; /* 👈 ENABLES SCROLLING IN SIDEBAR */
         }
+        .sidebar-logo {
+            width: 100px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            
+        }
+
         .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-            text-align: center;
+            display: flex;
+            justify-content: center;
         }
-        .sidebar-header h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
+
         .sidebar-menu {
             list-style: none;
             padding: 0 10px;
@@ -115,6 +117,13 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .logout-btn {
             background: #dc3545;
@@ -528,10 +537,15 @@
             .sidebar {
                 width: 70px;
             }
-            .sidebar-header h2,
-            .sidebar-menu a span {
-                display: none;
+            .sidebar-logo {
+                width: 35px;
+                height: 35px;
             }
+
+            .sidebar-header {
+                padding: 15px 10px;
+            }
+
             .sidebar-menu a {
                 justify-content: center;
                 padding: 15px;
@@ -558,7 +572,9 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Business Manager</h2>
+            <div>
+                <img src="<?php echo IMG_ROOT.'/logo/logo design 1(2).png'?>" alt="Logo" class="sidebar-logo">
+            </div>
         </div>
         <ul class="sidebar-menu">
             <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
@@ -584,8 +600,15 @@
                 <?php
                 $user = getLoggedInUser();
                 $firstInitial = !empty($user['fullname']) ? strtoupper(substr($user['fullname'], 0, 1)) : 'B';
+                $profilePhoto = $user['profile_photo'] ?? null;
                 ?>
-                <div class="user-avatar"><?= $firstInitial ?></div>
+                <div class="user-avatar">
+                    <?php if (!empty($profilePhoto) && file_exists(ROOT_PATH.'/public/'.$user['profile_photo'])): ?>
+                        <img src="<?=URL_ROOT.'/public/'.$user['profile_photo']?>" alt="Profile Photo">
+                    <?php else: ?>
+                        <?= $firstInitial ?>
+                    <?php endif; ?>
+                </div>
                 <span><?= htmlspecialchars($user['fullname'] ?? 'Business Manager') ?></span>
                 <button class="logout-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/user/logout'">Logout</button>
             </div>
@@ -598,21 +621,21 @@
                     <div class="stat-icon revenue">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
-                    <div class="stat-number">$247,890</div>
+                    <div class="stat-number">Rs. 37,183,500</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon payouts">
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
-                    <div class="stat-number">$89,450</div>
+                    <div class="stat-number">Rs. 13,417,500</div>
                     <div class="stat-label">Pending Payouts</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon refunds">
                         <i class="fas fa-undo"></i>
                     </div>
-                    <div class="stat-number">$12,340</div>
+                    <div class="stat-number">Rs. 1,851,000</div>
                     <div class="stat-label">Refund Requests</div>
                 </div>
                 <div class="stat-card">
@@ -641,7 +664,7 @@
                             <strong>Payout Processed</strong>
                             <small>5 hours ago</small>
                         </div>
-                        <p>Successfully processed $2,450 in payouts to guides and drivers for completed services.</p>
+                        <p>Successfully processed Rs. 367,500 in payouts to guides and drivers for completed services.</p>
                     </div>
                     <div style="padding: 15px; border-left: 4px solid #2196F3; background: #f8f9fa; border-radius: 0 8px 8px 0;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -675,7 +698,7 @@
                         <tr>
                             <td>TXN-001</td>
                             <td>John Doe</td>
-                            <td>$1,200</td>
+                            <td>Rs. 180,000</td>
                             <td>Itinerary Booking</td>
                             <td>2024-01-15</td>
                             <td><span class="status-badge status-completed">Completed</span></td>
@@ -686,7 +709,7 @@
                         <tr>
                             <td>TXN-002</td>
                             <td>Jane Smith</td>
-                            <td>$800</td>
+                            <td>Rs. 120,000</td>
                             <td>Guide Service</td>
                             <td>2024-01-14</td>
                             <td><span class="status-badge status-completed">Completed</span></td>

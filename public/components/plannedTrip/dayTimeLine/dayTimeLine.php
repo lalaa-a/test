@@ -29,29 +29,24 @@ $trId = $trId ?? ('tr-' . uniqid()); // unique id for the toggle
       // 1) Place item (Checking)
       $title='Bandaranaike International Airport'; $tag='Checking'; $tagKey='checking';
       $from='9.00 am'; $to='9.10 am';
-      $img='https://images.unsplash.com/photo-1542556398-95f0d4d09f33?q=80&w=600&auto=format&fit=crop';
+      $img=IMG_ROOT.'/explore/destinations/colombo.png';
       $rating='4.6'; $dots=4; $desc='Some details about the place';
+      $showAddGuide=false;
       renderComponent("plannedTrip","itineLocationItem");
 
       // 2) Location item (Destination) + Add Guide action, taller
       $title='Sigiriya'; $tag='Destination'; $tagKey='destination';
-      $img='https://images.unsplash.com/photo-1573455494057-2d243b526f1a?q=80&w=600&auto=format&fit=crop';
+      $img=IMG_ROOT.'/explore/destinations/sigiriya.png';
       $showAddGuide=true;
       $locStyle='--loc-box-h: 140px;';
       renderComponent("plannedTrip","itineLocationItem");
 
       // 3) Location item (Map Location) default
       $title='Bandaranaike International Airport'; $tag='Map Location'; $tagKey='map';
-      $img='https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600&auto=format&fit=crop';
+      $img=IMG_ROOT.'/explore/destinations/negombo.png';
       $showAddGuide=false;
       $locStyle='';
       renderComponent("plannedTrip","itineLocationItem");
-
-      // 4) Place item (Checkout) optional
-      // $title='Bandaranaike International Airport'; $tag='Checkout'; $tagKey='checkout';
-      // $img='https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=600&auto=format&fit=crop';
-      // $placeStyle='--place-box-h: 120px;';
-      // renderComponent("plannedTrip","itinePlaceItem");
     ?>
 
     <?php renderComponent("plannedTrip","itineAddBar"); ?>

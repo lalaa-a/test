@@ -13,7 +13,7 @@
   <!-- Left square photo (auto equals card height) -->
   <div class="pc-media">
     <img
-      src="https://images.unsplash.com/photo-1558808047-8934d8794047?q=80&w=1200&auto=format&fit=crop"
+      src="<?php echo IMG_ROOT.'/explore/destinations/sigiriya.png'?>"
       alt="Sigiriya Ancient Rock Fortress, Sri Lanka"
       loading="lazy"
     />

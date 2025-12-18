@@ -8,8 +8,8 @@ class Vehicle {
     
     // Add a new vehicle
     public function addVehicle($vehicleData) {
-        $sql = "INSERT INTO vehicles (driver_id, make, model, year, license_plate, color, vehicle_type, front_photo, back_photo, side_photo) 
-                VALUES (:driver_id, :make, :model, :year, :license_plate, :color, :vehicle_type, :front_photo, :back_photo, :side_photo)";
+        $sql = "INSERT INTO vehicles (driver_id, make, model, year, license_plate, color, vehicle_type, seat_count, daily_rate, front_photo, back_photo, side_photo) 
+                VALUES (:driver_id, :make, :model, :year, :license_plate, :color, :vehicle_type, :seat_count, :daily_rate, :front_photo, :back_photo, :side_photo)";
         
         $this->db->query($sql);
         $this->db->bind(':driver_id', $vehicleData['driver_id']);
@@ -18,6 +18,9 @@ class Vehicle {
         $this->db->bind(':year', $vehicleData['year']);
         $this->db->bind(':license_plate', $vehicleData['license_plate']);
         $this->db->bind(':color', $vehicleData['color']);
+        $this->db->bind(':vehicle_type', $vehicleData['vehicle_type']);
+        $this->db->bind(':seat_count', $vehicleData['seat_count']);
+        $this->db->bind(':daily_rate', $vehicleData['daily_rate']);
         $this->db->bind(':vehicle_type', $vehicleData['vehicle_type']);
         $this->db->bind(':front_photo', $vehicleData['front_photo']);
         $this->db->bind(':back_photo', $vehicleData['back_photo']);
@@ -109,6 +112,8 @@ class Vehicle {
             'license_plate = :license_plate',
             'color = :color',
             'vehicle_type = :vehicle_type',
+            'seat_count = :seat_count',
+            'daily_rate = :daily_rate',
             'verification_status = \'pending\'',
             'updated_at = NOW()'
         ];
@@ -120,7 +125,9 @@ class Vehicle {
             ':year' => $vehicleData['year'],
             ':license_plate' => $vehicleData['license_plate'],
             ':color' => $vehicleData['color'],
-            ':vehicle_type' => $vehicleData['vehicle_type']
+            ':vehicle_type' => $vehicleData['vehicle_type'],
+            ':seat_count' => $vehicleData['seat_count'],
+            ':daily_rate' => $vehicleData['daily_rate']
         ];
         
         // Add photo updates only if new photos are provided

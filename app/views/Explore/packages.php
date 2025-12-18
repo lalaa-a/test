@@ -512,7 +512,7 @@
         <section class="hero-section">
             <div class="hero-packages-grid">
                 <article class="package-card" tabindex="0" aria-label="Cultural Heritage Tour, 7 days exploring ancient sites">
-                    <div class="package-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Cultural+Heritage');"></div>
+                    <div class="package-bg" style="background-image:url(<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png);"></div>
                     <div class="package-overlay"></div>
                     <div class="package-text">
                         <h2 class="package-title">Cultural Heritage</h2>
@@ -520,7 +520,7 @@
                     </div>
                 </article>
                 <article class="package-card" tabindex="0" aria-label="Adventure & Wildlife, 10 days safari and hiking">
-                    <div class="package-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Adventure+Safari');"></div>
+                    <div class="package-bg" style="background-image:url(<?php echo IMG_ROOT; ?>/explore/destinations/wildlife.jpg);"></div>
                     <div class="package-overlay"></div>
                     <div class="package-text">
                         <h2 class="package-title">Adventure & Wildlife</h2>
@@ -528,7 +528,7 @@
                     </div>
                 </article>
                 <article class="package-card" tabindex="0" aria-label="Beach & Relaxation, 5 days coastal paradise">
-                    <div class="package-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Beach+Paradise');"></div>
+                    <div class="package-bg" style="background-image:url(<?php echo IMG_ROOT; ?>/explore/destinations/beach.png);"></div>
                     <div class="package-overlay"></div>
                     <div class="package-text">
                         <h2 class="package-title">Beach & Relaxation</h2>
@@ -536,7 +536,7 @@
                     </div>
                 </article>
                 <article class="package-card" tabindex="0" aria-label="Hill Country Escape, 6 days tea plantations and mountains">
-                    <div class="package-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Hill+Country');"></div>
+                    <div class="package-bg" style="background-image:url('<?php echo IMG_ROOT; ?>/explore/destinations/hillcountry.png');"></div>
                     <div class="package-overlay"></div>
                     <div class="package-text">
                         <h2 class="package-title">Hill Country</h2>
@@ -552,12 +552,12 @@
             <div class="category-container">
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Golden+Triangle" alt="Golden Triangle Tour">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Golden Triangle Tour">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Golden Triangle Tour</h3>
                         <span class="package-type">Cultural Heritage</span>
-                        <div class="package-price">$899</div>
+                        <div class="package-price">Rs. 134,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             8 Days / 7 Nights
@@ -568,12 +568,12 @@
                 </div>
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Wildlife+Safari" alt="Wildlife Safari">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/wildlife.jpg" alt="Wildlife Safari">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Wildlife Safari Adventure</h3>
                         <span class="package-type">Adventure & Wildlife</span>
-                        <div class="package-price">$1,299</div>
+                        <div class="package-price">Rs. 194,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             12 Days / 11 Nights
@@ -584,12 +584,12 @@
                 </div>
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Beach+Bliss" alt="Beach Paradise">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/beach.png" alt="Beach Paradise">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Beach Paradise Escape</h3>
                         <span class="package-type">Beach & Relaxation</span>
-                        <div class="package-price">$699</div>
+                        <div class="package-price">Rs. 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             6 Days / 5 Nights
@@ -600,12 +600,12 @@
                 </div>
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Hill+Country" alt="Hill Country">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/hillcountry.png" alt="Hill Country">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Hill Country Explorer</h3>
                         <span class="package-type">Nature & Adventure</span>
-                        <div class="package-price">$799</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             7 Days / 6 Nights
@@ -616,12 +616,12 @@
                 </div>
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Colombo+City" alt="City Experience">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/colombo.png" alt="City Experience">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Colombo City Experience</h3>
                         <span class="package-type">Urban & Culture</span>
-                        <div class="package-price">$399</div>
+                        <div class="package-price">Rs 150,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             3 Days / 2 Nights
@@ -632,12 +632,12 @@
                 </div>
                 <div class="package-detail-card category-package-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/280x150/1f2937/ffffff?text=Grand+Tour" alt="Grand Tour">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/kandy.png" alt="Grand Tour">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Grand Sri Lanka Tour</h3>
                         <span class="package-type">Complete Experience</span>
-                        <div class="package-price">$1,899</div>
+                        <div class="package-price">Rs 99,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             15 Days / 14 Nights
@@ -656,12 +656,12 @@
                 <div class="package-detail-card featured-package">
                     <div class="popular-badge">Most Popular</div>
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Ancient+Kingdoms" alt="Ancient Kingdoms Tour">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png" alt="Ancient Kingdoms Tour">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Ancient Kingdoms Discovery</h3>
                         <span class="package-type">Cultural Heritage</span>
-                        <div class="package-price">$1,199</div>
+                        <div class="package-price">Rs 204,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             10 Days / 9 Nights
@@ -682,12 +682,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Buddhist+Pilgrimage" alt="Buddhist Pilgrimage">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Buddhist Pilgrimage">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Buddhist Pilgrimage Tour</h3>
                         <span class="package-type">Cultural Heritage</span>
-                        <div class="package-price">$899</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             8 Days / 7 Nights
@@ -708,12 +708,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Colonial+Heritage" alt="Colonial Heritage">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/galle.jpg" alt="Colonial Heritage">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Colonial Heritage Trail</h3>
                         <span class="package-type">Cultural Heritage</span>
-                        <div class="package-price">$749</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             6 Days / 5 Nights
@@ -750,12 +750,12 @@
                 <div class="package-detail-card featured-package">
                     <div class="popular-badge">Best Value</div>
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Safari+Adventure" alt="Ultimate Safari">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/safari.jpg" alt="Ultimate Safari">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Ultimate Safari Adventure</h3>
                         <span class="package-type">Adventure & Wildlife</span>
-                        <div class="package-price">$1,499</div>
+                        <div class="package-price">Rs 154,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             12 Days / 11 Nights
@@ -776,12 +776,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Whale+Watching" alt="Marine Adventure">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/whale.png" alt="Marine Adventure">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Marine Adventure Tour</h3>
                         <span class="package-type">Adventure & Wildlife</span>
-                        <div class="package-price">$999</div>
+                        <div class="package-price">Rs 204,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             8 Days / 7 Nights
@@ -802,12 +802,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Hiking+Adventure" alt="Hiking Adventure">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/hiking.png" alt="Hiking Adventure">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Mountain Hiking Adventure</h3>
                         <span class="package-type">Adventure & Wildlife</span>
-                        <div class="package-price">$849</div>
+                        <div class="package-price">Rs 204,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             7 Days / 6 Nights
@@ -845,12 +845,12 @@
             <div class="packages-grid">
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Luxury+Beach" alt="Luxury Beach Resort">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/hotel.png" alt="Luxury Beach Resort">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Luxury Beach Resort Experience</h3>
                         <span class="package-type">Beach & Relaxation</span>
-                        <div class="package-price">$1,299</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             7 Days / 6 Nights
@@ -871,12 +871,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Beach+Hopping" alt="Beach Hopping">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/beach.png" alt="Beach Hopping">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Southern Coast Beach Hopping</h3>
                         <span class="package-type">Beach & Relaxation</span>
-                        <div class="package-price">$799</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             6 Days / 5 Nights
@@ -897,12 +897,12 @@
                 </div>
                 <div class="package-detail-card">
                     <div class="package-image">
-                        <img src="https://placehold.co/320x180/1f2937/ffffff?text=Surfing+Package" alt="Surfing Adventure">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/serfing.png" alt="Surfing Adventure">
                     </div>
                     <div class="package-info">
                         <h3 class="package-name">Surfing Paradise Package</h3>
                         <span class="package-type">Beach & Relaxation</span>
-                        <div class="package-price">$649</div>
+                        <div class="package-price">Rs 104,850</div>
                         <div class="package-duration">
                             <span class="material-icons" style="font-size: 16px;">schedule</span>
                             5 Days / 4 Nights
@@ -936,242 +936,17 @@
     <?php renderComponent('inc','footer',[]); ?>
 
     <script>
-        // Initialize all functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            initializePackageCards();
-            initializeCategoryPackages();
-            initializeBookingButtons();
-            initializeScrollBehavior();
-        });
 
-        // Package cards interaction
-        function initializePackageCards() {
-            const packageCards = document.querySelectorAll('.package-card');
-            
-            packageCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const title = this.querySelector('.package-title').textContent;
-                    console.log(`Package clicked: ${title}`);
-                    navigateToPackageDetails(title);
-                });
-                
-                // Add keyboard navigation
-                card.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this.click();
-                    }
-                });
-            });
+        function navigateToTrips() {
+            window.location.href = '<?php echo URL_ROOT; ?>/user/trips';
         }
 
-        // Category package cards interaction
-        function initializeCategoryPackages() {
-            const categoryCards = document.querySelectorAll('.category-package-card');
-            
-            categoryCards.forEach(card => {
-                card.addEventListener('click', function(e) {
-                    // Don't trigger if clicking on book button
-                    if (!e.target.classList.contains('book-package-btn')) {
-                        const packageName = this.querySelector('.package-name').textContent;
-                        console.log(`Category package clicked: ${packageName}`);
-                        navigateToPackageDetails(packageName);
-                    }
-                });
-                
-                // Add hover effects
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-8px)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-        }
-
-        // Detail package cards interaction
-        function initializeDetailPackages() {
-            const detailCards = document.querySelectorAll('.package-detail-card');
-            
-            detailCards.forEach(card => {
-                card.addEventListener('click', function(e) {
-                    // Don't trigger if clicking on book button
-                    if (!e.target.classList.contains('book-package-btn')) {
-                        const packageName = this.querySelector('.package-name').textContent;
-                        console.log(`Detail package clicked: ${packageName}`);
-                        navigateToPackageDetails(packageName);
-                    }
-                });
-            });
-        }
-
-        // Booking buttons interaction
         function initializeBookingButtons() {
-            const bookingButtons = document.querySelectorAll('.book-package-btn');
-            
-            bookingButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent card click event
-                    
-                    const packageCard = this.closest('.package-detail-card') || this.closest('.category-package-card');
-                    const packageName = packageCard.querySelector('.package-name').textContent;
-                    const packagePrice = packageCard.querySelector('.package-price').textContent;
-                    
-                    console.log(`Book button clicked for: ${packageName} - ${packagePrice}`);
-                    handlePackageBooking(packageName, packagePrice);
-                });
+            document.querySelectorAll('.book-package-btn').forEach(button => {
+                button.addEventListener('click', navigateToTrips);
             });
         }
-
-        // Scroll behavior for category containers
-        function initializeScrollBehavior() {
-            const categoryContainers = document.querySelectorAll('.category-container:not(.no-scroll)');
-            
-            categoryContainers.forEach(container => {
-                // Add smooth scrolling
-                container.style.scrollBehavior = 'smooth';
-                
-                // Optional: Add scroll indicators if container overflows
-                if (container.scrollWidth > container.clientWidth) {
-                    addScrollIndicators(container);
-                }
-            });
-        }
-
-        // Add scroll indicators for horizontally scrollable containers
-        function addScrollIndicators(container) {
-            const wrapper = container.parentElement;
-            
-            // Create left and right scroll buttons
-            const leftBtn = document.createElement('button');
-            leftBtn.innerHTML = '‹';
-            leftBtn.className = 'scroll-btn scroll-btn-left';
-            leftBtn.style.cssText = `
-                position: absolute;
-                left: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: rgba(255,255,255,0.9);
-                border: none;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                font-size: 20px;
-                cursor: pointer;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                z-index: 10;
-                display: none;
-            `;
-            
-            const rightBtn = document.createElement('button');
-            rightBtn.innerHTML = '›';
-            rightBtn.className = 'scroll-btn scroll-btn-right';
-            rightBtn.style.cssText = leftBtn.style.cssText.replace('left: 10px', 'right: 10px');
-            
-            wrapper.style.position = 'relative';
-            wrapper.appendChild(leftBtn);
-            wrapper.appendChild(rightBtn);
-            
-            // Scroll functionality
-            leftBtn.addEventListener('click', () => {
-                container.scrollBy({ left: -300, behavior: 'smooth' });
-            });
-            
-            rightBtn.addEventListener('click', () => {
-                container.scrollBy({ left: 300, behavior: 'smooth' });
-            });
-            
-            // Show/hide scroll buttons based on scroll position
-            function updateScrollButtons() {
-                leftBtn.style.display = container.scrollLeft > 0 ? 'block' : 'none';
-                rightBtn.style.display = 
-                    container.scrollLeft < (container.scrollWidth - container.clientWidth) ? 'block' : 'none';
-            }
-            
-            container.addEventListener('scroll', updateScrollButtons);
-            updateScrollButtons();
-        }
-
-        // Navigation function for package details
-        function navigateToPackageDetails(packageName) {
-            // Create URL-friendly slug
-            const urlSlug = packageName.toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/-+/g, '-') // Replace multiple hyphens with single
-                .trim('-'); // Remove leading/trailing hyphens
-
-            // Navigate to package details page
-            const packageUrl = `<?php echo URL_ROOT; ?>/Home/packageDetails/${urlSlug}`;
-            
-            console.log(`Navigating to package: ${packageName}`);
-            console.log(`URL: ${packageUrl}`);
-            
-            window.location.href = packageUrl;
-        }
-
-        // Handle package booking
-        function handlePackageBooking(packageName, packagePrice) {
-            // Show booking confirmation
-            showNotification(`Booking initiated for ${packageName} - ${packagePrice}`, 'success');
-            
-            // Here you can add more sophisticated booking logic:
-            // - Open booking modal
-            // - Navigate to booking form
-            // - Add to cart
-            // - Etc.
-            
-            // For now, let's simulate navigation to booking page
-            setTimeout(() => {
-                const bookingUrl = `<?php echo URL_ROOT; ?>/Home/bookPackage?package=${encodeURIComponent(packageName)}`;
-                console.log(`Booking URL: ${bookingUrl}`);
-                // window.location.href = bookingUrl;
-            }, 1500);
-        }
-
-        // Utility functions
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 5px;
-                color: white;
-                font-weight: 600;
-                z-index: 1000;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Fade in
-            setTimeout(() => notification.style.opacity = '1', 100);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => document.body.removeChild(notification), 300);
-            }, 3000);
-        }
-
-        // Export functions for external use
-        window.PackagesPage = {
-            showNotification,
-            bookPackage: function(packageName, price) {
-                console.log(`Programmatically booking package: ${packageName} for ${price}`);
-                handlePackageBooking(packageName, price);
-            },
-            navigateToPackage: function(packageName) {
-                console.log(`Programmatically navigating to package: ${packageName}`);
-                navigateToPackageDetails(packageName);
-            }
-        };
+        document.addEventListener('DOMContentLoaded', initializeBookingButtons);
     </script>
 </body>
 </html>

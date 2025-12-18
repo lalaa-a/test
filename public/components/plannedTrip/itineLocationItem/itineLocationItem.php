@@ -1,9 +1,9 @@
 <?php
 // Props (override BEFORE include)
-$title   = $title   ?? 'Sigiriya';
+$title   = $title   ?? 'Anuradhapura';
 $from    = $from    ?? '9.00 am';
 $to      = $to      ?? '9.10 am';
-$img     = $img     ?? 'https://images.unsplash.com/photo-1573455494057-2d243b526f1a?q=80&w=600&auto=format&fit=crop';
+$img     = $img     ??  IMG_ROOT.'/explore/destinations/anuradhapura.png';
 $rating  = $rating  ?? '4.6';
 $dots    = $dots    ?? 4; // 0..5 filled dots
 $desc    = $desc    ?? 'Some details about the place';
@@ -53,11 +53,11 @@ $locStyle = $locStyle ?? '';
         </div>
         <p><?= htmlspecialchars($desc) ?></p>
 
-        <?php if ($showAddGuide): ?>
-          <a href="#" class="li-action">
+        <?php if (1): ?>
+          <button type="button" class="li-action open-guides-btn">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 4.08 7 13 7 13s7-8.92 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>
             Add Guide
-          </a>
+          </button>
         <?php endif; ?>
       </div>
     </div>

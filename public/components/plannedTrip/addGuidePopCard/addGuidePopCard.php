@@ -19,7 +19,7 @@
         <ul class="ag-list" role="listbox" aria-multiselectable="true">
           <!-- Card 1 -->
           <li class="ag-card" tabindex="0" role="option" aria-selected="false" data-id="1">
-            <img class="ag-thumb" src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=240&h=180&fit=crop" alt="Guide photo" />
+            <img class="ag-thumb" src="<?php echo IMG_ROOT; ?>/explore/drivers/sample2.png" alt="Guide photo" />
             <div class="ag-card-body">
               <div class="ag-card-top">
                 <p class="ag-name">Akila Prabhashawara</p>
@@ -29,13 +29,13 @@
                 <span class="ag-score">4.6</span>
                 <span class="ag-dots"><i></i><i></i><i></i><i></i><i class="ag-off"></i></span>
               </div>
-              <p class="ag-sub">Some details about the place</p>
+              <p class="ag-sub">Some details about the guide</p>
             </div>
           </li>
 
           <!-- Card 2 -->
           <li class="ag-card" tabindex="0" role="option" aria-selected="false" data-id="2">
-            <img class="ag-thumb" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=240&h=180&fit=crop" alt="Guide photo" />
+            <img class="ag-thumb" src="<?php echo IMG_ROOT; ?>/explore/drivers/sample1.png" alt="Guide photo" />
             <div class="ag-card-body">
               <div class="ag-card-top">
                 <p class="ag-name">Akila Prabhashawara</p>
@@ -45,13 +45,13 @@
                 <span class="ag-score">4.6</span>
                 <span class="ag-dots"><i></i><i></i><i></i><i></i><i class="ag-off"></i></span>
               </div>
-              <p class="ag-sub">Some details about the place</p>
+              <p class="ag-sub">Some details about the guide</p>
             </div>
           </li>
           
            <!-- Card 2 -->
           <li class="ag-card" tabindex="0" role="option" aria-selected="false" data-id="2">
-            <img class="ag-thumb" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=240&h=180&fit=crop" alt="Guide photo" />
+            <img class="ag-thumb" src="<?php echo IMG_ROOT; ?>/explore/drivers/sample3.png" alt="Guide photo" />
             <div class="ag-card-body">
               <div class="ag-card-top">
                 <p class="ag-name">Akila Prabhashawara</p>
@@ -61,13 +61,13 @@
                 <span class="ag-score">4.6</span>
                 <span class="ag-dots"><i></i><i></i><i></i><i></i><i class="ag-off"></i></span>
               </div>
-              <p class="ag-sub">Some details about the place</p>
+              <p class="ag-sub">Some details about the guide</p>
             </div>
           </li>
           
            <!-- Card 2 -->
           <li class="ag-card" tabindex="0" role="option" aria-selected="false" data-id="2">
-            <img class="ag-thumb" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=240&h=180&fit=crop" alt="Guide photo" />
+            <img class="ag-thumb" src="<?php echo IMG_ROOT; ?>/explore/drivers/sample4.png" alt="Guide photo" />
             <div class="ag-card-body">
               <div class="ag-card-top">
                 <p class="ag-name">Akila Prabhashawara</p>
@@ -77,7 +77,7 @@
                 <span class="ag-score">4.6</span>
                 <span class="ag-dots"><i></i><i></i><i></i><i></i><i class="ag-off"></i></span>
               </div>
-              <p class="ag-sub">Some details about the place</p>
+              <p class="ag-sub">Some details about the guide</p>
             </div>
           </li>
           

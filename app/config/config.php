@@ -17,6 +17,9 @@
     // URL Root
     define('IMG_ROOT', 'http://localhost/test/public/img');
 
+    //Upload root
+    define('UP_ROOT', 'http://localhost/test/public/uploads');
+
     // Website Name
     define('SITE_NAME', 'test');
 

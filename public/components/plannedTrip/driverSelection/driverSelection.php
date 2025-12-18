@@ -8,17 +8,31 @@
       <div class="ds-body">
         <div class="ds-title">Select Driver</div>
 
+        <!-- Driver Search -->
+        <div class="ds-field">
+          <label for="ds-driver-search">Search Drivers</label>
+          <div class="ds-search-container">
+            <input type="text" id="ds-driver-search" name="driver-search" placeholder="Search by name, location, or specialty..." autocomplete="off">
+            <div class="ds-search-icon">🔍</div>
+          </div>
+        </div>
+
         <!-- Driver Selection -->
         <div class="ds-field">
           <label for="ds-driver">Choose Your Driver</label>
           <select id="ds-driver" name="driver">
             <option value="">Select a driver</option>
-            <option value="driver1">John Smith - Professional Driver (4.8★)</option>
-            <option value="driver2">Priya Fernando - Family Tours (4.9★)</option>
-            <option value="driver3">Ravi Perera - Adventure Expert (4.7★)</option>
-            <option value="driver4">Samantha W. - Cultural Guide (4.9★)</option>
+            <option value="driver1" data-name="Pasan Mihiranga" data-location="Colombo" data-specialty="City Tours">Pasan Mihiranga - Colombo</option>
+            <option value="driver2" data-name="Vihanga Fernando" data-location="Kandy" data-specialty="Cultural Sites">Vihanga Fernando </option>
+            <option value="driver3" data-name="Ravi Perera" data-location="Galle" data-specialty="Coastal Tours">Ravi Perera</option>
+            <option value="driver4" data-name="Saman Kumara" data-location="Nuwara Eliya" data-specialty="Hill Country">Saman Kumara</option>
+            <option value="driver5" data-name="Chamara Silva" data-location="Sigiriya" data-specialty="Ancient Sites">Chamara Silva</option>
+            <option value="driver6" data-name="Nuwan Jayasinghe" data-location="Ella" data-specialty="Adventure Tours">Nuwan Jayasinghe</option>
+            <option value="driver7" data-name="Tharaka Bandara" data-location="Anuradhapura" data-specialty="Heritage Tours">Tharaka Bandara</option>
+            <option value="driver8" data-name="Kamal Wickramasinghe" data-location="Negombo" data-specialty="Airport Transfers">Kamal Wickramasinghe</option>
           </select>
           <div class="ds-error"></div>
+          <div class="ds-search-results" id="dsSearchResults"></div>
         </div>
 
 
@@ -46,7 +60,7 @@
         <!-- Price Display -->
         <div class="ds-price-display">
           <div class="ds-price-label">Estimated Cost:</div>
-          <div class="ds-price-amount" id="dsPriceAmount">$0.00 / day</div>
+          <div class="ds-price-amount" id="dsPriceAmount">Rs 0.00 / day</div>
         </div>
       </div>
 

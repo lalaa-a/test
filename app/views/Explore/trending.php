@@ -514,7 +514,7 @@
                 <!-- Place Card 1 - Anuradhapura -->
                 <div class="place-card" onclick="navigateToDestination('Anuradhapura')">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Anuradhapura" alt="Anuradhapura">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Anuradhapura</h3>
@@ -531,7 +531,7 @@
                 <!-- Place Card 2 - Kandy -->
                 <div class="place-card" onclick="navigateToDestination('Kandy')">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Kandy" alt="Kandy">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/kandy.png" alt="Kandy">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Kandy</h3>
@@ -548,7 +548,7 @@
                 <!-- Place Card 3 - Nuwara Eliya -->
                 <div class="place-card" onclick="navigateToDestination('Nuwara Eliya')">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Nuwara+Eliya" alt="Nuwara Eliya">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/nuwaraeliya.png" alt="Nuwara Eliya">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Nuwara Eliya</h3>
@@ -564,12 +564,6 @@
 
             </div>
             
-            <div class="show-more-container">
-                <button class="show-more-btn" onclick="showMoreDestinations()">
-                    <span>View All Destinations</span>
-                    <span class="material-icons">arrow_forward</span>
-                </button>
-            </div>
         </section>
 
         <!-- Trending Drivers Section -->
@@ -585,7 +579,7 @@
                         #1 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=DB" alt="David Brown">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample1.png" alt="David Brown">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">David Brown</h3>
@@ -607,7 +601,7 @@
                         #2 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=SS" alt="Sarah Silva">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample2.png" alt="Sarah Silva">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">Sarah Silva</h3>
@@ -629,7 +623,7 @@
                         #3 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=MF" alt="Michael Fernando">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample3.png" alt="Michael Fernando">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">Michael Fernando</h3>
@@ -647,10 +641,9 @@
             </div>
             
             <div class="show-more-container">
-                <button class="show-more-btn" onclick="showMoreDrivers()">
-                    <span>View All Drivers</span>
-                    <span class="material-icons">arrow_forward</span>
-                </button>
+
+                
+
             </div>
         </section>
 
@@ -667,7 +660,7 @@
                         #1 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=RP" alt="Ravi Perera">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample1.png" alt="Ravi Perera">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">Ravi Perera</h3>
@@ -689,7 +682,7 @@
                         #2 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=CW" alt="Chamila Wijesinghe">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample2.png" alt="Chamila Wijesinghe">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">Chamila Wijesinghe</h3>
@@ -711,7 +704,7 @@
                         #3 Trending
                     </div>
                     <div class="driver-avatar">
-                        <img src="https://placehold.co/60x60/2d3748/ffffff?text=NR" alt="Nimal Rajapakse">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/drivers/sample3.png" alt="Nimal Rajapakse">
                     </div>
                     <div class="driver-info">
                         <h3 class="driver-name">Nimal Rajapakse</h3>
@@ -728,12 +721,7 @@
                 </div>
             </div>
             
-            <div class="show-more-container">
-                <button class="show-more-btn" onclick="showMoreGuides()">
-                    <span>View All Guides</span>
-                    <span class="material-icons">arrow_forward</span>
-                </button>
-            </div>
+            
         </section>
 
     </main>
@@ -924,7 +912,7 @@
                 z-index: 10000;
                 opacity: 0;
                 transition: opacity 0.3s ease;
-                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#006A71'};
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             `;
             

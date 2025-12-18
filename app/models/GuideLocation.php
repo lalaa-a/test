@@ -8,14 +8,15 @@ class GuideLocation {
     }
     
     // Add a new guiding location
-    public function addLocation($guide_id, $location_name, $city, $visit_hours, $description = '') {
-        $this->db->query('INSERT INTO guide_locations (guide_id, location_name, city, visit_hours, description) 
-                         VALUES (:guide_id, :location_name, :city, :visit_hours, :description)');
+    public function addLocation($guide_id, $location_name, $city, $visit_hours, $rate_per_hour, $description = '') {
+        $this->db->query('INSERT INTO guide_locations (guide_id, location_name, city, visit_hours, rate_per_hour, description) 
+                         VALUES (:guide_id, :location_name, :city, :visit_hours, :rate_per_hour, :description)');
         
         $this->db->bind(':guide_id', $guide_id);
         $this->db->bind(':location_name', $location_name);
         $this->db->bind(':city', $city);
         $this->db->bind(':visit_hours', $visit_hours);
+        $this->db->bind(':rate_per_hour', $rate_per_hour);
         $this->db->bind(':description', $description);
         
         return $this->db->execute();
@@ -47,15 +48,16 @@ class GuideLocation {
     }
     
     // Update a location
-    public function updateLocation($id, $location_name, $city, $visit_hours, $description) {
+    public function updateLocation($id, $location_name, $city, $visit_hours, $rate_per_hour, $description) {
         $this->db->query('UPDATE guide_locations 
-                         SET location_name = :location_name, city = :city, visit_hours = :visit_hours, description = :description 
+                         SET location_name = :location_name, city = :city, visit_hours = :visit_hours, rate_per_hour = :rate_per_hour, description = :description 
                          WHERE id = :id');
         
         $this->db->bind(':id', $id);
         $this->db->bind(':location_name', $location_name);
         $this->db->bind(':city', $city);
         $this->db->bind(':visit_hours', $visit_hours);
+        $this->db->bind(':rate_per_hour', $rate_per_hour);
         $this->db->bind(':description', $description);
         
         return $this->db->execute();

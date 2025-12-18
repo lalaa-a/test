@@ -36,6 +36,190 @@
             padding: 20px;
         }
         
+        /* Search Section */
+        .search-section {
+            margin-bottom: 40px;
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        .search-title {
+            font-family: 'Geologica', sans-serif;
+            font-weight: 700;
+            font-size: 28px;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+        
+        .search-subtitle {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-input-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input-wrapper:focus-within {
+            border-color: #006a71;
+            box-shadow: 0 8px 32px rgba(0, 106, 113, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 18px 60px 18px 24px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            background: transparent;
+            outline: none;
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background:#ffffff;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .search-icon:hover {
+            background: #005a61;
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .search-filters {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-chip {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .filter-chip:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        
+        .filter-chip.active {
+            background: #006a71;
+            color: white;
+        }
+        
+        .filter-chip.active:hover {
+            background: #005a61;
+        }
+        
+        .search-results-info {
+            margin-top: 20px;
+            color: #6b7280;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .no-results-title {
+            font-family: 'Geologica', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .no-results-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+        }
+        
+        /* Search Results Highlighting */
+        .highlight {
+            background: rgba(255, 235, 59, 0.4);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .search-title {
+                font-size: 24px;
+            }
+            
+            .search-container {
+                max-width: 90%;
+            }
+            
+            .search-input {
+                padding: 16px 50px 16px 20px;
+                font-size: 15px;
+            }
+            
+            .search-icon {
+                width: 35px;
+                height: 35px;
+                right: 15px;
+            }
+            
+            .search-filters {
+                gap: 8px;
+            }
+            
+            .filter-chip {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+        
         
         
         /* Hero Section */
@@ -483,11 +667,32 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <!-- Search Section -->
+        <section class="search-section">
+            <h1 class="search-title">Discover Sri Lanka's Wonders</h1>
+            <p class="search-subtitle">Find your perfect destination from hundreds of amazing places across the island</p>
+            
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="destinationSearch"
+                        placeholder="Search destinations, activities, or places..."
+                        autocomplete="off"
+                    >
+                    <button class="search-icon" id="searchButton">
+                        🔍
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- Hero Section -->
         <section class="hero-section">
             <div class="hero-destinations-grid">
                 <article class="destination-card" tabindex="0" aria-label="Ella, lush green hills and scenic train rides">
-                    <div class="destination-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Ella');"></div>
+                    <div class="destination-bg" style="background-image:url('<?php echo URL_ROOT; ?>/public/components/driver/images/img01.jpg');"></div>
                     <div class="destination-overlay"></div>
                     <div class="destination-text">
                         <h2 class="destination-title">Ella</h2>
@@ -495,7 +700,7 @@
                     </div>
                 </article>
                 <article class="destination-card" tabindex="0" aria-label="Galle, historic fort and coastal charm">
-                    <div class="destination-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Galle');"></div>
+                    <div class="destination-bg" style="background-image:url('<?php echo URL_ROOT; ?>/public/components/driver/images/img02.jpg');"></div>
                     <div class="destination-overlay"></div>
                     <div class="destination-text">
                         <h2 class="destination-title">Galle</h2>
@@ -503,7 +708,7 @@
                     </div>
                 </article>
                 <article class="destination-card" tabindex="0" aria-label="Yala, wildlife safaris and national park">
-                    <div class="destination-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Yala');"></div>
+                    <div class="destination-bg" style="background-image:url('<?php echo URL_ROOT; ?>/public/components/driver/images/img03.jpg');"></div>
                     <div class="destination-overlay"></div>
                     <div class="destination-text">
                         <h2 class="destination-title">Yala</h2>
@@ -511,7 +716,7 @@
                     </div>
                 </article>
                 <article class="destination-card" tabindex="0" aria-label="Sigiriya, ancient rock fortress and panoramic views">
-                    <div class="destination-bg" style="background-image:url('https://placehold.co/600x400/2d3748/ffffff?text=Sigiriya');"></div>
+                    <div class="destination-bg" style="background-image:url('<?php echo URL_ROOT; ?>/public/components/driver/images/img04.jpg');"></div>
                     <div class="destination-overlay"></div>
                     <div class="destination-text">
                         <h2 class="destination-title">Sigiriya</h2>
@@ -527,7 +732,7 @@
             <div class="category-container">
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Kandy" alt="Kandy">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/kandy.png" alt="Kandy">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Kandy</h3>
@@ -542,7 +747,7 @@
                 </div>
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Nuwara+Eliya" alt="Nuwara Eliya">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/nuwaraeliya.png" alt="Nuwara Eliya">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Nuwara Eliya</h3>
@@ -557,7 +762,7 @@
                 </div>
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Bentota" alt="Bentota">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/benthota.png" alt="Bentota">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Bentota</h3>
@@ -572,7 +777,7 @@
                 </div>
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Dambulla" alt="Dambulla">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/dambulla.png" alt="Dambulla">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Dambulla</h3>
@@ -587,7 +792,7 @@
                 </div>
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Hikkaduwa" alt="Hikkaduwa">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/hikkaduwa.png" alt="Hikkaduwa">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Hikkaduwa</h3>
@@ -602,7 +807,7 @@
                 </div>
                 <div class="place-card category-place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/240x120/1f2937/ffffff?text=Negombo" alt="Negombo">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/negombo.png" alt="Negombo">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Negombo</h3>
@@ -624,7 +829,7 @@
             <div class="trending-places-grid">
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Mirissa" alt="Mirissa Beach">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/mirissa.png" alt="Mirissa Beach">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Mirissa Beach</h3>
@@ -639,7 +844,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Anuradhapura" alt="Anuradhapura">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Anuradhapura</h3>
@@ -654,7 +859,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Horton+Plains" alt="Horton Plains">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/horton.png" alt="Horton Plains">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Horton Plains</h3>
@@ -669,7 +874,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Colombo" alt="Colombo">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/colombo.png" alt="Colombo">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Colombo</h3>
@@ -684,7 +889,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Polonnaruwa" alt="Polonnaruwa">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Polonnaruwa">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Polonnaruwa</h3>
@@ -699,7 +904,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Adam%27s+Peak" alt="Adam's Peak">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Adam's Peak">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Adam's Peak</h3>
@@ -730,7 +935,7 @@
             <div class="trending-places-grid">
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Mirissa" alt="Mirissa Beach">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/mirissa.png" alt="Mirissa Beach">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Mirissa Beach</h3>
@@ -745,7 +950,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Anuradhapura" alt="Anuradhapura">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Anuradhapura</h3>
@@ -760,7 +965,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Horton+Plains" alt="Horton Plains">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/horton.png" alt="Horton Plains">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Horton Plains</h3>
@@ -775,7 +980,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Colombo" alt="Colombo">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/colombo.png" alt="Colombo">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Colombo</h3>
@@ -790,7 +995,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Polonnaruwa" alt="Polonnaruwa">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Polonnaruwa">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Polonnaruwa</h3>
@@ -805,7 +1010,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Adam%27s+Peak" alt="Adam's Peak">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Adam's Peak">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Adam's Peak</h3>
@@ -837,7 +1042,7 @@
             <div class="trending-places-grid">
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Mirissa" alt="Mirissa Beach">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/mirissa.png" alt="Mirissa Beach">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Mirissa Beach</h3>
@@ -852,7 +1057,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Anuradhapura" alt="Anuradhapura">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Anuradhapura</h3>
@@ -867,7 +1072,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Horton+Plains" alt="Horton Plains">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/horton.png" alt="Horton Plains">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Horton Plains</h3>
@@ -882,7 +1087,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Colombo" alt="Colombo">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/colombo.png" alt="Colombo">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Colombo</h3>
@@ -897,7 +1102,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Polonnaruwa" alt="Polonnaruwa">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Polonnaruwa">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Polonnaruwa</h3>
@@ -912,7 +1117,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Adam%27s+Peak" alt="Adam's Peak">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Adam's Peak">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Adam's Peak</h3>
@@ -943,7 +1148,7 @@
             <div class="trending-places-grid">
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Mirissa" alt="Mirissa Beach">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/mirissa.png" alt="Mirissa Beach">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Mirissa Beach</h3>
@@ -958,7 +1163,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Anuradhapura" alt="Anuradhapura">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Anuradhapura</h3>
@@ -973,7 +1178,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Horton+Plains" alt="Horton Plains">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/horton.png" alt="Horton Plains">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Horton Plains</h3>
@@ -988,7 +1193,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Colombo" alt="Colombo">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/colombo.png" alt="Colombo">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Colombo</h3>
@@ -1003,7 +1208,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Polonnaruwa" alt="Polonnaruwa">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Polonnaruwa">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Polonnaruwa</h3>
@@ -1018,7 +1223,7 @@
                 </div>
                 <div class="place-card">
                     <div class="place-image">
-                        <img src="https://placehold.co/320x200/1f2937/ffffff?text=Adam%27s+Peak" alt="Adam's Peak">
+                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Adam's Peak">
                     </div>
                     <div class="place-info">
                         <h3 class="place-title">Adam's Peak</h3>
@@ -1059,6 +1264,7 @@
             initializePlaceCards();
             initializeExploreButtons();
             initializeScrollBehavior();
+            initializeSearchFunctionality();
         });
 
         // Destination cards interaction
@@ -1250,6 +1456,237 @@
         }
 
 // end of the destination clicked function
+
+        // Search functionality
+        function initializeSearchFunctionality() {
+            const searchInput = document.getElementById('destinationSearch');
+            const searchButton = document.getElementById('searchButton');
+            const filterChips = document.querySelectorAll('.filter-chip');
+            const searchResultsInfo = document.getElementById('searchResultsInfo');
+            let currentFilter = 'all';
+            let searchTerm = '';
+
+            // Get all searchable items
+            function getAllSearchableItems() {
+                const items = [];
+                
+                // Add destination cards
+                document.querySelectorAll('.destination-card').forEach(card => {
+                    const title = card.querySelector('.destination-title')?.textContent || '';
+                    const subtitle = card.querySelector('.destination-subtitle')?.textContent || '';
+                    items.push({
+                        element: card,
+                        title: title,
+                        description: subtitle,
+                        category: 'destination',
+                        searchText: (title + ' ' + subtitle).toLowerCase()
+                    });
+                });
+
+                // Add place cards
+                document.querySelectorAll('.place-card').forEach(card => {
+                    const title = card.querySelector('.place-title')?.textContent || '';
+                    const description = card.querySelector('.place-description')?.textContent || '';
+                    const category = card.querySelector('.place-category')?.textContent || '';
+                    
+                    let categoryType = 'all';
+                    if (category.includes('Culture') || category.includes('Heritage')) categoryType = 'culture';
+                    else if (category.includes('Nature') || category.includes('Adventure')) categoryType = 'nature';
+                    else if (category.includes('Relaxation') || category.includes('Leisure')) categoryType = 'beach';
+                    else if (category.includes('Entertainment') || category.includes('Activities')) categoryType = 'entertainment';
+                    else if (category.includes('Food') || category.includes('Cuisine')) categoryType = 'food';
+
+                    items.push({
+                        element: card,
+                        title: title,
+                        description: description,
+                        category: categoryType,
+                        searchText: (title + ' ' + description + ' ' + category).toLowerCase()
+                    });
+                });
+
+                return items;
+            }
+
+            // Filter and search items
+            function filterAndSearchItems() {
+                const items = getAllSearchableItems();
+                let visibleCount = 0;
+                let filteredItems = items;
+
+                // Apply category filter
+                if (currentFilter !== 'all') {
+                    filteredItems = items.filter(item => item.category === currentFilter);
+                }
+
+                // Apply search filter
+                if (searchTerm) {
+                    filteredItems = filteredItems.filter(item => 
+                        item.searchText.includes(searchTerm.toLowerCase())
+                    );
+                }
+
+                // Show/hide items
+                items.forEach(item => {
+                    const shouldShow = filteredItems.includes(item);
+                    const section = item.element.closest('section');
+                    
+                    if (shouldShow) {
+                        item.element.style.display = '';
+                        visibleCount++;
+                        highlightSearchTerm(item.element, searchTerm);
+                    } else {
+                        item.element.style.display = 'none';
+                        removeHighlights(item.element);
+                    }
+                });
+
+                // Show/hide sections based on visible items
+                document.querySelectorAll('section').forEach(section => {
+                    const visibleItems = section.querySelectorAll('.destination-card:not([style*="display: none"]), .place-card:not([style*="display: none"])');
+                    if (visibleItems.length === 0 && (searchTerm || currentFilter !== 'all')) {
+                        section.style.display = 'none';
+                    } else {
+                        section.style.display = '';
+                    }
+                });
+
+                // Update results info
+                updateResultsInfo(visibleCount, searchTerm, currentFilter);
+
+                // Show no results message if needed
+                showNoResultsIfNeeded(visibleCount);
+            }
+
+            // Highlight search terms
+            function highlightSearchTerm(element, term) {
+                if (!term) return;
+
+                const titleElement = element.querySelector('.destination-title, .place-title');
+                const descElement = element.querySelector('.destination-subtitle, .place-description');
+
+                [titleElement, descElement].forEach(el => {
+                    if (el && el.textContent) {
+                        const originalText = el.getAttribute('data-original-text') || el.textContent;
+                        if (!el.getAttribute('data-original-text')) {
+                            el.setAttribute('data-original-text', originalText);
+                        }
+
+                        const regex = new RegExp(`(${term})`, 'gi');
+                        const highlightedText = originalText.replace(regex, '<span class="highlight">$1</span>');
+                        el.innerHTML = highlightedText;
+                    }
+                });
+            }
+
+            // Remove highlights
+            function removeHighlights(element) {
+                const elements = element.querySelectorAll('[data-original-text]');
+                elements.forEach(el => {
+                    el.innerHTML = el.getAttribute('data-original-text');
+                });
+            }
+
+            // Update results info
+            function updateResultsInfo(count, term, filter) {
+                let message = '';
+                if (term && filter !== 'all') {
+                    message = `Found ${count} results for "${term}" in ${getFilterName(filter)}`;
+                } else if (term) {
+                    message = `Found ${count} results for "${term}"`;
+                } else if (filter !== 'all') {
+                    message = `Showing ${count} ${getFilterName(filter)} destinations`;
+                } else {
+                    message = '';
+                }
+
+                if (message) {
+                    searchResultsInfo.textContent = message;
+                    searchResultsInfo.style.display = 'block';
+                } else {
+                    searchResultsInfo.style.display = 'none';
+                }
+            }
+
+            // Get filter display name
+            function getFilterName(filter) {
+                const filterNames = {
+                    'culture': 'Culture & Heritage',
+                    'nature': 'Nature & Adventure',
+                    'beach': 'Beach & Relaxation',
+                    'entertainment': 'Entertainment & Activities',
+                    'food': 'Food & Cuisine'
+                };
+                return filterNames[filter] || filter;
+            }
+
+            // Show no results message
+            function showNoResultsIfNeeded(count) {
+                let noResultsElement = document.getElementById('noResultsMessage');
+                
+                if (count === 0 && (searchTerm || currentFilter !== 'all')) {
+                    if (!noResultsElement) {
+                        noResultsElement = document.createElement('div');
+                        noResultsElement.id = 'noResultsMessage';
+                        noResultsElement.className = 'no-results';
+                        noResultsElement.innerHTML = `
+                            <div class="no-results-icon">🔍</div>
+                            <div class="no-results-title">No destinations found</div>
+                            <div class="no-results-text">Try adjusting your search terms or filters to find more results.</div>
+                        `;
+                        document.querySelector('.main-content').appendChild(noResultsElement);
+                    }
+                    noResultsElement.style.display = 'block';
+                } else if (noResultsElement) {
+                    noResultsElement.style.display = 'none';
+                }
+            }
+
+            // Search input event
+            searchInput.addEventListener('input', function() {
+                searchTerm = this.value.trim();
+                filterAndSearchItems();
+            });
+
+            // Search button event
+            searchButton.addEventListener('click', function() {
+                searchTerm = searchInput.value.trim();
+                filterAndSearchItems();
+            });
+
+            // Enter key search
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchTerm = this.value.trim();
+                    filterAndSearchItems();
+                }
+            });
+
+            // Filter chip events
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // Update active chip
+                    filterChips.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current filter
+                    currentFilter = this.getAttribute('data-category');
+                    
+                    // Apply filter
+                    filterAndSearchItems();
+                });
+            });
+
+            // Clear search function
+            window.clearSearch = function() {
+                searchInput.value = '';
+                searchTerm = '';
+                currentFilter = 'all';
+                filterChips.forEach(c => c.classList.remove('active'));
+                filterChips[0].classList.add('active'); // Activate "All Places"
+                filterAndSearchItems();
+            };
+        }
 
 
 

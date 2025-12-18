@@ -47,6 +47,7 @@ class GuideDashboard extends controller {
         $location_name = trim($_POST['location_name'] ?? '');
         $city = trim($_POST['city'] ?? '');
         $visit_hours = floatval($_POST['visit_hours'] ?? 1.0);
+        $rate_per_hour = floatval($_POST['rate_per_hour'] ?? 0);
         $description = trim($_POST['description'] ?? '');
         
         // Validation
@@ -64,6 +65,10 @@ class GuideDashboard extends controller {
             $errors[] = 'Visit hours must be between 0.1 and 99.9';
         }
         
+        if ($rate_per_hour <= 0) {
+            $errors[] = 'Rate per hour must be greater than 0';
+        }
+        
         if (!empty($errors)) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
@@ -71,7 +76,7 @@ class GuideDashboard extends controller {
         }
         
         // Add location to database
-        if ($this->guideLocationModel->addLocation($guide_id, $location_name, $city, $visit_hours, $description)) {
+        if ($this->guideLocationModel->addLocation($guide_id, $location_name, $city, $visit_hours, $rate_per_hour, $description)) {
             // Get updated location count
             $newLocationCount = $this->guideLocationModel->getLocationCount($guide_id);
             
@@ -189,6 +194,7 @@ class GuideDashboard extends controller {
         $location_name = trim($_POST['location_name'] ?? '');
         $city = trim($_POST['city'] ?? '');
         $visit_hours = floatval($_POST['visit_hours'] ?? 1.0);
+        $rate_per_hour = floatval($_POST['rate_per_hour'] ?? 0);
         $description = trim($_POST['description'] ?? '');
         
         // Validation
@@ -210,6 +216,10 @@ class GuideDashboard extends controller {
             $errors[] = 'Visit hours must be between 0.1 and 99.9';
         }
         
+        if ($rate_per_hour <= 0) {
+            $errors[] = 'Rate per hour must be greater than 0';
+        }
+        
         if (!empty($errors)) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
@@ -223,7 +233,7 @@ class GuideDashboard extends controller {
             return;
         }
         
-        if ($this->guideLocationModel->updateLocation($location_id, $location_name, $city, $visit_hours, $description)) {
+        if ($this->guideLocationModel->updateLocation($location_id, $location_name, $city, $visit_hours, $rate_per_hour, $description)) {
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'message' => 'Location updated successfully']);
         } else {

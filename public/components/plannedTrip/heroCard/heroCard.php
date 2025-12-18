@@ -6,7 +6,7 @@
 <article data-hero-trip aria-label="A Trip to Sigiriya">
   <img
     class="thc-img"
-    src="https://images.unsplash.com/photo-1558808047-8934d8794047?q=80&w=1600&auto=format&fit=crop"
+    src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png"
     alt="Sigiriya Rock Fortress under a blue sky"
     loading="lazy"
   />

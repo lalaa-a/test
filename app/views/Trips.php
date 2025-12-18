@@ -18,8 +18,9 @@
     </style>
 
     <script>
-        // Make URL_ROOT available to JavaScript
+        // Make URL_ROOT and IMG_ROOT available to JavaScript
         window.URL_ROOT = '<?php echo URL_ROOT; ?>';
+        window.IMG_ROOT = '<?php echo IMG_ROOT; ?>';
     </script>
 
     <?php

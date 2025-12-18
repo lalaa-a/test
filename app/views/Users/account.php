@@ -45,7 +45,7 @@
         }
 
         .profile-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #006A71 0%, #48A6A7 100%);
             color: white;
             padding: 40px;
             text-align: center;
@@ -119,7 +119,7 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #006A71;
             color: white;
             border: none;
             padding: 14px 30px;
@@ -238,7 +238,7 @@
             <div class="profile-section">
                 <?php
                 $user = getLoggedInUser();
-                $profilePhoto = !empty($user['profile_photo']) ? URL_ROOT . '/uploads/' . $user['profile_photo'] : URL_ROOT . '/public/img/default-avatar.png';
+                $profilePhoto = !empty($user['profile_photo']) ? URL_ROOT.'/public/'.$user['profile_photo'] : URL_ROOT . '/public/img/default-avatar.png';
                 ?>
                 <img src="<?= $profilePhoto ?>" alt="Profile Photo" class="profile-photo" id="profilePhotoDisplay">
                 <div class="profile-name"><?= htmlspecialchars($user['fullname']) ?></div>

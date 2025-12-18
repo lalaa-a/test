@@ -103,6 +103,7 @@
             color: #006a71;
             font-size: 20px;
         }
+
         
         /* Image Gallery */
         .image-gallery {
@@ -338,59 +339,115 @@
             }
         }
         
-        .location-card {
-            background: white;
+        /* Place Card Styles - Using destination card structure */
+        .place-card {
+            position: relative;
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: transform 0.22s ease, box-shadow 0.22s ease;
-        }
-        
-        .location-card:hover {
-            transform: translateY(-8px);
-        }
-        
-        .location-image {
-            width: 100%;
-            height: 180px;
-            border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 15px;
-            background: #f3f4f6;
+            min-height: 345px;
+            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.13);
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s cubic-bezier(.4,0,.2,1), filter 0.3s cubic-bezier(.4,0,.2,1);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
-        .location-image img {
+        .place-card:focus {
+            box-shadow: 0 0 0 3px #006a71, 0 4px 24px 0 rgba(0,0,0,0.13);
+        }
+        
+        .place-card:hover, .place-card:focus-visible {
+            transform: scale(1.035);
+            filter: brightness(1.08);
+            z-index: 3;
+        }
+        
+        .place-image {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+        }
+        
+        .place-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
         }
         
-        .location-name {
+        .place-card:hover .place-image img {
+            transform: scale(1.05);
+        }
+        
+        .place-info {
+            padding: 18px;
+            background: white;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .place-title {
             font-family: 'Roboto', sans-serif;
             font-weight: 600;
             font-size: 18px;
             color: #111827;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
-        .location-details {
+        .place-category {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            background-color: #f3f4f6;
+        }
+        
+        .place-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .rating-value {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .place-description {
             font-family: 'Roboto', sans-serif;
             font-size: 14px;
             color: #4b5563;
-            margin-bottom: 15px;
+            line-height: 1.45;
+            margin-bottom: 18px;
+            flex: 1;
         }
         
-        .location-duration {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            background: #d4edda;
-            color: #155724;
+        .explore-place-btn {
+            width: 100%;
+            background: #006a71;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .explore-place-btn:hover {
+            background: #005a61;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
         /* Tours Section */
@@ -698,7 +755,7 @@
         <section class="guide-header">
             <h1 class="guide-title">
                 <span class="guide-icon">🎯</span>
-                Sarah Wilson - Professional Guide
+                Pasan Sandeepa
             </h1>
             <div class="guide-rating">
                 <span class="rating-value">4.9</span>
@@ -718,14 +775,14 @@
         <!-- Image Gallery -->
         <section class="image-gallery">
             <div class="main-image">
-                <img src="https://placehold.co/800x400/1f2937/ffffff?text=Sarah+Wilson+Guide" alt="Sarah Wilson - Professional Guide">
+                <img src="<?php echo IMG_ROOT.'/explore/drivers/guidePic1.png'?>" alt="Sarah Wilson - Professional Guide">
             </div>
             <div class="side-images">
                 <div class="side-image">
-                    <img src="https://placehold.co/400x192/1f2937/ffffff?text=Tour+in+Progress" alt="Tour in Progress">
+                    <img src="<?php echo IMG_ROOT.'/explore/drivers/guidePic2.png'?>" alt="Tour in Progress">
                 </div>
                 <div class="side-image">
-                    <img src="https://placehold.co/400x192/1f2937/ffffff?text=Happy+Travelers" alt="Happy Travelers">
+                    <img src="<?php echo IMG_ROOT.'/explore/drivers/guidePic3.png'?>" alt="Happy Travelers">
                 </div>
             </div>
         </section>
@@ -884,82 +941,95 @@
             <div class="tab-section" id="locations">
                 <h2 class="section-title">Guiding Locations</h2>
                 <div class="locations-grid">
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Eiffel+Tower" alt="Eiffel Tower">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/kandy.png" alt="Kandy">
                         </div>
-                        <div class="location-name">Eiffel Tower</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Paris<br>
-                            <strong>Specialty:</strong> Architectural History<br>
-                            <strong>Languages:</strong> EN, FR, ES
+                        <div class="place-info">
+                            <h3 class="place-title">Kandy</h3>
+                            <span class="place-category">Culture & Heritage</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.8 (156 reviews)</span>
+                            </div>
+                            <p class="place-description">Cultural capital with the Temple of Tooth and beautiful lake views.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">3 hours tour</span>
                     </div>
-                    
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Louvre+Museum" alt="Louvre Museum">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/nuwaraeliya.png" alt="Nuwara Eliya">
                         </div>
-                        <div class="location-name">Louvre Museum</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Paris<br>
-                            <strong>Specialty:</strong> Art & Renaissance History<br>
-                            <strong>Languages:</strong> EN, FR, ES
+                        <div class="place-info">
+                            <h3 class="place-title">Nuwara Eliya</h3>
+                            <span class="place-category">Nature & Adventure</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.7 (203 reviews)</span>
+                            </div>
+                            <p class="place-description">Hill station with tea plantations and cool mountain climate.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">4 hours tour</span>
                     </div>
-                    
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Montmartre" alt="Montmartre">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/sigiriya.png" alt="Sigiriya">
                         </div>
-                        <div class="location-name">Montmartre</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Paris<br>
-                            <strong>Specialty:</strong> Local Culture & Hidden Gems<br>
-                            <strong>Languages:</strong> EN, FR
+                        <div class="place-info">
+                            <h3 class="place-title">Sigiriya</h3>
+                            <span class="place-category">Culture & Heritage</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.9 (289 reviews)</span>
+                            </div>
+                            <p class="place-description">Ancient rock fortress with stunning panoramic views and historical significance.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">3 hours tour</span>
                     </div>
-                    
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Versailles+Palace" alt="Versailles Palace">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/dambulla.png" alt="Dambulla">
                         </div>
-                        <div class="location-name">Versailles Palace</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Versailles<br>
-                            <strong>Specialty:</strong> Royal History & Gardens<br>
-                            <strong>Languages:</strong> EN, FR, ES
+                        <div class="place-info">
+                            <h3 class="place-title">Dambulla</h3>
+                            <span class="place-category">Culture & Heritage</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.5 (174 reviews)</span>
+                            </div>
+                            <p class="place-description">Ancient cave temple complex with stunning Buddhist art and statues.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">6 hours tour</span>
                     </div>
-                    
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Notre+Dame" alt="Notre Dame">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/polonnaruwa.png" alt="Polonnaruwa">
                         </div>
-                        <div class="location-name">Notre Dame</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Paris<br>
-                            <strong>Specialty:</strong> Gothic Architecture & History<br>
-                            <strong>Languages:</strong> EN, FR
+                        <div class="place-info">
+                            <h3 class="place-title">Polonnaruwa</h3>
+                            <span class="place-category">Culture & Heritage</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.8 (267 reviews)</span>
+                            </div>
+                            <p class="place-description">Ancient city with well-preserved ruins, temples, and statues showcasing the architectural brilliance of medieval Sri Lanka.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">2 hours tour</span>
                     </div>
-                    
-                    <div class="location-card">
-                        <div class="location-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Latin+Quarter" alt="Latin Quarter">
+                    <div class="place-card">
+                        <div class="place-image">
+                            <img src="<?php echo IMG_ROOT; ?>/explore/destinations/hillcountry.png" alt="Ella">
                         </div>
-                        <div class="location-name">Latin Quarter</div>
-                        <div class="location-details">
-                            <strong>City:</strong> Paris<br>
-                            <strong>Specialty:</strong> Student Life & Medieval History<br>
-                            <strong>Languages:</strong> EN, FR, ES
+                        <div class="place-info">
+                            <h3 class="place-title">Ella</h3>
+                            <span class="place-category">Nature & Adventure</span>
+                            <div class="place-rating">
+                                <span class="star">★</span>
+                                <span class="rating-value">4.6 (198 reviews)</span>
+                            </div>
+                            <p class="place-description">Scenic hill town with beautiful views, hiking trails, and famous train rides.</p>
+                            <button class="explore-place-btn">Explore This Place</button>
                         </div>
-                        <span class="location-duration">3 hours tour</span>
                     </div>
                 </div>
             </div>
@@ -1087,6 +1157,7 @@
             initializeGuideInteraction();
             populateGuideReviews();
             initializeReviewForm();
+            initializePlaceCards();
         });
 
         // Tabs functionality
@@ -1221,7 +1292,59 @@
             }
         }
 
-        // Initialize review form functionality
+        // Place cards interaction
+        function initializePlaceCards() {
+            const placeCards = document.querySelectorAll('.place-card');
+            
+            placeCards.forEach(card => {
+                const exploreBtn = card.querySelector('.explore-place-btn');
+                
+                // Card click event
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if the explore button was clicked
+                    if (e.target === exploreBtn) return;
+                    
+                    const placeName = this.querySelector('.place-title').textContent;
+                    console.log(`Place card clicked: ${placeName}`);
+                    navigateToDestination(placeName);
+                });
+                
+                // Explore button click event
+                if (exploreBtn) {
+                    exploreBtn.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent card click event
+                        
+                        const placeName = this.closest('.place-card').querySelector('.place-title').textContent;
+                        console.log(`Explore button clicked for: ${placeName}`);
+                        navigateToDestination(placeName);
+                    });
+                }
+                
+                // Add hover effects
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.035)';
+                    this.style.filter = 'brightness(1.08)';
+                    this.style.zIndex = '3';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.filter = '';
+                    this.style.zIndex = '';
+                });
+            });
+        }
+
+        // Navigation function for destinations
+        function navigateToDestination(destinationName) {
+            const destUrl = `<?php echo URL_ROOT; ?>/user/destDetails`;
+            
+            console.log(`Navigating to destination: ${destinationName}`);
+            console.log(`URL: ${destUrl}`);
+            
+            // Navigate to the destination page
+            window.location.href = destUrl;
+        }
         function initializeReviewForm() {
             const form = document.getElementById('reviewForm');
             if (!form) return;

@@ -48,7 +48,7 @@
       <div id="adp-card-list" class="adp-card-list" tabindex="0" aria-label="Saved places list">
         <!-- Replace with PHP: BEGIN -->
         <article class="adp-card">
-          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-img" style="background-image:url('<?php echo IMG_ROOT.'/explore/destinations/sigiriya.png'?>');"></div>
           <div class="adp-card-body">
             <h4 class="adp-card-title">Sigiriya Ancient Rock Fortress</h4>
             <div class="adp-card-sub">4.6 • Some details about the place</div>
@@ -57,7 +57,7 @@
         </article>
 
         <article class="adp-card">
-          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1563897539633-7374c276c212?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-img" style="background-image:url('<?php echo IMG_ROOT.'/explore/destinations/dambulla.png'?>');"></div>
           <div class="adp-card-body">
             <h4 class="adp-card-title">Another Place</h4>
             <div class="adp-card-sub">4.5 • Some details about the place</div>
@@ -66,7 +66,7 @@
         </article>
 
         <article class="adp-card">
-          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1494475673543-6a6a27143b22?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-img" style="background-image:url('<?php echo IMG_ROOT.'/explore/destinations/sigiriya.png'?>');"></div>
           <div class="adp-card-body">
             <h4 class="adp-card-title">Sample Place</h4>
             <div class="adp-card-sub">4.3 • Some details about the place</div>

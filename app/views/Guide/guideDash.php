@@ -38,19 +38,20 @@
             z-index: 1000;
             border-right: 1px solid #e9ecef;
         }
+
         .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-        }
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
+            justify-content: center;
         }
+
+        .sidebar-logo {
+            width: 100px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            
+        }
+
         .sidebar-menu {
             list-style: none;
             padding: 0 10px;
@@ -116,6 +117,13 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .logout-btn {
@@ -1029,7 +1037,14 @@
             .sidebar {
                 width: 70px;
             }
-            .sidebar-header h2 span,
+            .sidebar-header {
+                padding: 15px 10px;
+            }
+            .sidebar-logo {
+                width: 35px;
+                height: 35px;
+            }
+
             .sidebar-menu a span {
                 display: none;
             }
@@ -1080,7 +1095,9 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2><i class="fas fa-user-tie"></i> <span>Guide Dashboard</span></h2>
+            <div>
+                <img src="<?php echo IMG_ROOT.'/logo/logo design 1(2).png'?>" alt="Logo" class="sidebar-logo">
+            </div>
         </div>
         <ul class="sidebar-menu">
             <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
@@ -1102,8 +1119,15 @@
                 <?php
                 $user = getLoggedInUser();
                 $firstInitial = !empty($user['fullname']) ? strtoupper(substr($user['fullname'], 0, 1)) : 'G';
+                $profilePhoto = $user['profile_photo'] ?? null;
                 ?>
-                <div class="user-avatar"><?= $firstInitial ?></div>
+                <div class="user-avatar">
+                    <?php if (!empty($profilePhoto) && file_exists(ROOT_PATH.'/public/'.$user['profile_photo'])): ?>
+                        <img src="<?=URL_ROOT.'/public/'.$user['profile_photo']?>" alt="Profile Photo">
+                    <?php else: ?>
+                        <?= $firstInitial ?>
+                    <?php endif; ?>
+                </div>
                 <span><?= htmlspecialchars($user['fullname'] ?? 'Guide User') ?></span>
                 <button class="logout-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/user/logout'">Logout</button>
             </div>
@@ -1149,7 +1173,7 @@
                     <div class="stat-icon earnings">
                         <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="stat-number">$8,750</div>
+                    <div class="stat-number">Rs. 1,312,500</div>
                     <div class="stat-label">Total Earnings</div>
                 </div>
                 <div class="stat-card">
@@ -1205,7 +1229,7 @@
                     <div class="trip-details">
                         <div class="trip-detail-item">
                             <strong>Location:</strong><br>
-                            Eiffel Tower, Paris
+                            galle fort
                         </div>
                         <div class="trip-detail-item">
                             <strong>Duration:</strong><br>
@@ -1431,7 +1455,7 @@
                         <div class="stat-icon earnings">
                             <i class="fas fa-dollar-sign"></i>
                         </div>
-                        <div class="stat-number">$6,200</div>
+                        <div class="stat-number">Rs. 930,000</div>
                         <div class="stat-label">Earnings from Locations</div>
                     </div>
                 </div>
@@ -1571,7 +1595,7 @@
                                 <td>Robert Davis</td>
                                 <td>Notre Dame</td>
                                 <td>2 hours</td>
-                                <td>$300</td>
+                                <td>Rs. 45,000</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1591,21 +1615,21 @@
                         <div class="stat-icon earnings">
                             <i class="fas fa-dollar-sign"></i>
                         </div>
-                        <div class="stat-number">$8,750</div>
+                        <div class="stat-number">Rs. 1,312,500</div>
                         <div class="stat-label">Total Earnings</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon trips">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="stat-number">$7,800</div>
+                        <div class="stat-number">Rs. 1,170,000</div>
                         <div class="stat-label">Completed Earnings</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon rating">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-number">$950</div>
+                        <div class="stat-number">Rs. 142,500</div>
                         <div class="stat-label">Pending Earnings</div>
                     </div>
                 </div>
@@ -1622,13 +1646,13 @@
                         <tr>
                             <td>2024-01-15</td>
                             <td>Notre Dame Tour</td>
-                            <td>$300</td>
+                            <td>Rs. 45,000</td>
                             <td><span class="status-badge status-completed">Completed</span></td>
                         </tr>
                         <tr>
                             <td>2024-01-18</td>
                             <td>Eiffel Tower Tour</td>
-                            <td>$450</td>
+                            <td>Rs. 67,500</td>
                             <td><span class="status-badge status-pending">Pending</span></td>
                         </tr>
                     </tbody>
@@ -1818,15 +1842,15 @@
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" value="+1 (555) 123-4567">
+                            <input type="tel" id="phone" value="+94782498755">
                         </div>
                         <div class="form-group">
                             <label for="address">Address</label>
-                            <input type="text" id="address" value="123 Main St, Paris, France">
+                            <input type="text" id="address" value="galle">
                         </div>
                         <div class="form-group">
                             <label for="experience">Guiding Experience</label>
-                            <input type="text" id="experience" value="5 years of professional guiding experience in Paris">
+                            <input type="text" id="experience" value="5 years of professional guiding experience in galle">
                         </div>
                         <div class="form-group">
                             <label for="languages">Languages Spoken</label>
@@ -1834,7 +1858,7 @@
                         </div>
                         <div class="form-group">
                             <label for="bio">Bio</label>
-                            <textarea id="bio" rows="3">Certified tour guide with extensive knowledge of Paris history and culture. Passionate about providing memorable experiences for travelers from around the world.</textarea>
+                            <textarea id="bio" rows="3">Certified tour guide with extensive knowledge of galle history and culture. Passionate about providing memorable experiences for travelers from around the world.</textarea>
                         </div>
                     </div>
                 </div>
@@ -1855,16 +1879,21 @@
             <form id="addLocationForm">
                 <div class="form-group">
                     <label for="locationName">Location Name</label>
-                    <input type="text" id="locationName" placeholder="e.g., Eiffel Tower" required>
+                    <input type="text" id="locationName" placeholder="e.g., galle fort" required>
                 </div>
                 <div class="form-group">
                     <label for="locationCity">City</label>
-                    <input type="text" id="locationCity" placeholder="e.g., Paris" required>
+                    <input type="text" id="locationCity" placeholder="e.g., Galle" required>
                 </div>
                 <div class="form-group">
                     <label for="visitHours">Visit Duration (Hours)</label>
                     <input type="number" id="visitHours" placeholder="e.g., 2.5" min="0.5" max="24" step="0.5" value="2.0" required>
                     <small style="color: #666; font-size: 0.85rem;">How many hours does it take to visit this location?</small>
+                </div>
+                <div class="form-group">
+                    <label for="locationRate">Rate per Hour Rs.</label>
+                    <input type="number" id="locationRate" placeholder="e.g., 25.00" min="1" step="0.01" required>
+                    <small style="color: #666; font-size: 0.85rem;">Your hourly rate for guiding this location</small>
                 </div>
                 <div class="form-group">
                     <label for="locationDescription">Description</label>
@@ -1944,16 +1973,21 @@
                 <input type="hidden" id="editLocationId">
                 <div class="form-group">
                     <label for="editLocationName">Location Name</label>
-                    <input type="text" id="editLocationName" placeholder="e.g., Eiffel Tower" required>
+                    <input type="text" id="editLocationName" placeholder="e.g., galle fort" required>
                 </div>
                 <div class="form-group">
                     <label for="editLocationCity">City</label>
-                    <input type="text" id="editLocationCity" placeholder="e.g., Paris" required>
+                    <input type="text" id="editLocationCity" placeholder="e.g., galle" required>
                 </div>
                 <div class="form-group">
                     <label for="editVisitHours">Visit Duration (Hours)</label>
                     <input type="number" id="editVisitHours" placeholder="e.g., 2.5" min="0.5" max="24" step="0.5" value="2.0" required>
                     <small style="color: #666; font-size: 0.85rem;">How many hours does it take to visit this location?</small>
+                </div>
+                <div class="form-group">
+                    <label for="editLocationRate">Rate per Hour ($)</label>
+                    <input type="number" id="editLocationRate" placeholder="e.g., 25.00" min="1" step="0.01" required>
+                    <small style="color: #666; font-size: 0.85rem;">Your hourly rate for guiding this location</small>
                 </div>
                 <div class="form-group">
                     <label for="editLocationDescription">Description</label>
@@ -2080,6 +2114,7 @@
             document.getElementById('editLocationName').value = locationData.location_name;
             document.getElementById('editLocationCity').value = locationData.city;
             document.getElementById('editVisitHours').value = locationData.visit_hours;
+            document.getElementById('editLocationRate').value = locationData.rate_per_hour || '';
             document.getElementById('editLocationDescription').value = locationData.description || '';
             document.getElementById('editLocationModal').style.display = 'block';
         }
@@ -2281,6 +2316,7 @@
             formData.append('location_name', document.getElementById('locationName').value);
             formData.append('city', document.getElementById('locationCity').value);
             formData.append('visit_hours', document.getElementById('visitHours').value);
+            formData.append('rate_per_hour', document.getElementById('locationRate').value);
             formData.append('description', document.getElementById('locationDescription').value);
             
             // Show loading state
@@ -2353,6 +2389,7 @@
             formData.append('location_name', document.getElementById('editLocationName').value);
             formData.append('city', document.getElementById('editLocationCity').value);
             formData.append('visit_hours', document.getElementById('editVisitHours').value);
+            formData.append('rate_per_hour', document.getElementById('editLocationRate').value);
             formData.append('description', document.getElementById('editLocationDescription').value);
             
             // Show loading state

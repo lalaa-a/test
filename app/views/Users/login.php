@@ -26,7 +26,7 @@
 
         .left-section {
             flex: 1.5;
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/6366F1/FFFFFF?text=Travel+Together');
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(<?php echo IMG_ROOT.'/homepage/planning-trekking-trip_53876-51125.jpg'?>);
             background-size: cover;
             background-position: center;
             display: flex;
@@ -130,6 +130,12 @@
 
         .form-group input::placeholder {
             color: #9ca3af;
+        }
+
+        /* valid input state */
+        .form-group input.valid {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.06);
         }
 
         .password-container {
@@ -317,6 +323,7 @@
                         <label for="email">Email Address *</label>
                         <input type="email" id="email" name="email" placeholder="youremail@gmail.com" required>
                         <div class="error-message" id="email-error">Valid email is required</div>
+                        <div class="success-message" id="email-success" style="display:none; background:transparent; color:#065f46; padding:0; font-size:0.9rem; margin-top:6px;">Email looks good</div>
                     </div>
 
                     <div class="form-group">
@@ -515,8 +522,44 @@
         });
 
         // Add input event listeners for real-time validation
-        document.getElementById('email').addEventListener('input', function() {
+        const emailInput = document.getElementById('email');
+        const loginButton = document.getElementById('login-button');
+        const emailSuccess = document.getElementById('email-success');
+
+        function validateEmailField(showFeedback = true) {
+            const value = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            // reset
+            emailInput.classList.remove('valid');
             clearError('email');
+            emailSuccess.style.display = 'none';
+
+            if (!value) {
+                // empty - keep button disabled
+                loginButton.disabled = true;
+                return false;
+            }
+
+            if (emailRegex.test(value)) {
+                emailInput.classList.add('valid');
+                if (showFeedback) emailSuccess.style.display = 'block';
+                loginButton.disabled = false;
+                return true;
+            } else {
+                // invalid
+                if (showFeedback) showError('email', 'Please enter a valid email address');
+                loginButton.disabled = true;
+                return false;
+            }
+        }
+
+        emailInput.addEventListener('input', function() {
+            validateEmailField(false); // live validate, but don't show error until blur/submission
+        });
+
+        emailInput.addEventListener('blur', function() {
+            validateEmailField(true); // on blur show feedback/errors
         });
         
         document.getElementById('password').addEventListener('input', function() {

@@ -8,7 +8,7 @@
       <div class="tpc-image-wrap">
         <img
           class="tpc-image"
-          src="<?php echo htmlspecialchars($image ?? 'https://images.unsplash.com/photo-1558808047-8934d8794047?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); ?>"
+          src="<?php echo IMG_ROOT; ?>/explore/destinations/kandy.png"
           alt="<?php echo htmlspecialchars($name ?? 'Trip'); ?>"
         />
       </div>

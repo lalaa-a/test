@@ -86,6 +86,14 @@
 
       if (!name) { showToast('Please enter a trip name'); return; }
       if (!startDate) { showToast('Please select your dates'); return; }
+      
+      // Validate that start date is not in the past
+      const startDateObj = new Date(startDate);
+      const todayStart = dayStart(today);
+      if (dayStart(startDateObj) < todayStart) {
+        showToast('Cannot create trip with past dates. Please select dates from today onwards.');
+        return;
+      }
 
       const payload = { name, description, startDate, endDate };
       const url = root.dataset.postUrl || '';
@@ -126,6 +134,15 @@
     });
 
     function onDayClick(d) {
+      // Prevent selecting past dates (before today)
+      const todayStart = dayStart(today);
+      const clickedDate = dayStart(d);
+      
+      if (clickedDate < todayStart) {
+        showToast('Cannot select past dates. Please choose a date from today onwards.');
+        return;
+      }
+      
       if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) {
         viewYear = d.getFullYear(); viewMonth = d.getMonth();
         monthSel.value = String(viewMonth); yearSel.value = String(viewYear);
@@ -144,18 +161,31 @@
       const firstOfMonth = new Date(viewYear, viewMonth, 1);
       const startOffset = (firstOfMonth.getDay() + 6) % 7; // Monday-first
       const gridStart = new Date(viewYear, viewMonth, 1 - startOffset);
+      const todayStart = dayStart(today);
 
       for (let i = 0; i < 42; i++) {
         const d = new Date(gridStart); d.setDate(gridStart.getDate() + i);
+        const dayDateStart = dayStart(d);
+        const isPastDate = dayDateStart < todayStart;
+        
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'ctf-day';
         btn.textContent = d.getDate();
         btn.dataset.date = toISO(d);
+        
         if (d.getMonth() !== viewMonth) btn.classList.add('is-outside');
-        if (inRange(d, selStart, selEnd)) btn.classList.add('is-inrange');
-        if (selStart && sameDate(d, selStart)) btn.classList.add('is-start');
-        if (selEnd && sameDate(d, selEnd)) btn.classList.add('is-end');
+        if (isPastDate) {
+          btn.classList.add('is-disabled');
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+          btn.title = 'Past dates cannot be selected';
+        } else {
+          if (inRange(d, selStart, selEnd)) btn.classList.add('is-inrange');
+          if (selStart && sameDate(d, selStart)) btn.classList.add('is-start');
+          if (selEnd && sameDate(d, selEnd)) btn.classList.add('is-end');
+        }
+        
         btn.addEventListener('click', () => onDayClick(d));
         grid.appendChild(btn);
       }
@@ -277,7 +307,7 @@
             <div class="tpc-image-wrap">
               <img
                 class="tpc-image"
-                src="https://images.unsplash.com/photo-1558808047-8934d8794047?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                src="${window.IMG_ROOT || window.URL_ROOT + '/public/img'}/explore/destinations/kandy.png"
                 alt="${name}"
               />
             </div>

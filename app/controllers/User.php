@@ -5,10 +5,8 @@
     class User extends Controller{
         
         private $userModel;
-        private $bridgeModel;
         public function __construct() {
             $this->userModel = $this->model('UserModel');
-            $this->bridgeModel = $this->model('bridgeModel');
         }
             
         
@@ -16,6 +14,7 @@
             requireLogin();
             $this->view('Trips');
         }
+        
 
         public function plannedTrip() {
             requireLogin();
@@ -70,6 +69,10 @@
         public function trending() {
             requireLogin();
             $this->view('Explore/trending');
+        }
+
+        public function aboutUs() {
+            $this->view('aboutUs');
         }
 
         //For register a user
@@ -224,7 +227,6 @@
 
                 try {
                     if ($this->userModel->create($userData)) {
-                        $this->bridgeModel->bridge($userData);
                         echo json_encode(['success' => true, 'message' => 'Account created successfully']);
                     } else {
                         echo json_encode(['success' => false, 'message' => 'Failed to create account. Please try again.']);
@@ -254,6 +256,7 @@
             redirectIfLoggedIn();
             
             if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                
                 header('Content-Type: application/json');
 
                 // Sanitize inputs
@@ -305,8 +308,10 @@
 
                     // Handle remember me
                     if ($remember) {
+                        /*
                         $rememberToken = bin2hex(random_bytes(32));
-                        $this->userModel->updateRememberToken($user->id, $rememberToken);
+                        $this->userModel->updateRememberToken($user->id, $rememberToken);*/
+
                         setRememberMeCookie($userData, 2592000); // 30 days
                     }
 
@@ -330,6 +335,7 @@
                 } catch (Exception $e) {
                     echo json_encode(['success' => false, 'message' => 'An error occurred during login. Please try again.']);
                 }
+
             } else {
                 // Load login view
                 $this->view('Users/login');

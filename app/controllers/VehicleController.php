@@ -89,14 +89,17 @@ class VehicleController extends controller {
                 'year' => intval($_POST['year']),
                 'license_plate' => strtoupper(trim($_POST['license_plate'])),
                 'color' => trim($_POST['color']),
-                'vehicle_type' => $_POST['vehicle_type']
+                'vehicle_type' => $_POST['vehicle_type'],
+                'seat_count' => intval($_POST['seat_count']),
+                'daily_rate' => floatval($_POST['daily_rate'])
             ];
             
             // Validate required fields
             if (empty($vehicleData['make']) || empty($vehicleData['model']) || 
                 empty($vehicleData['license_plate']) || empty($vehicleData['color']) || 
-                empty($vehicleData['vehicle_type']) || $vehicleData['year'] < 1900) {
-                echo json_encode(['success' => false, 'message' => 'All fields are required and year must be valid']);
+                empty($vehicleData['vehicle_type']) || $vehicleData['year'] < 1900 ||
+                $vehicleData['seat_count'] < 1 || $vehicleData['daily_rate'] <= 0) {
+                echo json_encode(['success' => false, 'message' => 'All fields are required, year must be valid, seats must be at least 1, and daily rate must be greater than 0']);
                 exit;
             }
             
@@ -269,14 +272,17 @@ class VehicleController extends controller {
                 'year' => intval($_POST['year']),
                 'license_plate' => strtoupper(trim($_POST['license_plate'])),
                 'color' => trim($_POST['color']),
-                'vehicle_type' => $_POST['vehicle_type']
+                'vehicle_type' => $_POST['vehicle_type'],
+                'seat_count' => intval($_POST['seat_count']),
+                'daily_rate' => floatval($_POST['daily_rate'])
             ];
             
             // Validate required fields
             if (empty($vehicleData['make']) || empty($vehicleData['model']) || 
                 empty($vehicleData['license_plate']) || empty($vehicleData['color']) || 
-                empty($vehicleData['vehicle_type']) || $vehicleData['year'] < 1900) {
-                echo json_encode(['success' => false, 'message' => 'All fields are required and year must be valid']);
+                empty($vehicleData['vehicle_type']) || $vehicleData['year'] < 1900 ||
+                $vehicleData['seat_count'] < 1 || $vehicleData['daily_rate'] <= 0) {
+                echo json_encode(['success' => false, 'message' => 'All fields are required, year must be valid, seats must be at least 1, and daily rate must be greater than 0']);
                 exit;
             }
             

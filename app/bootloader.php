@@ -3,6 +3,7 @@
     // Load configuration
     require_once 'helpers/upload_helper.php';
     require_once 'helpers/session_helper.php';
+    require_once 'helpers/html_js_css_Extractor.php';
     require_once 'config/config.php';
     
     // Load libraries and configurations

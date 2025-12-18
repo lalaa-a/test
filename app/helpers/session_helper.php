@@ -1,6 +1,5 @@
 <?php
 /**
- * Session Helper Functions
  * Functions to handle session management
  */
 
@@ -84,6 +83,7 @@ function getLoggedInUser() {
  * Set user session data
  * @param array $user
  */
+
 function setUserSession($user) {
     setSession('user_id', $user['id']);
     setSession('user_email', $user['email']);
@@ -98,6 +98,7 @@ function setUserSession($user) {
  * Clear user session data
  */
 function clearUserSession() {
+
     $sessionKeys = [
         'user_id', 'user_email', 'user_fullname', 
         'user_account_type', 'user_profile_photo', 
@@ -206,30 +207,89 @@ function regenerateSession() {
  * @param array $user
  * @param int $duration (in seconds, default 30 days)
  */
+
 function setRememberMeCookie($user, $duration = 2592000) {
-    $token = bin2hex(random_bytes(32));
-    $expiry = time() + $duration;
+
+    // Ensure UserModel is available
+    if (!class_exists('UserModel')) {
+        require_once '../app/models/UserModel.php';
+    }
     
-    // Store token in database (you would need to add this to your UserModel)
-    // For now, we'll just set a simple cookie
-    setcookie('remember_token', $token, $expiry, '/', '', false, true);
+    $user_model = new UserModel();
+
+    $token = bin2hex(random_bytes(32));
+    $tokenHash = password_hash($token, PASSWORD_DEFAULT);
+    $expiry = date('Y-m-d H:i:s', time() + $duration);
+    
+    //$user_model->updateLastLogin($user['id'],$tokenHash,$expiry);
+    $user_model->updateRememberToken($user['id'],$tokenHash,$expiry);
+
+    setcookie('remember_token', $token, time() + $duration, '/', '', false, true);
     setSession('remember_token', $token);
 }
+
 
 /**
  * Clear remember me cookie
  */
 function clearRememberMeCookie() {
+    
+    if(isset($_COOKIE['remember_token'])){
+        $token = $_COOKIE['remember_token'];
+        
+        // Ensure UserModel is available
+        if (!class_exists('UserModel')) {
+            require_once '../app/models/UserModel.php';
+        }
+        
+        $user_model = new UserModel();
+        $user_model->deleteRememberToken($token);
+    }
+
     setcookie('remember_token', '', time() - 3600, '/', '', false, true);
     unsetSession('remember_token');
 }
+
+
 
 /**
  * Check if remember me is active
  * @return bool
  */
 function hasRememberMe() {
+    /*
     return isset($_COOKIE['remember_token']) && hasSession('remember_token') && 
            $_COOKIE['remember_token'] === getSession('remember_token');
+    */
+
+    if (!isset($_COOKIE['remember_token']) || !hasSession('remember_token') || 
+        $_COOKIE['remember_token'] !== getSession('remember_token')) {
+        return false;
+    }
+
+    // Ensure UserModel is available
+    if (!class_exists('UserModel')) {
+        require_once '../app/models/UserModel.php';
+    }
+
+    $user_model = new UserModel();
+    $userId = $user_model->findByRememberToken($_COOKIE['remember_token']);
+
+    if ($userId) {
+        // Auto-login: Fetch user and set session
+        $userModel = new UserModel();
+        $user = $userModel->findById($userId);
+        if ($user) {
+            setUserSession([
+                'id' => $user->id,
+                'email' => $user->email,
+                'fullname' => $user->fullname,
+                'account_type' => $user->account_type,
+                'profile_photo' => $user->profile_photo
+            ]);
+            return true;
+        }
+    }
+    return false;
 }
 ?>

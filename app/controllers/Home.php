@@ -22,6 +22,11 @@
         public function drive() {
             $this->view('Explore/driver/driver_detail');
         }
+
+        public function test() {
+            $this->view('Admin/adminDash1');
+        }
+
     }
 
 

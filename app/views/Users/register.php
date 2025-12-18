@@ -23,7 +23,7 @@
         }
         .left-section1 {
             flex: 1.5;
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/4A90E2/FFFFFF?text=Driver');
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(<?php echo IMG_ROOT.'/explore/drivers/portrait-young-asian-handsome-man-with-backpack-trekking-hat-pretty-girlfriend-standing-checking-direction-paper-map-while-walking-forest-trail-backpack-travel-concept_1150-48388.jpg'?>);
             background-size: cover;
             background-position: center;
             display: flex;
@@ -443,9 +443,9 @@
 <body>
     <div class="container">
         <div class="left-section1">
-            <div class="location-icon1"></div>
-            <h1>Provide Safe Transportation</h1>
-            <p>Help tourists and locals get around safely while earning from your driving skills.</p>
+            <div class=""></div>
+            <h1>Register to your account</h1>
+            <p>Get the ultimate experience with us</p>
         </div>
         <div class="right-section">
             <div class="form-container">
@@ -870,7 +870,7 @@
             switch (accountType) {
                 case 'driver':
                     leftSection.classList.add('left-section1');
-                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/4A90E2/FFFFFF?text=Driver')`;
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero2.jpg')`;
                     leftSection.style.backgroundSize = 'cover';
                     leftSection.style.backgroundPosition = 'center';
                     // Update icon
@@ -886,7 +886,7 @@
                     break;
                 case 'guide':
                     leftSection.classList.add('left-section2');
-                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/50C878/FFFFFF?text=Guide')`;
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero3.jpg')`;
                     leftSection.style.backgroundSize = 'cover';
                     leftSection.style.backgroundPosition = 'center';
                     // Update icon
@@ -902,7 +902,7 @@
                     break;
                 case 'tourist':
                     leftSection.classList.add('left-section3');
-                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/FF6B6B/FFFFFF?text=Tourist')`;
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero1.jpg')`;
                     leftSection.style.backgroundSize = 'cover';
                     leftSection.style.backgroundPosition = 'center';
                     // Update icon

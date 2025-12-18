@@ -39,17 +39,16 @@
             border-right: 1px solid #e9ecef;
         }
         .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-        }
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
+            justify-content: center;
+        }
+
+        .sidebar-logo {
+            width: 100px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            
         }
         .sidebar-menu {
             list-style: none;
@@ -116,6 +115,13 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .logout-btn {
@@ -1156,7 +1162,15 @@
             .sidebar {
                 width: 70px;
             }
-            .sidebar-header h2 span,
+
+            .sidebar-header {
+                padding: 15px 10px;
+            }
+            .sidebar-logo {
+                width: 35px;
+                height: 35px;
+            }
+
             .sidebar-menu a span {
                 display: none;
             }
@@ -1210,9 +1224,13 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
+
         <div class="sidebar-header">
-            <h2><i class="fas fa-car"></i> <span>Driver Dashboard</span></h2>
+            <div>
+                <img src="<?php echo IMG_ROOT.'/logo/logo design 1(2).png'?>" alt="Logo" class="sidebar-logo">
+            </div>
         </div>
+        
         <ul class="sidebar-menu">
             <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
             <li><a href="#" data-tab="vehicles"><i class="fas fa-car"></i> <span>Vehicles</span></a></li>
@@ -1233,8 +1251,15 @@
                 <?php
                 $user = getLoggedInUser();
                 $firstInitial = !empty($user['fullname']) ? strtoupper(substr($user['fullname'], 0, 1)) : 'D';
+                $profilePhoto = $user['profile_photo'] ?? null;
                 ?>
-                <div class="user-avatar"><?= $firstInitial ?></div>
+                <div class="user-avatar">
+                    <?php if (!empty($profilePhoto) && file_exists(ROOT_PATH.'/public/'.$user['profile_photo'])): ?>
+                        <img src="<?=URL_ROOT.'/public/'.$user['profile_photo']?>" alt="Profile Photo">
+                    <?php else: ?>
+                        <?= $firstInitial ?>
+                    <?php endif; ?>
+                </div>
                 <span><?= htmlspecialchars($user['fullname'] ?? 'Driver User') ?></span>
                 <button class="logout-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/user/logout'">Logout</button>
             </div>
@@ -1280,7 +1305,7 @@
                     <div class="stat-icon earnings">
                         <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="stat-number">$12,450</div>
+                    <div class="stat-number">Rs. 1,867,500</div>
                     <div class="stat-label">Total Earnings</div>
                 </div>
                 <div class="stat-card">
@@ -1328,16 +1353,16 @@
                     <h2>Current Trip</h2>
                 </div>
                 <div class="trip-info">
-                    <h3>ITN-001: Paris City Tour</h3>
-                    <p><strong>Traveller:</strong> John Doe</p>
+                    <h3>ITN-001: kandy Tour</h3>
+                    <p><strong>Traveller:</strong> pubudu</p>
                     <div class="trip-details">
                         <div class="trip-detail-item">
                             <strong>Pickup:</strong><br>
-                            Eiffel Tower, Paris
+                            kandy
                         </div>
                         <div class="trip-detail-item">
                             <strong>Destination:</strong><br>
-                            Louvre Museum, Paris
+                            kandy temple of the tooth relic
                         </div>
                     </div>
                     <button class="btn btn-primary" style="margin-top: 20px;" onclick="showItinerary('ITN-001')">View Itinerary</button>
@@ -1364,10 +1389,10 @@
                     <tbody>
                         <tr>
                             <td>2024-01-20</td>
-                            <td>Jane Smith</td>
+                            <td>ridma</td>
                             <td>ITN-002</td>
-                            <td>Charles de Gaulle Airport</td>
-                            <td>Champs-Élysées</td>
+                            <td>katunayake airport</td>
+                            <td>galle</td>
                             <td>4 hours</td>
                             <td>
                                 <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-002')">View</button>
@@ -1375,10 +1400,10 @@
                         </tr>
                         <tr>
                             <td>2024-01-22</td>
-                            <td>Mike Johnson</td>
+                            <td>pubudu</td>
                             <td>ITN-003</td>
-                            <td>Gare du Nord</td>
-                            <td>Montmartre</td>
+                            <td>galle</td>
+                            <td>kandy</td>
                             <td>6 hours</td>
                             <td>
                                 <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-003')">View</button>
@@ -1386,10 +1411,10 @@
                         </tr>
                         <tr>
                             <td>2024-01-25</td>
-                            <td>Sarah Wilson</td>
+                            <td>sanduni</td>
                             <td>ITN-004</td>
-                            <td>Orly Airport</td>
-                            <td>Versailles Palace</td>
+                            <td>Katunayake Airport</td>
+                            <td>galle</td>
                             <td>8 hours</td>
                             <td>
                                 <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-004')">View</button>
@@ -1406,13 +1431,13 @@
                 <div class="requests-grid">
                     <div class="request-card">
                         <div class="request-header">
-                            <div class="request-title">Paris Full Day Tour</div>
+                            <div class="request-title"> kandy</div>
                             <div class="request-time">2 hours ago</div>
                         </div>
                         <div class="request-details">
-                            <p><strong>Traveller:</strong> John Doe</p>
-                            <p><strong>Pickup:</strong> Eiffel Tower, Paris</p>
-                            <p><strong>Destination:</strong> Louvre Museum, Paris</p>
+                            <p><strong>Traveller:</strong> sewmini</p>
+                            <p><strong>Pickup:</strong> kandy temple</p>
+                            <p><strong>Destination:</strong> anuradhapura</p>
                         </div>
                         <div class="request-actions">
                             <button class="btn btn-success btn-sm">Accept</button>
@@ -1426,9 +1451,9 @@
                             <div class="request-time">5 hours ago</div>
                         </div>
                         <div class="request-details">
-                            <p><strong>Traveller:</strong> Jane Smith</p>
-                            <p><strong>Pickup:</strong> Charles de Gaulle Airport</p>
-                            <p><strong>Destination:</strong> Champs-Élysées</p>
+                            <p><strong>Traveller:</strong> ridma</p>
+                            <p><strong>Pickup:</strong> katunayake airport</p>
+                            <p><strong>Destination:</strong> galle</p>
                         </div>
                         <div class="request-actions">
                             <button class="btn btn-success btn-sm">Accept</button>
@@ -1612,16 +1637,16 @@
                 </div>
                 <div class="tab-content active" id="today-content">
                     <div class="trip-info">
-                        <h3>ITN-001: Paris City Tour</h3>
-                        <p><strong>Traveller:</strong> John Doe</p>
+                        <h3>ITN-001: kandy city tour</h3>
+                        <p><strong>Traveller:</strong> pubudu</p>
                         <div class="trip-details">
                             <div class="trip-detail-item">
                                 <strong>Pickup:</strong><br>
-                                Eiffel Tower, Paris
+                                kandy temple
                             </div>
                             <div class="trip-detail-item">
                                 <strong>Destination:</strong><br>
-                                Louvre Museum, Paris
+                                kandy city
                             </div>
                         </div>
                         <button class="btn btn-warning" style="margin-top: 20px;" onclick="showItinerary('ITN-001')">Ongoing</button>
@@ -1643,10 +1668,10 @@
                         <tbody>
                             <tr>
                                 <td>2024-01-20</td>
-                                <td>Jane Smith</td>
+                                <td>ridma</td>
                                 <td>ITN-002</td>
-                                <td>Charles de Gaulle Airport</td>
-                                <td>Champs-Élysées</td>
+                                <td>katunayake Airport</td>
+                                <td>galle</td>
                                 <td>4 hours</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-002')">View</button>
@@ -1654,10 +1679,10 @@
                             </tr>
                             <tr>
                                 <td>2024-01-22</td>
-                                <td>Mike Johnson</td>
+                                <td>pubudu</td>
                                 <td>ITN-003</td>
-                                <td>Gare du Nord</td>
-                                <td>Montmartre</td>
+                                <td>colombo</td>
+                                <td>kandy</td>
                                 <td>6 hours</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-003')">View</button>
@@ -1665,10 +1690,10 @@
                             </tr>
                             <tr>
                                 <td>2024-01-25</td>
-                                <td>Sarah Wilson</td>
+                                <td>sanduni</td>
                                 <td>ITN-004</td>
-                                <td>Orly Airport</td>
-                                <td>Versailles Palace</td>
+                                <td>katunayake airport</td>
+                                <td>galle</td>
                                 <td>8 hours</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-004')">View</button>
@@ -1693,10 +1718,10 @@
                         <tbody>
                             <tr>
                                 <td>2024-01-15</td>
-                                <td>Robert Davis</td>
+                                <td>thilak</td>
                                 <td>ITN-000</td>
-                                <td>Hotel de Ville</td>
-                                <td>Notre Dame Cathedral</td>
+                                <td>galle fort</td>
+                                <td>Nuwara eliya </td>
                                 <td>3 hours</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-000')">View</button>
@@ -1721,10 +1746,10 @@
                         <tbody>
                             <tr>
                                 <td>2024-01-10</td>
-                                <td>Alex Thompson</td>
+                                <td>thilak</td>
                                 <td>ITN-005</td>
-                                <td>Lyon Part-Dieu</td>
-                                <td>Annecy Old Town</td>
+                                <td>galle fort</td>
+                                <td>mirissa</td>
                                 <td>5 hours</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-005')">View</button>
@@ -1745,21 +1770,21 @@
                         <div class="stat-icon earnings">
                             <i class="fas fa-dollar-sign"></i>
                         </div>
-                        <div class="stat-number">$12,450</div>
+                        <div class="stat-number">Rs. 1,867,500</div>
                         <div class="stat-label">Total Earnings</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon trips">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="stat-number">$11,200</div>
+                        <div class="stat-number">Rs. 1,680,000</div>
                         <div class="stat-label">Completed Earnings</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon rating">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-number">$1,250</div>
+                        <div class="stat-number">Rs. 187,500</div>
                         <div class="stat-label">Pending Earnings</div>
                     </div>
                 </div>
@@ -1776,13 +1801,13 @@
                         <tr>
                             <td>2024-01-15</td>
                             <td>ITN-000</td>
-                            <td>$450</td>
+                            <td>Rs. 67,500</td>
                             <td><span class="status-badge status-completed">Completed</span></td>
                         </tr>
                         <tr>
                             <td>2024-01-20</td>
                             <td>ITN-001</td>
-                            <td>$600</td>
+                            <td>Rs. 90,000</td>
                             <td><span class="status-badge status-pending">Pending</span></td>
                         </tr>
                     </tbody>
@@ -1803,13 +1828,13 @@
                     <div class="requests-grid">
                         <div class="request-card">
                             <div class="request-header">
-                                <div class="request-title">Paris Full Day Tour</div>
+                                <div class="request-title">kandy city tour</div>
                                 <div class="request-time">2 hours ago</div>
                             </div>
                             <div class="request-details">
-                                <p><strong>Traveller:</strong> John Doe</p>
-                                <p><strong>Pickup:</strong> Eiffel Tower, Paris</p>
-                                <p><strong>Destination:</strong> Louvre Museum, Paris</p>
+                                <p><strong>Traveller:</strong> kasun </p>
+                                <p><strong>Pickup:</strong> galle fort</p>
+                                <p><strong>Destination:</strong> mirissa</p>
                             </div>
                             <div class="request-actions">
                                 <button class="btn btn-success btn-sm">Accept</button>
@@ -1827,9 +1852,9 @@
                                 <div class="request-time">1 day ago</div>
                             </div>
                             <div class="request-details">
-                                <p><strong>Traveller:</strong> Mike Johnson</p>
-                                <p><strong>Pickup:</strong> Colosseum, Rome</p>
-                                <p><strong>Destination:</strong> Vatican City</p>
+                                <p><strong>Traveller:</strong> pubudu</p>
+                                <p><strong>Pickup:</strong> galle fort</p>
+                                <p><strong>Destination:</strong> colombo city</p>
                             </div>
                             <div class="request-actions">
                                 <button class="btn btn-primary btn-sm" onclick="showItinerary('ITN-003')">View Itinerary</button>
@@ -1841,13 +1866,13 @@
                     <div class="requests-grid">
                         <div class="request-card">
                             <div class="request-header">
-                                <div class="request-title">Day Trip to Versailles</div>
+                                <div class="request-title">Day Trip galle</div>
                                 <div class="request-time">3 days ago</div>
                             </div>
                             <div class="request-details">
-                                <p><strong>Traveller:</strong> Sarah Wilson</p>
-                                <p><strong>Pickup:</strong> Paris City Center</p>
-                                <p><strong>Destination:</strong> Palace of Versailles</p>
+                                <p><strong>Traveller:</strong> sewmini</p>
+                                <p><strong>Pickup:</strong> kandy city</p>
+                                <p><strong>Destination:</strong> Palace of galle</p>
                             </div>
                             <div class="request-actions">
                                 <span class="status-badge status-cancelled">Rejected</span>
@@ -1868,23 +1893,23 @@
                             <input type="text" placeholder="Search travelers...">
                         </div>
                         <div class="chat-list" id="travelerChatList">
-                            <div class="chat-item active" data-traveler="john">
+                            <div class="chat-item active" data-traveler="pubudu">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">John Doe</div>
+                                    <div class="chat-item-name">pubudu</div>
                                     <div class="chat-item-time">Online</div>
                                 </div>
                                 <div class="chat-item-preview">Thanks for the great tour!</div>
                             </div>
-                            <div class="chat-item" data-traveler="jane">
+                            <div class="chat-item" data-traveler="ridma">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Jane Smith</div>
+                                    <div class="chat-item-name">ridma</div>
                                     <div class="chat-item-time">2h ago</div>
                                 </div>
                                 <div class="chat-item-preview">When will you arrive?</div>
                             </div>
-                            <div class="chat-item" data-traveler="mike">
+                            <div class="chat-item" data-traveler="dilshan">
                                 <div class="chat-item-header">
-                                    <div class="chat-item-name">Mike Johnson</div>
+                                    <div class="chat-item-name">pubudu</div>
                                     <div class="chat-item-time">1d ago</div>
                                 </div>
                                 <div class="chat-item-preview">Can we extend the tour?</div>
@@ -1895,7 +1920,7 @@
                         <div class="chat-header">
                             <div class="chat-avatar">J</div>
                             <div class="chat-header-info">
-                                <h3>John Doe</h3>
+                                <h3>pubudu</h3>
                                 <p>ITN-001 - Online</p>
                             </div>
                         </div>
@@ -1927,10 +1952,10 @@
                             <div class="image-label">Trip Photos</div>
                             <div class="trip-photos">
                                 <div class="trip-photo">+ Add</div>
-                                <div class="trip-photo">Eiffel Tower</div>
-                                <div class="trip-photo">Louvre</div>
-                                <div class="trip-photo">Notre Dame</div>
-                                <div class="trip-photo">Montmartre</div>
+                                <div class="trip-photo">galle</div>
+                                <div class="trip-photo">sigiriya</div>
+                                <div class="trip-photo">anuradhapura</div>
+                                <div class="trip-photo">kandy</div>
                             </div>
                             <input type="file" id="tripPhotos" accept="image/*" multiple>
                             <button class="upload-btn" onclick="document.getElementById('tripPhotos').click()">Add More Photos</button>
@@ -1939,19 +1964,19 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="fullName">Full Name</label>
-                            <input type="text" id="fullName" value="David Brown">
+                            <input type="text" id="fullName" value="sakuna">
                         </div>
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" value="david@example.com">
+                            <input type="email" id="email" value="sakuna@gmail.com">
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" value="+1 (555) 123-4567">
+                            <input type="tel" id="phone" value="+94782498755">
                         </div>
                         <div class="form-group">
                             <label for="address">Address</label>
-                            <input type="text" id="address" value="123 Main St, New York, NY 10001">
+                            <input type="text" id="address" value="imaduwa road beranagoda yakkalamulla">
                         </div>
                         <div class="form-group">
                             <label for="experience">Driving Experience</label>
@@ -1963,7 +1988,7 @@
                         </div>
                         <div class="form-group">
                             <label for="bio">Bio</label>
-                            <textarea id="bio" rows="3">Professional driver with extensive knowledge of Paris and surrounding areas. Passionate about providing exceptional service and ensuring passenger safety and comfort.</textarea>
+                            <textarea id="bio" rows="3">Professional driver with extensive knowledge of kandy and surrounding areas. Passionate about providing exceptional service and ensuring passenger safety and comfort.</textarea>
                         </div>
                     </div>
                 </div>
@@ -2030,7 +2055,7 @@
                             </div>
                             <div class="activity-details">
                                 <div class="activity-time">09:00 AM</div>
-                                <div class="activity-location">Charles de Gaulle Airport - Pickup</div>
+                                <div class="activity-location">Katunayake Airport - Pickup</div>
                             </div>
                         </div>
                         <div class="activity-item">
@@ -2039,7 +2064,7 @@
                             </div>
                             <div class="activity-details">
                                 <div class="activity-time">10:30 AM</div>
-                                <div class="activity-location">Arc de Triomphe - Photo Stop</div>
+                                <div class="activity-location">nuwara eliya - Photo Stop</div>
                             </div>
                         </div>
                         <div class="activity-item">
@@ -2048,7 +2073,7 @@
                             </div>
                             <div class="activity-details">
                                 <div class="activity-time">12:00 PM</div>
-                                <div class="activity-location">Champs-Élysées - Lunch</div>
+                                <div class="activity-location">galle - Lunch</div>
                             </div>
                         </div>
                     </div>
@@ -2065,7 +2090,7 @@
                             </div>
                             <div class="activity-details">
                                 <div class="activity-time">09:00 AM</div>
-                                <div class="activity-location">Louvre Museum - Tour</div>
+                                <div class="activity-location">Anuradhapura - Tour</div>
                             </div>
                         </div>
                         <div class="activity-item">
@@ -2074,7 +2099,7 @@
                             </div>
                             <div class="activity-details">
                                 <div class="activity-time">02:00 PM</div>
-                                <div class="activity-location">Seine River Cruise</div>
+                                <div class="activity-location">galle</div>
                             </div>
                         </div>
                     </div>
@@ -2124,6 +2149,14 @@
                             <option value="luxury">Luxury</option>
                             <option value="minibus">Minibus</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="seatCount">Number of Seats</label>
+                        <input type="number" id="seatCount" placeholder="e.g., 5" min="1" max="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dailyRate">Daily Rate (LKR)</label>
+                        <input type="number" id="dailyRate" placeholder="e.g., 50" min="1" step="0.01" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -2199,6 +2232,14 @@
                             <option value="luxury">Luxury</option>
                             <option value="minibus">Minibus</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSeatCount">Number of Seats</label>
+                        <input type="number" id="editSeatCount" placeholder="e.g., 5" min="1" max="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDailyRate">Daily Rate (LKR)</label>
+                        <input type="number" id="editDailyRate" placeholder="e.g., 50" min="1" step="0.01" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -2509,6 +2550,8 @@
             formData.append('license_plate', document.getElementById('licensePlate').value);
             formData.append('color', document.getElementById('vehicleColor').value);
             formData.append('vehicle_type', document.getElementById('vehicleType').value);
+            formData.append('seat_count', document.getElementById('seatCount').value);
+            formData.append('daily_rate', document.getElementById('dailyRate').value);
             
             // Add photo files
             const frontPhoto = document.getElementById('frontPhoto').files[0];
@@ -2564,6 +2607,8 @@
             formData.append('license_plate', document.getElementById('editLicensePlate').value);
             formData.append('color', document.getElementById('editVehicleColor').value);
             formData.append('vehicle_type', document.getElementById('editVehicleType').value);
+            formData.append('seat_count', document.getElementById('editSeatCount').value);
+            formData.append('daily_rate', document.getElementById('editDailyRate').value);
             
             // Add photo files only if new ones are selected
             const frontPhoto = document.getElementById('editFrontPhoto').files[0];
@@ -3065,32 +3110,32 @@
         
         // Mock traveler chat data
         const travelerChatData = {
-            john: {
-                name: "John Doe",
+            pubudu: {
+                name: "pubudu",
                 itinerary: "ITN-001",
                 status: "Online",
                 messages: [
-                    { sender: "user", text: "Hi David! Thanks for the amazing tour today!", time: "10 minutes ago" },
-                    { sender: "driver", text: "You're welcome, John! It was my pleasure to show you around Paris.", time: "8 minutes ago" },
+                    { sender: "user", text: "Hi lalinda! Thanks for the amazing tour today!", time: "10 minutes ago" },
+                    { sender: "driver", text: "You're welcome, chiran! It was my pleasure to show you around kandy.", time: "8 minutes ago" },
                     { sender: "user", text: "I'll definitely recommend your services to my friends!", time: "5 minutes ago" }
                 ]
             },
-            jane: {
-                name: "Jane Smith",
+            ridma: {
+                name: "ridma sandamini",
                 itinerary: "ITN-002",
                 status: "Last seen 2h ago",
                 messages: [
-                    { sender: "user", text: "Hi David, when will you arrive for our pickup?", time: "2 hours ago" },
-                    { sender: "driver", text: "Hi Jane! I'll be there in about 15 minutes.", time: "2 hours ago" }
+                    { sender: "user", text: "Hi lalinda, when will you arrive for our pickup?", time: "2 hours ago" },
+                    { sender: "driver", text: "Hi ridma! I'll be there in about 15 minutes.", time: "2 hours ago" }
                 ]
             },
-            mike: {
-                name: "Mike Johnson",
+            dilshan: {
+                name: "pubudu",
                 itinerary: "ITN-003",
                 status: "Last seen 1d ago",
                 messages: [
-                    { sender: "user", text: "David, can we extend our tour by 2 more hours?", time: "1 day ago" },
-                    { sender: "driver", text: "Hi Mike! Yes, that's possible. There will be an additional charge of $100 for the extra time.", time: "1 day ago" },
+                    { sender: "user", text: "lalinda, can we extend our tour by 2 more hours?", time: "1 day ago" },
+                    { sender: "driver", text: "Hi dilshan! Yes, that's possible. There will be an additional charge of Rs. 15,000 for the extra time.", time: "1 day ago" },
                     { sender: "user", text: "That works for me. Let's do it!", time: "1 day ago" }
                 ]
             }
@@ -3121,8 +3166,8 @@
             travelerChatMessages.scrollTop = travelerChatMessages.scrollHeight;
         }
         
-        // Initialize with John's chat
-        loadTravelerMessages('john');
+        // Initialize with pubudu chat
+        loadTravelerMessages('pubudu');
         
         // Traveler chat item selection
         if (travelerChatList) {

@@ -698,7 +698,7 @@
         <section class="driver-header">
             <h1 class="driver-title">
                 <span class="driver-icon">🚗</span>
-                David Brown - Professional Driver
+                Darshana Mihiranga
             </h1>
             <div class="driver-rating">
                 <span class="rating-value">4.8</span>
@@ -718,14 +718,14 @@
         <!-- Image Gallery -->
         <section class="image-gallery">
             <div class="main-image">
-                <img src="https://placehold.co/800x400/1f2937/ffffff?text=David+Brown+Driver" alt="David Brown - Professional Driver">
+                <img src="<?php echo IMG_ROOT.'/explore/drivers/driverPic1.png'?>" alt="David Brown - Professional Driver">
             </div>
             <div class="side-images">
                 <div class="side-image">
-                    <img src="https://placehold.co/400x192/1f2937/ffffff?text=Driver+License" alt="Driver License">
+                    <img src="<?php echo IMG_ROOT.'/explore/drivers/driverPic2.png'?>" alt="Driver License">
                 </div>
                 <div class="side-image">
-                    <img src="https://placehold.co/400x192/1f2937/ffffff?text=Professional+Service" alt="Professional Service">
+                    <img src="<?php echo IMG_ROOT.'/explore/drivers/driverPic3.png'?>" alt="Professional Service">
                 </div>
             </div>
         </section>
@@ -830,7 +830,7 @@
                         <div class="detail-icon">📞</div>
                         <div class="detail-meta">
                             <span class="detail-label">Contact</span>
-                            <span class="detail-value">+33 1 23 45 67 89</span>
+                            <span class="detail-value">+94782498755</span>
                         </div>
                     </div>
 
@@ -886,27 +886,27 @@
                 <div class="vehicles-grid">
                     <div class="vehicle-card">
                         <div class="vehicle-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Toyota+Camry+2023" alt="Toyota Camry 2023">
+                            <img src="<?php echo IMG_ROOT.'/explore/drivers/vehicle1.png'?>" alt="Toyota Camry 2023">
                         </div>
                         <div class="vehicle-name">Toyota Camry 2023</div>
                         <div class="vehicle-details">
                             <strong>License Plate:</strong> ABC-123<br>
                             <strong>Type:</strong> Sedan<br>
                             <strong>Capacity:</strong> 4 passengers<br>
-                            <strong>Features:</strong> AC, GPS, USB Charging
+                            
                         </div>
                         <span class="vehicle-status">✓ Verified</span>
                     </div>
                     <div class="vehicle-card">
                         <div class="vehicle-image">
-                            <img src="https://placehold.co/300x180/1f2937/ffffff?text=Honda+Accord+2022" alt="Honda Accord 2022">
+                            <img src="<?php echo IMG_ROOT.'/explore/drivers/vehicle2.png'?>" alt="Honda Accord 2022">
                         </div>
                         <div class="vehicle-name">Honda Accord 2022</div>
                         <div class="vehicle-details">
                             <strong>License Plate:</strong> XYZ-789<br>
                             <strong>Type:</strong> Sedan<br>
                             <strong>Capacity:</strong> 4 passengers<br>
-                            <strong>Features:</strong> AC, GPS, WiFi, Premium Audio
+                            
                         </div>
                         <span class="vehicle-status">✓ Verified</span>
                     </div>
