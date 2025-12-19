@@ -529,9 +529,10 @@
 
             try{
                 $travelSpotCardData = $this->moderatorModel->loadTravelSpotCardData();
+                
             }catch(PDOException $e){
                 http_response_code(500);
-                echo json_encode(['success' => false, 'travelSpotCardData'=>NULL, 'message' => 'Database error occurred when getting travel Spot card Data']);
+                echo json_encode(['success' => false, 'travelSpotCardData'=>NULL, 'message' => 'Database error occurred when getting travel Spot card Data'.$e->getMessage()]);
                 return;
             }
 

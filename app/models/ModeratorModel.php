@@ -176,6 +176,8 @@
         }
 
         public function loadTravelSpotCardData(){
+
+            error_log("Loading Travel Spot Card Data");
             $query = 'SELECT spotId, spotName, overview , averageRating, totalReviews, mainFilterId, mainFilterName, subFilterId, subFilterName, photoPath FROM travel_spot_card_data';
             $this->db->query($query);
             return $this->db->resultSet();

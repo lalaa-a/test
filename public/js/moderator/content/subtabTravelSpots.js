@@ -515,7 +515,7 @@
                 if (result.success) {
                     alert(msg);
                     this.closePopup();
-                    this.renderTravelSpotCards();
+                    this.loadTravelSpotCards();
                 } else {
                     alert('Error: ' + result.message);
                 }

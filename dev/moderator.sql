@@ -53,7 +53,7 @@ ORDER BY mf.mainFilterName, sf.subFilterName;
 CREATE TABLE travel_spots (
 
     spotId INT PRIMARY KEY AUTO_INCREMENT,
-    spotName VARCHAR(200) NOT NULL,
+    spotName VARCHAR(200) UNIQUE NOT NULL,
     overview TEXT,
     
     province ENUM('Western','Central', 'Southern','Northern','Eastern','North Western','North Central','Uva','Sabaragamuwa'),
@@ -85,7 +85,7 @@ CREATE TABLE travel_spots (
 
 )ENGINE=InnoDB;
 
---delete cascade eka kara
+
 CREATE TABLE travel_spots_subfilters (
     id INT PRIMARY KEY AUTO_INCREMENT,
     spotId INT,
@@ -93,11 +93,12 @@ CREATE TABLE travel_spots_subfilters (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId),
-    FOREIGN KEY (subFilterId) REFERENCES travelspots_subfilters(subFilterId)
-
-)ENGINE=InnoDB;
-
+    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
+    FOREIGN KEY (subFilterId) REFERENCES travelspots_subfilters(subFilterId),
+    
+    UNIQUE KEY unique_spot_subfilter (spotId, subFilterId)
+    
+) ENGINE=InnoDB;
 
 
 --delete cascade eka kara
@@ -108,8 +109,9 @@ CREATE TABLE travel_spots_photos (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId)
-)ENGINE=InnoDB;
+    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE
+    
+) ENGINE=InnoDB;
 
 --delete cascade eka kara
 CREATE TABLE travel_spots_itinerary (
@@ -122,8 +124,12 @@ CREATE TABLE travel_spots_itinerary (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId)
-)ENGINE=InnoDB;
+    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
+    
+    UNIQUE KEY unique_coordinates (spotId,latitude, longitude),
+    UNIQUE KEY unique_point_name (pointName)
+    
+) ENGINE=InnoDB;
 
 -- to check the constraint name for spotId foreign key in travel_spots_itinerary table
 SELECT CONSTRAINT_NAME 
@@ -136,20 +142,19 @@ ALTER TABLE travel_spots_itinerary
 DROP FOREIGN KEY fk_spot_id;  -- Replace with actual constraint name
 
 
-
 --added cascade delete only for sourceSpotId
 -- Nearby attractions table
 CREATE TABLE travel_spots_nearbyspots (
-
     id INT PRIMARY KEY AUTO_INCREMENT,
     sourceSpotId INT,
     nearbySpotId INT,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (sourceSpotId) REFERENCES travel_spots(spotId),
+    FOREIGN KEY (sourceSpotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
     FOREIGN KEY (nearbySpotId) REFERENCES travel_spots(spotId)
-)ENGINE=InnoDB;
+    
+) ENGINE=InnoDB;
 
 ALTER TABLE travel_spots_nearbyspots 
 ADD CONSTRAINT fk_nearbyspots_nearby_restrict 
@@ -165,9 +170,10 @@ CREATE TABLE travel_spots_contributions (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     
-    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId),
+    FOREIGN KEY (spotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
     FOREIGN KEY (moderatorId) REFERENCES users(id)
-)ENGINE=InnoDB;
+    
+) ENGINE=InnoDB;
 
 ALTER TABLE travel_spots_contributions 
 ADD CONSTRAINT fk_contributions_moderator_restrict 
@@ -190,6 +196,7 @@ SELECT
     ts.totalReviews,
     ts.district,
     ts.province,
+    tsp.photoPath,
     CASE 
         WHEN tsf.subFilterId IS NULL THEN 'MAIN_FILTER_WITHOUT_SUBFILTERS'
         WHEN ts.spotId IS NULL THEN 'SUBFILTER_WITHOUT_SPOTS'
@@ -199,6 +206,7 @@ FROM travelspots_mainfilters tmf
 LEFT JOIN travelspots_subfilters tsf ON tmf.mainFilterId = tsf.mainFilterId
 LEFT JOIN travel_spots_subfilters tss ON tsf.subFilterId = tss.subFilterId
 LEFT JOIN travel_spots ts ON tss.spotId = ts.spotId
+LEFT JOIN travel_spots_photos tsp ON tss.spotId = tsp.spotId
 ORDER BY 
     tmf.mainFilterName,
     CASE WHEN tsf.subFilterName IS NULL THEN 1 ELSE 0 END,
