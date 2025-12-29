@@ -70,7 +70,6 @@
     }
 
 
-
     .popup-overlay {
         position: fixed;
         top: 0;
@@ -83,6 +82,30 @@
         align-items: center;
         z-index: 1000;
     }
+
+
+
+
+ /* new one with scrolling */   
+    .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.popup-overlay.show {
+    display: flex;
+}
+
 
     .form-group {
         margin-bottom: 20px;
@@ -133,6 +156,50 @@
         margin-top: 25px;
     }
 
+    .dot-menu-dropdown {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    background: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+    z-index: 100;
+    display: none;
+    border: 1px solid var(--border-color);
+    }
+
+    .dot-menu-dropdown.show {
+        display: block;
+    }
+
+    .dot-menu-item {
+        display: block;
+        width: 100%;
+        padding: 10px 16px;
+        text-decoration: none;
+        color: var(--text-primary);
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .dot-menu-item:hover {
+        background: var(--background-gray);
+    }
+
+    .dot-menu-item.edit {
+        color: var(--primary-color);
+    }
+    .dot-menu-item.delete {
+        color: #dc3545;
+    }
+
+
+
 </style>
 
 <html>
@@ -152,10 +219,10 @@
         </div>
     </div>
 
+
     <div class="popup-overlay" id="popup">
         <div class="popup-content">
             <h2>Create New Trip</h2>
-            
             <form id="create-trip-form">
                 <div class="form-group">
                     <label for="trip-title">Trip Title</label>
@@ -186,8 +253,37 @@
                     <button type="submit" class="btn-create" id="submit-trip">Create Trip</button>
                 </div>
             </form>
-
         </div>
     </div>
 
 </html>
+
+<script>
+    // Toggle trip menu dropdown
+    function openToggles(mainFilterId,event) {
+        event.stopPropagation();
+        console.log("toggle main filter menu is working");
+        
+        //when opening this toggle,remove all other these type of toggles
+        document.querySelectorAll('.dot-menu-dropdown.show').forEach(menu => {  
+            if(menu!=document.getElementById(`mainFilterMenu-${mainFilterId}`)) {
+                menu.classList.remove('show');
+            }
+        });
+     
+        // Toggle current menu
+        const menu = document.getElementById(`mainFilterMenu-${mainFilterId}`);
+        menu.classList.toggle('show');
+    }
+
+
+    //function to close toggles when clicking on outside 
+    function closetoggles(){
+        // Close menus when clicking outside
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dot-menu-dropdown.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        });
+    }
+</script>

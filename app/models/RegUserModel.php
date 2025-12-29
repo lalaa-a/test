@@ -58,5 +58,11 @@ class RegUserModel {
         $this->db->bind(':tripId', $tripId);
         return $this->db->execute();
     }
+
+    public function getTripById($tripId) {
+        $this->db->query('SELECT * FROM created_trips WHERE tripId = :tripId');
+        $this->db->bind(':tripId', $tripId);
+        return $this->db->single();
+    }
    
 }

@@ -371,6 +371,7 @@
                 // When sending FormData, data comes through $_POST, not php://input
                 $input = $_POST;
 
+                error_log("Recieved Size: " . print_r($_SERVER['CONTENT_LENGTH'], true));
                 error_log("Received input: " . print_r($input, true));
 
                 if(empty($input)){
@@ -408,10 +409,13 @@
 
                     $file = $_FILES[$photoKey];
 
-                    if ($file['size'] > 5 * 1024 * 1024) { // 5MB
+                    if ($file['size'] > 1.5 * 1024 * 1024) { // 5MB
                         echo json_encode(['success' => false, 'message' => 'File size exeeded 5MB !']);  
                         return;
                     }
+
+                    error_log(ini_get('post_max_size'));
+                    error_log($file['size']);
 
                     error_log("photo names: " . print_r($file['tmp_name'], true));
                     
@@ -622,12 +626,10 @@
                     $file = $_FILES[$photoKey];
 
                     if ($file['size'] > 5 * 1024 * 1024) { // 5MB
-                        echo json_encode(['success' => false, 'message' => 'File size exeeded 5MB !']);  
+                        echo json_encode(['success' => false, 'message' => 'File size exceeded 5MB !']);  
                         return;
                     }
 
-                    error_log("photo names: " . print_r($file['tmp_name'], true));
-                    
                     $mimeType = mime_content_type($file['tmp_name']);
 
                     if (!in_array($mimeType, $allowedTypes)) {
@@ -678,12 +680,14 @@
 
                             $itinerary = $input['itinerary'];
                             error_log("itinerary: " . json_encode($itinerary));
+
                             $this->moderatorModel->deleteTravelSpotItinerary($insertedSpotId);
                             foreach($itinerary as $location){
                                 $this->moderatorModel->addTravelSpotItinerary($insertedSpotId, $location['name'],$location['lat'], $location['lng']);
                             }
 
                             $this->moderatorModel->deleteTravelSpotPhotos($insertedSpotId);
+
                             foreach($photos as $photoKey){
                                 $extension = pathinfo($_FILES[$photoKey]['name'], PATHINFO_EXTENSION);
                                 $newName = $photoKey . '_' . uniqid('spot_', true) . '.' . $extension;
@@ -694,7 +698,7 @@
                                 if (!is_dir($uploadDir)) {
                                     mkdir($uploadDir, 0755, true);
                                 }
-                                move_uploaded_file($file['tmp_name'], $uploadDir . $newName);
+                                move_uploaded_file($_FILES[$photoKey]['tmp_name'], $uploadDir . '/' . $newName);
                                 $this->moderatorModel->addTravelSpotPhotos($insertedSpotId, $newName);
                             }
 
@@ -740,14 +744,16 @@
             }
         }
 
-        public function deleteTravelSpoot(){
+        public function deleteTravelSpot(){
+
+            error_log('delete travel spot called');
             header('Content-Type: application/json');
             
             if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
                 echo json_encode(['success' => false, 'message' => 'Invalid method']);
                 return;
             }
-
+            
             $input = json_decode(file_get_contents('php://input'), true);
             $userId = getSession('user_id');
 
@@ -755,6 +761,8 @@
                 echo json_encode(['success' => false, 'message' => 'userId or deleting spotID not found']);
                 return;
             }
+
+            error_log(print_r($input, true));
 
             try{
                 if ($this->moderatorModel->eraseTravelSpot($input['spotId'])) {

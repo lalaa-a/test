@@ -6,8 +6,7 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
-
-    <link href="<?php echo URL_ROOT; ?>/public/css/trips/usertrip.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
 
 
     <style>
@@ -565,9 +564,7 @@
         </div>
 
         <!-- Dashboard Content -->
-        <div class="dashboard-content active" id="dashboard"></div>
-
-
+        <div class="dashboard-content active" id="dashboard">lalinda</div>
 
     <script>
 
@@ -595,8 +592,9 @@
             loadTabContent(tabId);
 
             console.log('DOM fully loaded and parsed');
-            console.log('DOM fully loaded and parsed');
         });
+
+        
        
         // Function to set active tab
         function setActiveTab(activeTabId) {
@@ -610,6 +608,7 @@
             if (activeLink) {
                 activeLink.classList.add('active');
             }
+            console.log(activeTabId);
         }
 
         // function to load tab content
@@ -639,7 +638,7 @@
                 }
 
                 if(data.js){
-                    executeJS(data.js);
+                    appendJS(data.js,tabId);
                 }
                 
             } catch (error) {
@@ -657,42 +656,76 @@
             }
         }
 
-        
-        // Helper function to clean up previous assets
         function cleanupPreviousAssets(currentTabId) {
-            // Remove previous tab CSS
-            const existingStyles = document.querySelectorAll('style[data-tab]');
-            existingStyles.forEach(style => {
-                if (style.dataset.tab !== currentTabId) {
-                    style.remove();
-                }
-            });
-        }
-
-        // Helper function to append CSS
-        function appendCSS(cssContent, tabId) {
-            // Check if CSS for this tab already exists
-            let existingStyle = document.querySelector(`style[data-tab="${tabId}"]`);
             
-            if (existingStyle) {
-                existingStyle.textContent = cssContent;
+            // Remove previous tab CSS
+            const existingAssets = document.querySelectorAll('link[data-tab], style[data-tab],script[data-tab]');
+
+            if(currentTabId.startsWith("subtab")){
+                existingAssets.forEach(asset => {
+                    if (asset.dataset.tab.startsWith("subtab")) {
+                        asset.remove();
+                        console.log("cleaning ", asset);
+                    }
+                });
             } else {
-                const styleElement = document.createElement('style');
-                styleElement.setAttribute('data-tab', tabId);
-                styleElement.textContent = cssContent;
-                document.head.appendChild(styleElement);
+                existingAssets.forEach(asset => {
+                    asset.remove();
+                });
             }
         }
 
-        // Helper function to safely execute JavaScript
-        function executeJS(jsContent) {
-            try {
-                // Create a new function and execute it
-                new Function(jsContent)();
-            } catch (error) {
-                console.error('Error executing JavaScript:', error);
+        function appendCSS(url, tabId) {
+
+            // Check if CSS for this tab already exists
+            const existingLink = document.querySelector(`link[data-tab="${tabId}"]`);
+            console.log('this exists ',existingLink);
+
+            console.log("adding id " + tabId);
+            
+            if (existingLink) {
+                existingScript.remove();
+                console.log("existing css ",existingLink);
+            } 
+
+            // Create new link element
+            const linkElement = document.createElement('link');
+            linkElement.rel = 'stylesheet';
+            linkElement.type = 'text/css';
+            linkElement.href = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+            linkElement.setAttribute('data-tab', tabId);
+            document.head.appendChild(linkElement);
+            
+        }  
+
+        function appendJS(url, tabId){
+            
+            // Remove existing script for this tab
+            const existingScript = document.querySelector(`script[data-tab="${tabId}"]`);
+
+            if (existingScript) {
+                console.log(`Removing existing script for tab ${tabId}`);
+                existingScript.remove();
             }
+                
+            // Create new script element with cache busting
+            const script = document.createElement('script');
+            script.src = url + '?t=' + Date.now(); // Cache busting
+            script.setAttribute('data-tab', tabId);
+            
+            script.onload = function() {
+                console.log(`Successfully loaded and executed script for ${tabId}`);
+            };
+            
+            script.onerror = function() {
+                console.error(`Failed to load script for ${tabId}:`, url);
+            };
+            
+            console.log("adding ", script);
+            document.head.appendChild(script);
+            console.log('append js is working');
         }
+        
 
         // Toggle dropdown
         function toggleDropdown() {
@@ -776,8 +809,7 @@
             }
         }
 
-        
-    
+
     </script>
 </body>
 </html>

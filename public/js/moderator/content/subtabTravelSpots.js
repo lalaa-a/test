@@ -1,8 +1,8 @@
 
-// Travel Spot Management JavaScript
+// Travel Spot Management 
 (function() {
 
-    // Check if CategoryManager already exists and clean up
+    // Check if TravelSpotManager already exists and clean up
     if (window.TravelSpotManager) {
         console.log('TravelSpotManger already exists, cleaning up...');
         // Clean up any existing instance
@@ -15,14 +15,15 @@
 
     class TravelSpotManager {
         constructor() {
-            this.URL_ROOT = 'http://localhost/test';
 
+            this.URL_ROOT = 'http://localhost/test';
             this.allFilters = [];
             this.selectedSubfilters = [];
             this.selectedNearbySpots = [];
             this.itinerary = [];
             this.travelSpotCardData = [];
             this.editingTravelSpot = null;
+            this.existingPhotos = [];
 
             this.initializeElements();
             this.attachEventListeners();
@@ -40,6 +41,7 @@
             this.submitBtn = document.getElementById('submit-btn');
             this.addTravelSpotBtn = document.getElementById('add-main-filter-btn');
             this.travelSpotCardSection = document.getElementById('travel-spot-cards');
+            this.filterChipContainer = document.getElementById('filter-chip-container');
 
             // Form elements
             this.form = document.getElementById('travel-spot-form');
@@ -127,6 +129,7 @@
             this.form.reset();
             this.selectedSubfilters = [];
             this.selectedNearbySpots = [];
+            this.existingPhotos = [];
 
             // Reset photo previews
             this.photoPreviews.forEach(preview => {
@@ -153,6 +156,7 @@
                 if (data.success) {
                     this.allFilters = data.allFilters;
                     console.log('All filters loaded for search functionality');
+                    this.addFilterChips();
                 } else {
                     console.error('Failed to load filters:', data.message);
                 }
@@ -478,7 +482,7 @@
                 console.log(key, value);
             }
 
-            // Add photos
+            // Add photos (all as files now, including existing ones)
             this.photoInputs.forEach((input, index) => {
                 if (input.files[0]) {
                     formData.append(`photo${index + 1}`, input.files[0]);
@@ -562,9 +566,12 @@
                 return false;
             }
 
-            if (!photo1) {
-                alert('Please upload at least one photo');
-                return false;
+            // Check all photo inputs have files
+            for (let i = 0; i < this.photoInputs.length; i++) {
+                if (!this.photoInputs[i].files[0]) {
+                    alert(`Please upload photo ${i + 1}`);
+                    return false;
+                }
             }
 
             if (this.selectedSubfilters.length === 0) {
@@ -705,7 +712,7 @@
                                         <p class="place-description">${spot.overview}</p>
                                         <div class="place-actions">
                                             <button type="button" class="btn btn-edit"onclick='travelSpotManager.editTravelSpot(${spot.spotId},event)' >Edit</button>
-                                            <button type="button" class="btn btn-delete">Delete</button>
+                                            <button type="button" class="btn btn-delete" onclick='travelSpotManager.deleteTravelSpot(${spot.spotId},event)'>Delete</button>
                                             <button type="button" class="btn btn-view">View</button>
                                         </div>
                                     </div>
@@ -755,7 +762,11 @@
                     });
 
                     for (let index = 0; index < data.travelSpotData.photos.length; index++) {
-                        this.photoPreviews[index].innerHTML = `<img src="${this.URL_ROOT + '/uploads/' + data.travelSpotData.photos[index].photoPath}" alt="Photo ${index + 1}">`;
+                        const photoUrl = this.URL_ROOT + '/public/uploads/travelSpots/' + data.travelSpotData.photos[index].photoPath;
+                        this.photoPreviews[index].innerHTML = `<img src="${photoUrl}" alt="Photo ${index + 1}">`;
+                        
+                        // Load existing image as File object into input
+                        this.loadExistingImageToInput(photoUrl, index);
                     }
 
                     data.travelSpotData.itinerary.forEach( location => {
@@ -775,15 +786,15 @@
         }
 
         deleteTravelSpot(spotId, event){
-            console.log('Deleting travel spot:', tripId);
-            event,preventDefault();
+            console.log('Deleting travel spot:', spotId);
+            event.preventDefault();
         
             if (!confirm('Are you sure you want to delete this travel spot? This action cannot be undone.')) {
                 return;
             }
 
             // Make delete request
-            fetch(URL_ROOT + '/RegUser/deleteTravelSpot', {
+            fetch(this.URL_ROOT + '/Moderator/deleteTravelSpot', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -794,7 +805,7 @@
             .then(result => {
                 if (result.success) {
                     alert('Travel Spot deleted successfully!');
-                    loadUserTrips(); // Reload trips
+                    this.loadTravelSpotCards(); // Reload cards after a deletion
                 } else {
                     alert('Error deleting Travel Spot: ' + result.message);
                 }
@@ -804,6 +815,48 @@
                 alert('An error occurred while deleting the travel spot.');
             });
         }
+
+        async loadExistingImageToInput(imageUrl, index) {
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                
+                // Extract file extension from path
+                const extension = imageUrl.split('.').pop();
+
+                const mimeType = blob.type || `image/${extension}`;
+                
+                // Create a File object from the blob
+                const file = new File([blob], `photo${index + 1}.${extension}`, { type: mimeType });
+                
+                // Create a DataTransfer object to set the files
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                // Set the files to the input
+                this.photoInputs[index].files = dataTransfer.files;
+                
+                console.log(`Loaded existing photo ${index + 1} into input:`, file);
+            } catch (error) {
+                console.error(`Error loading existing photo ${index + 1}:`, error);
+            }
+        }
+
+        addFilterChips(){
+            console.log('add all filter chips',this.allFilters);
+
+            this.allFilters.forEach(filter => {
+                const filterChip = document.createElement('div');
+                
+                filterChip.className = 'filter-chip';
+                filterChip.id = filter.mainFilterId;
+                filterChip.dataset.filter = filter.mainFilterName;
+                filterChip.innerHTML = `${filter.mainFilterName}`;
+                this.filterChipContainer.appendChild(filterChip);
+            });
+        }
+
+
     }
 
     // Initialize the travel spot manager

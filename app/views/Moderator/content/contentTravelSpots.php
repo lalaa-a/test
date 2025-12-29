@@ -320,20 +320,17 @@
                     placeholder="Search destinations, activities, or places..."
                     autocomplete="off"
                 >
-                <div class="search-icon" id="searchButton">🔍</div>
+                <div class="search-icon" id="searchButton"><i class="fa-solid fa-magnifying-glass"></i></div>
             </div>
         </div>
 
-        <div class="search-filters">
+        <div class="search-filters" id ='filter-chip-container'>
             <button class="filter-icon" id="filterToggle">
                 <i class="fas fa-filter"></i>
-                Filter
+                More Filters
             </button>
+
             <div class="filter-chip active" data-category="all">All Places</div>
-            <div class="filter-chip" data-category="culture">Culture & Heritage</div>
-            <div class="filter-chip" data-category="nature">Nature & Adventure</div>
-            <div class="filter-chip" data-category="beach">Beach & Relaxation</div>
-            <div class="filter-chip" data-category="entertainment">Entertainment & Activities</div>
         </div>
 
         <div class="search-results-info" id="searchResultsInfo"></div>

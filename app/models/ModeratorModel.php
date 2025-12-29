@@ -178,7 +178,7 @@
         public function loadTravelSpotCardData(){
 
             error_log("Loading Travel Spot Card Data");
-            $query = 'SELECT spotId, spotName, overview , averageRating, totalReviews, mainFilterId, mainFilterName, subFilterId, subFilterName, photoPath FROM travel_spot_card_data';
+            $query = 'SELECT spotId, spotName, overview , averageRating, totalReviews, mainFilterId, mainFilterName, subFilterId, subFilterName, photoPath FROM travel_spot_card_data WHERE spotId IS NOT NULL';
             $this->db->query($query);
             return $this->db->resultSet();
         }
@@ -188,7 +188,7 @@
             error_log("Loading Travel Spot Data for ID: " . $travelSpotId);
 
             $mainDetailsQuery = '  SELECT spotId, spotName, overview, province, district, bestTimeFrom, bestTimeTo, visitingDurationMax, ticketPriceLocal, 
-                        ticketPriceForeigner, openingHours,ticketDetails, parkingDetails, accessibility, facilities, travelerTips
+                        ticketPriceForeigner, openingHours,ticketDetails, parkingDetails, accessibility, facilities, travelerTips, averageRating, totalReviews
                         FROM travel_spots 
                         WHERE spotId = :travelSpotId';
             
@@ -342,7 +342,7 @@
         }   
 
         //delete travel spot main details
-        public function deleteTravelSpot($spotId){
+        public function eraseTravelSpot($spotId){
             $this->db->query('DELETE FROM travel_spots WHERE spotId = :spotId');
             $this->db->bind(':spotId', $spotId);
             return $this->db->execute();
@@ -358,16 +358,6 @@
             $this->db->bind(':spotId', $contributionData['spotId']);
 
             return $this->db->execute();
-        }
-
-        public function eraseTravelSpot($spotId){
-
-            $this->deleteTravelSpot($spotId);
-            $this->deleteTravelSpotItinerary($spotId);
-            $this->deleteTravelSpotPhotos($spotId);
-            $this->deleteTravelSpotSubFilters($spotId);
-            $this->deleteTravelSpotNearbySpots($spotId);
-
         }
 
     }

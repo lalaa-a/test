@@ -563,9 +563,7 @@
 
         <!-- Dashboard Content -->
         <div class="dashboard-content active" id="dashboard"></div>
-
-
-
+        
     <script>
 
         let isLoggedIn = false;

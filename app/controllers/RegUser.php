@@ -1,6 +1,7 @@
 <?php
 
 require_once '../app/helpers/session_helper.php';
+require_once '../app/helpers/travel_spot_helper.php';
 
     class RegUser extends Controller {
 
@@ -10,13 +11,61 @@ require_once '../app/helpers/session_helper.php';
         }
 
         public function destinations() {
-            ob_start();
-            $this->view('Explore/destinations/allDestinations1');
-            $fullcontent = ob_get_clean();
 
-            $html = extractSection($fullcontent,'HTML');
-            $css = extractSection($fullcontent,'CSS');
-            $js = extractSection($fullcontent,'JS');
+            $structCardData = [];
+
+            $moderatorModel = $this->model('ModeratorModel');
+            $travelSpotCardData = $moderatorModel->loadTravelSpotCardData();
+
+            error_log(print_r(json_encode($travelSpotCardData),true));
+
+            //structure the data that can use fro render the cards.
+            foreach($travelSpotCardData as $item){
+
+                $mainFilterId = $item -> mainFilterId;
+                $spotId = $item -> spotId;
+                
+                if(!isset($structCardData[$mainFilterId])){
+                    $structCardData[$mainFilterId] = [
+                        "mainFilterName" => $item -> mainFilterName,
+                        "travelSpots" => []
+                    ];
+                }
+                
+                if(!isset($structCardData[$mainFilterId]["travelSpots"][$spotId])){
+                    $structCardData[$mainFilterId]["travelSpots"][$spotId] = [
+                        "spotName"      => $item -> spotName,
+                        "overview"      => $item -> overview,
+                        "totalReviews"  => $item -> totalReviews,
+                        "averageRating" => $item -> averageRating,
+                        "subFilters"    => [],
+                        "photoPaths"    => []
+                    ];
+                }
+                
+                $currentSpot = &$structCardData[$mainFilterId]["travelSpots"][$spotId];
+                
+                if(!isset($currentSpot["subFilters"][$item -> subFilterId])){
+                    $currentSpot["subFilters"][$item -> subFilterId] = $item -> subFilterName ;
+                }
+                
+                if(!in_array($item -> photoPath, $currentSpot["photoPaths"])){
+                    $currentSpot["photoPaths"][] = $item -> photoPath;
+                }
+            }
+
+            error_log("structured card data". print_r($structCardData,true));
+
+            $cardData = [
+                            "cardData" => $structCardData
+            ];
+
+            ob_start();
+            $this->view('Explore/travelSpots/travelSpotsView',$cardData);
+            $html = ob_get_clean();
+
+            $css = URL_ROOT.'/public/css/regUser/travelSpots/travelSpotsView.css';
+            $js = URL_ROOT.'/public/js/regUser/travelSpots/travelSpotsView.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -111,8 +160,8 @@ require_once '../app/helpers/session_helper.php';
             $this->view("Trips/userTrip");
             $html = ob_get_clean();
 
-            $css = getCSS('trips','userTrip');
-            $js  = getJS('trips','userTrip');
+            $css = URL_ROOT.'/public/css/regUser/trips/userTrip.css';
+            $js  = URL_ROOT.'/public/js/regUser/trips/userTrip.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -128,13 +177,33 @@ require_once '../app/helpers/session_helper.php';
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
 
-        public function tripEventList(){
+        public function retrieveSelectedSpot($spotId){
+            error_log("working ". $spotId);
+            $spotData = travelSpotDetails($spotId);
+            if($spotData){
+                echo json_encode([ 'success' => true,
+                                    'spotData' => $spotData, 
+                                    'message'=>'data recieved successfully..' 
+                                ]);
+            } else {
+                echo json_encode([ 'success' => false,'spotData' => null, 'message'=>'no searching spot']);
+            }
+
+        }
+
+        public function tripEventList($tripId){
+
+            $basicTripDetails = $this->regUserModel->getTripById($tripId);
             ob_start();
-            $this->view("Trips/tripEventList");
+            $data = [
+                'basicTripDetails' => $basicTripDetails,
+                ];
+            
+            $this->view("Trips/tripEventList",$data);
             $html = ob_get_clean();
 
-            $css = getCSS('trips','tripEventList');
-            $js  = getJS('trips','tripEventList');
+            $css = URL_ROOT.'/public/css/regUser/trips/tripEventList.css';
+            $js  = URL_ROOT.'/public/js/regUser/trips/tripEventList.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -144,6 +213,76 @@ require_once '../app/helpers/session_helper.php';
 
            $unEncodedResponse = [
                 'tabId'=>'trips',
+                'loadingContent'=>$loadingContent
+            ];
+
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function selectTravelSpot(){
+
+            $structCardData = [];
+
+            $moderatorModel = $this->model('ModeratorModel');
+            $travelSpotCardData = $moderatorModel->loadTravelSpotCardData();
+
+            error_log(print_r(json_encode($travelSpotCardData),true));
+
+            //structure the data that can use fro render the cards.
+            foreach($travelSpotCardData as $item){
+
+                $mainFilterId = $item -> mainFilterId;
+                $spotId = $item -> spotId;
+                
+                if(!isset($structCardData[$mainFilterId])){
+                    $structCardData[$mainFilterId] = [
+                        "mainFilterName" => $item -> mainFilterName,
+                        "travelSpots" => []
+                    ];
+                }
+                
+                if(!isset($structCardData[$mainFilterId]["travelSpots"][$spotId])){
+                    $structCardData[$mainFilterId]["travelSpots"][$spotId] = [
+                        "spotName"      => $item -> spotName,
+                        "overview"      => $item -> overview,
+                        "totalReviews"  => $item -> totalReviews,
+                        "averageRating" => $item -> averageRating,
+                        "subFilters"    => [],
+                        "photoPaths"    => []
+                    ];
+                }
+                
+                $currentSpot = &$structCardData[$mainFilterId]["travelSpots"][$spotId];
+                
+                if(!isset($currentSpot["subFilters"][$item -> subFilterId])){
+                    $currentSpot["subFilters"][$item -> subFilterId] = $item -> subFilterName ;
+                }
+                
+                if(!in_array($item -> photoPath, $currentSpot["photoPaths"])){
+                    $currentSpot["photoPaths"][] = $item -> photoPath;
+                }
+            }
+
+            error_log("structured card data". print_r($structCardData,true));
+
+            $cardData = [
+                            "cardData" => $structCardData
+            ];
+
+            ob_start();
+            $this->view('Trips/addOns/travelSpots/travelSpotsSelect',$cardData);
+            $html = ob_get_clean();
+
+            $css = URL_ROOT.'/public/css/regUser/trips/addOns/travelSpots/travelSpotsSelect.css';
+            $js = URL_ROOT.'/public/js/regUser/trips/addOns/travelSpots/travelSpotsSelect.js';
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'destinations',
                 'loadingContent'=>$loadingContent
             ];
 

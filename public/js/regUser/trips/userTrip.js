@@ -261,7 +261,7 @@
 
     //Navigate to trip event list of a particular created trip
     function naviagateToTripEventList(tripId){
-        window.location.href = `${URL_ROOT}/RegUser/tripEventList`; ///${tripId}
+        window.location.href = `${URL_ROOT}/RegUser/tripEventList/${tripId}`; ///${tripId}
     }
 
 
