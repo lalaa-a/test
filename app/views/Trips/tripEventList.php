@@ -5,6 +5,10 @@
                 <div class="trip-title-row">
                     <div class="trip-title-section">
                         <h2 class="trip-title"><?php echo htmlspecialchars($basicTripDetails->tripTitle); ?></h2>
+                        <div class="trip-id">
+                            <span class="trip-id-label">Trip ID:</span>
+                            <span class="trip-id-value" id = "trip-id-value"><?php echo htmlspecialchars($basicTripDetails->tripId ?? 'N/A'); ?></span>
+                        </div>
                     </div>
                     <div class="trip-status-section">
                         <span class="trip-status">
@@ -84,6 +88,7 @@
                             <div class="date-nav-day"><?php echo strtoupper($date->format('D')); ?></div>
                             <div class="date-nav-date"><?php echo $date->format('j'); ?></div>
                             <div class="date-nav-month"><?php echo $date->format('M'); ?></div>
+                            <div class = "timelineDate" style = "display:none;"><?php echo $date->format('Y-m-d')?></div>
                         </div>
                         <?php
                     }
@@ -125,9 +130,9 @@
                             <label for="event-status">Status</label>
                             <select id="event-status" class="form-select">
                                 <option value="">Select a status</option>
-                                <option value="checking">Checking</option>
-                                <option value="normal">Normal</option>
-                                <option value="checkout">Checkout</option>
+                                <option value="start">Start</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="end">End </option>
                             </select>
                         </div>
                     </div>
@@ -145,17 +150,19 @@
                             <div id="autocomplete-container"> 
                                 <gmp-place-autocomplete id="location-input-container"></gmp-place-autocomplete>
                             </div>
-                            
+                            <div id='selected-location-container'></div>
                             <div id="map" class="location-map"></div>
                         </div>
 
                         <div id="travel-spot-select" class="travel-spot-select">
                             <div class="travel-spot-info" id='selected-spot-container'>
-                                <p>Discover amazing travel spots and destinations for your trip.</p>
-                                <button class="btn-travel-spots" id="btn-travel-spots" onclick="window.open('<?php echo URL_ROOT; ?>/RegUser/selectTravelSpot', '_blank')">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Go to Travel Spots
-                                </button>
+                                <div id="goto-travelspots-element">
+                                    <p>Discover amazing travel spots and destinations for your trip.</p>
+                                    <button class="btn-travel-spots" id="btn-travel-spots" onclick="window.open('<?php echo URL_ROOT; ?>/RegUser/selectTravelSpot', '_blank')">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Go to Travel Spots
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -181,7 +188,7 @@
                 </div>
             </div>
 
-            <div class="events-container">
+            <div class="events-container" id="events-container">
                 <!-- Custom Event Card with Two Badge Types -->
                 <div class="event-card" data-type="travelSpot" data-status="normal">
                     <div class="event-time-section">
@@ -198,9 +205,30 @@
                             <div>
                                 <h4 class="event-title">Sigiriya Rock Fortress</h4>
                             </div>
-                            <div class="event-badges">
-                                <span class="event-type-badge type-travelspot">Travel Spot</span>
-                                <span class="event-status-badge status-normal">Normal</span>
+                            <div class="event-header-actions">
+                                <div class="event-badges">
+                                    <span class="event-type-badge type-travelspot">Travel Spot</span>
+                                    <span class="event-status-badge status-normal">Normal</span>
+                                </div>
+                                <div class="dot-menu-container">
+                                    <button class="dot-menu-btn" onclick="tripEventListManager.toggleEventMenu(event, 'custom-1')">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dot-menu-dropdown" id="event-menu-custom-1">
+                                        <button class="dot-menu-item edit" onclick="tripEventListManager.editEvent('custom-1')">
+                                            <i class="fa-solid fa-arrow-up"></i> Add event above
+                                        </button>
+                                        <button class="dot-menu-item edit" onclick="tripEventListManager.deleteEvent('custom-1')">
+                                            <i class="fa-solid fa-arrow-down"></i> Add event below
+                                        </button>
+                                        <button class="dot-menu-item edit" onclick="tripEventListManager.deleteEvent('custom-1')">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                        </button>
+                                        <button class="dot-menu-item delete" onclick="tripEventListManager.deleteEvent('custom-1')">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p class="event-description">

@@ -203,11 +203,11 @@ body {
     }
 
     .location-map {
-        width: 100%;
-        height: 400px;
+        width: 70%;
+        height: 200px;
         border-radius: 8px;
         border: 1px solid var(--border-color);
-        margin-top: 10px;
+        margin: auto auto 10px auto;
     }
 
     #autocomplete-container {
@@ -263,7 +263,7 @@ body {
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         min-width: 175px;
-        z-index: 100;
+        z-index: 1500;
         display: none;
         border: 1px solid var(--border-color);
         margin-left: 8px;
@@ -400,6 +400,30 @@ body {
     color: var(--text-primary);
     margin-bottom: 0;
     line-height: 1.2;
+}
+
+.trip-id {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.trip-id-label {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.trip-id-value {
+    font-family: 'Courier New', monospace;
+    background: var(--background-gray);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
 }
 
 .trip-status {
@@ -667,7 +691,7 @@ body {
     transition: all 0.3s ease;
     border-left: none;
     display: flex;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     min-height: 120px;
 }
@@ -678,7 +702,7 @@ body {
 }
 
 .event-time-section {
-    width: 70px;
+    width: 86px;
     background: var(--primary-color);
     display: flex;
     flex-direction: column;
@@ -686,8 +710,10 @@ body {
     justify-content: center;
     color: white;
     text-align: center;
-    padding: 12px 6px;
+    padding: 12px 7px;
     flex-shrink: 0;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 
 .event-start-time {
@@ -748,6 +774,37 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 8px;
+}
+
+.event-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dot-menu-container {
+    position: relative;
+    display: inline-block;
+    z-index: 10;
+}
+
+.dot-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.dot-menu-btn:hover {
+    background-color: var(--background-gray);
+    color: var(--text-primary);
+}
+
+.dot-menu-btn i {
+    font-size: 1rem;
 }
 
 .event-title {
@@ -959,6 +1016,43 @@ body {
 .guide-price {
     color: var(--primary-color);
     font-weight: 600;
+}
+
+.event-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.remove-card-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-end;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.remove-card-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.remove-card-btn:active {
+    transform: translateY(0);
+}
+
+.remove-card-btn i {
+    font-size: 0.9rem;
 }
 
 /* Event type specific colors for time section */

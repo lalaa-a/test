@@ -64,5 +64,115 @@ class RegUserModel {
         $this->db->bind(':tripId', $tripId);
         return $this->db->single();
     }
+
+    public function addEventData($insertingData){
+
+        if(isset($insertingData['locationName'])) {
+            $query = 'INSERT INTO trip_events ( userId, tripId, eventDate, startTime, endTime, eventType, eventStatus, locationName, latitude, longitude, description ) VALUES ( :userId, :tripId, :eventDate, :startTime, :endTime, :eventType, :eventStatus, :locationName, :latitude, :longitude, :description )';
+            $this->db->query($query);
+            $this->db->bind(':userId',$insertingData['userId']);
+            $this->db->bind(':tripId',$insertingData['tripId']);
+            $this->db->bind(':eventDate',$insertingData['eventDate']);
+            $this->db->bind(':startTime',$insertingData['startTime']);
+            $this->db->bind(':endTime',$insertingData['endTime']);
+            $this->db->bind(':eventType',$insertingData['eventType']);
+            $this->db->bind(':eventStatus',$insertingData['eventStatus']);
+            $this->db->bind(':locationName',$insertingData['locationName']);
+            $this->db->bind(':latitude',$insertingData['latitude']);
+            $this->db->bind(':longitude',$insertingData['longitude']);
+            $this->db->bind(':description',$insertingData['description']);
+
+            return $this->db->execute();
+
+        } else {
+            $query = 'INSERT INTO trip_events ( userId, tripId, eventDate, startTime, endTime, eventType, eventStatus, travelSpotId ) VALUES ( :userId, :tripId, :eventDate, :startTime, :endTime, :eventType, :eventStatus, :travelSpotId )';
+            $this->db->query($query);   
+            $this->db->bind(':userId',$insertingData['userId']);
+            $this->db->bind(':tripId',$insertingData['tripId']);
+            $this->db->bind(':eventDate',$insertingData['eventDate']);
+            $this->db->bind(':startTime',$insertingData['startTime']);
+            $this->db->bind(':endTime',$insertingData['endTime']);
+            $this->db->bind(':eventType',$insertingData['eventType']);
+            $this->db->bind(':eventStatus',$insertingData['eventStatus']);
+            $this->db->bind(':travelSpotId',$insertingData['travelSpotId']);
+
+            return $this->db->execute();
+        }
+        
+    }
    
+    public function updateEvent($updatingData){
+
+        if($updatingData['eventType'] === 'travelSpot') {
+            $query = "UPDATE trip_events SET 
+                        startTime = :startTime,
+                        endTime = :endTime,
+                        eventType = :eventType,
+                        eventStatus = :eventStatus,
+                        travelSpotId = :travelSpotId
+                        WHERE eventId = :eventId AND userId = :userId";
+            
+            $this->db->query($query);
+            $this->db->bind(':eventId', $updatingData['eventId']);
+            $this->db->bind(':userId', $updatingData['userId']);
+            $this->db->bind(':startTime', $updatingData['startTime']);
+            $this->db->bind(':endTime', $updatingData['endTime']);
+            $this->db->bind(':eventType', $updatingData['eventType']);
+            $this->db->bind(':eventStatus', $updatingData['eventStatus']);
+            $this->db->bind(':travelSpotId', $updatingData['travelSpotId']);
+
+            return $this->db->execute();
+        } else {
+
+        $query = "UPDATE trip_events SET 
+                    startTime = :startTime,
+                    endTime = :endTime,
+                    eventType = :eventType,
+                    eventStatus = :eventStatus,
+                    locationName = :locationName,
+                    latitude = :latitude,
+                    longitude = :longitude,
+                    description = :description
+                    WHERE eventId = :eventId AND userId = :userId";
+        
+            $this->db->query($query);
+            $this->db->bind(':eventId', $updatingData['eventId']);
+            $this->db->bind(':userId', $updatingData['userId']);
+            $this->db->bind(':startTime', $updatingData['startTime']);
+            $this->db->bind(':endTime', $updatingData['endTime']);
+            $this->db->bind(':eventType', $updatingData['eventType']);
+            $this->db->bind(':eventStatus', $updatingData['eventStatus']);
+            $this->db->bind(':locationName', $updatingData['locationName']);
+            $this->db->bind(':latitude', $updatingData['latitude']);
+            $this->db->bind(':longitude', $updatingData['longitude']);
+            $this->db->bind(':description', $updatingData['description']);
+                
+            return $this->db->execute();
+        }
+        
+    }
+
+    public function getEventCardsByDate($userId,$tripId, $eventDate) {
+        $this->db->query('SELECT * FROM trip_events WHERE userId = :userId AND tripId = :tripId AND eventDate = :eventDate ORDER BY CAST(startTime AS TIME) ASC');
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':eventDate', $eventDate);
+        return $this->db->resultSet();
+    }
+
+    public function deleteEvent($userId, $tripId, $eventId) {
+        $this->db->query('DELETE FROM trip_events WHERE eventId = :eventId AND userId = :userId AND tripId = :tripId');
+        $this->db->bind(':eventId', $eventId);
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        return $this->db->execute();
+    }
+
+    public function getEventData($userId, $tripId, $eventId) {
+        $this->db->query('SELECT * FROM trip_events WHERE eventId = :eventId AND userId = :userId AND tripId = :tripId');
+        $this->db->bind(':eventId', $eventId);
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        return $this->db->single();
+    }
 }

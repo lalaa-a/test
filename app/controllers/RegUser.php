@@ -219,6 +219,154 @@ require_once '../app/helpers/travel_spot_helper.php';
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
 
+        public function addEvent(){
+
+            header('Content-Type: application/json');
+            if( $_SERVER['REQUEST_METHOD'] == "POST" ) {
+
+                $input = json_decode(file_get_contents('php://input'),true);
+                $userId = getSession('user_id');
+
+                if(!$input){
+                    http_response_code(400);
+                    echo json_encode(['success'=>false, 'message'=>'Invalid JSON data']);
+                    return;
+                }
+
+                $primary_required_fields = ['eventDate','startTime','endTime','eventType','eventStatus'];
+                
+                foreach($primary_required_fields as $field) {
+                    if(empty($input[$field])){
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' is required']);  
+                        return; 
+                    }    
+                }
+
+                if($input['eventType'] === 'location'){
+                    $location_required_fields = ['locationName','latitude','longitude','description'];
+                    foreach($location_required_fields as $field) {
+                        if(empty($input[$field])){
+                            http_response_code(400);
+                            echo json_encode(['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' is required for location visit events']);  
+                            return; 
+                        }    
+                    }
+                } elseif($input['eventType'] === 'travelSpot'){
+                    if(empty($input['travelSpotId'])){
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'message' => 'Spot ID is required for travel spot visit events']);  
+                        return; 
+                    }
+                }
+
+                $input['userId'] = $userId;
+                $insertingData = $input;
+
+                try{
+                    if($this->regUserModel->addEventData($insertingData)){
+                        echo json_encode(['success' => true, 'message' => 'Added event data to the database successfully']);
+                    }
+                    else{
+                        echo json_encode(['success' => false, 'message' => 'Failed to add the event data to the database.']);
+                    }
+
+                } catch(PDOException $e) {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Database error occurred when inserting event data'.$e->getMessage()]);
+                }
+            }
+        }
+
+        public function deleteEvent(){
+
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+            
+            if (!$userId || empty($input['tripId']) || empty($input['eventId'])) {
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                return;
+            }
+
+            try{
+                if ($this->regUserModel->deleteEvent($userId, $input['tripId'], $input['eventId'])) {
+                    echo json_encode(['success' => true, 'message' => 'Event card deleted successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to delete event card']);
+                }
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when deleting event card'.$e->getMessage()]);
+            }
+        }
+
+        public function editEvent($eventId){
+            error_log("editEvent called for eventId: " . $eventId);
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+            
+            if (!$userId || empty($input['tripId']) || empty($eventId)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                return;
+            }
+
+            $updatingData = $input;
+            $updatingData['eventId'] = $eventId;
+            $updatingData['userId'] = $userId;
+
+            try{
+                if ($this->regUserModel->updateEvent($updatingData)) {
+                    echo json_encode(['success' => true, 'message' => 'Event card updated successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update event card']);
+                }
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when updating event card'.$e->getMessage()]);
+            }
+        }
+
+        public function getEventCardsByDate($tripId, $eventDate){
+
+            header('Content-Type: application/json');
+
+            $date = new DateTime($eventDate);
+            $eventDate = $date->format('Y-m-d');
+
+            $userId = getSession('user_id');
+
+            try{
+                $eventCards = $this->regUserModel->getEventCardsByDate($userId, $tripId, $eventDate);
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving event cards(getEventCardsByDate)'.$e->getMessage()]);
+                return;
+
+            }
+
+            error_log("event cards for the date ". $eventDate . " are ". print_r($eventCards,true));
+
+            echo json_encode([
+                'success' => true,
+                'eventCards' => $eventCards
+            ]);
+
+        }
+
         public function selectTravelSpot(){
 
             $structCardData = [];
@@ -287,6 +435,30 @@ require_once '../app/helpers/travel_spot_helper.php';
             ];
 
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function retrieveEventData($tripId, $eventId){
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            try{
+                $eventData = $this->regUserModel->getEventData($userId, $tripId, $eventId);
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'eventData' => null, 'message' => 'Database error occurred when retrieving event data(retrieveEventData)'.$e->getMessage()]);
+                return;
+
+            }
+
+            if($eventData){
+                echo json_encode([ 'success' => true,
+                                    'eventData' => $eventData, 
+                                    'message'=>'Event data recieved successfully..' 
+                                ]);
+            } else {
+                echo json_encode([ 'success' => false,'eventData' => null, 'message'=>'No event found for the given ID']);
+            }
         }
 
         public function home() {
