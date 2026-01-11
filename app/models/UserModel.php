@@ -345,4 +345,36 @@ class UserModel {
         return null;
     }
 
+    public function getDashboardStatistics() {
+        $stats = [];
+        
+        // Count total trips (completed)
+        $this->db->query("SELECT COUNT(*) as total FROM created_trips WHERE status = 'completed'");
+        $result = $this->db->single();
+        $stats['trips_completed'] = $result ? $result->total : 0;
+        
+        // Count total users (all account types except admin)
+        $this->db->query("SELECT COUNT(*) as total FROM users WHERE account_type != 'admin'");
+        $result = $this->db->single();
+        $stats['total_users'] = $result ? $result->total : 0;
+        
+        // Count total bookings/trips (all statuses)
+        $this->db->query("SELECT COUNT(*) as total FROM created_trips");
+        $result = $this->db->single();
+        $stats['total_bookings'] = $result ? $result->total : 0;
+        
+        // Calculate total earnings from completed transactions
+        $this->db->query("SELECT SUM(amount) as total FROM transactions WHERE transaction_status = 'completed'");
+        $result = $this->db->single();
+        $stats['total_earnings'] = $result && $result->total ? $result->total : 0;
+        
+        return $stats;
+    }
+
+    public function getRecentNotifications($limit = 5) {
+        $this->db->query("SELECT * FROM notifications ORDER BY created_at DESC LIMIT :limit");
+        $this->db->bind(':limit', $limit);
+        return $this->db->resultSet();
+    }
+
 }

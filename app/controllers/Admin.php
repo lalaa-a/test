@@ -230,6 +230,40 @@
                 }
             }
         }
+
+        public function getDashboardStats() {
+            // Check if user is admin
+            if (!isLoggedIn() || getSession('user_account_type') !== 'admin') {
+                echo json_encode(['success' => false, 'message' => 'Access denied']);
+                return;
+            }
+
+            header('Content-Type: application/json');
+            
+            $stats = $this->userModel->getDashboardStatistics();
+            
+            echo json_encode([
+                'success' => true,
+                'stats' => $stats
+            ]);
+        }
+
+        public function getRecentNotifications() {
+            // Check if user is admin
+            if (!isLoggedIn() || getSession('user_account_type') !== 'admin') {
+                echo json_encode(['success' => false, 'message' => 'Access denied']);
+                return;
+            }
+
+            header('Content-Type: application/json');
+            
+            $notifications = $this->userModel->getRecentNotifications(4);
+            
+            echo json_encode([
+                'success' => true,
+                'notifications' => $notifications
+            ]);
+        }
     }
 
     // `/controller/method/parameters

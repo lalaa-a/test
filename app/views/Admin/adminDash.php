@@ -1041,29 +1041,29 @@
                     <div class="stat-icon trips">
                         <i class="fas fa-map-marked-alt"></i>
                     </div>
-                    <div class="stat-number">1,247</div>
+                    <div class="stat-number" id="tripsCompleted">0</div>
                     <div class="stat-label">Trips Completed</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon earnings">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
-                    <div class="stat-number">Rs. 37,183,500</div>
+                    <div class="stat-number" id="totalEarnings">Rs. 0</div>
                     <div class="stat-label">Total Earnings</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon users">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="stat-number">8,934</div>
+                    <div class="stat-number" id="totalUsers">0</div>
                     <div class="stat-label">Active Users</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon bookings">
                         <i class="fas fa-calendar-check"></i>
                     </div>
-                    <div class="stat-number">342</div>
-                    <div class="stat-label">Pending Bookings</div>
+                    <div class="stat-number" id="totalBookings">0</div>
+                    <div class="stat-label">Total Bookings</div>
                 </div>
             </div>
             <!-- Recent Notifications -->
@@ -1071,59 +1071,8 @@
                 <div class="card-header">
                     <h2>Recent Help Portal Notifications</h2>
                 </div>
-                <div class="notifications-grid">
-                    <div class="notification-card">
-                        <div class="notification-header">
-                            <div class="notification-title">Payment Issue</div>
-                            <div class="notification-time">2 hours ago</div>
-                        </div>
-                        <div class="notification-content">
-                            chiran reports payment went through but no confirmation received for itinerary ITN-001.
-                        </div>
-                        <div class="notification-actions">
-                            <button class="btn btn-primary btn-sm">View Details</button>
-                            <button class="btn btn-success btn-sm">Resolve</button>
-                        </div>
-                    </div>
-                    <div class="notification-card">
-                        <div class="notification-header">
-                            <div class="notification-title">Profile Update Help</div>
-                            <div class="notification-time">5 hours ago</div>
-                        </div>
-                        <div class="notification-content">
-                            sewmini needs assistance updating her guide profile information and certification documents.
-                        </div>
-                        <div class="notification-actions">
-                            <button class="btn btn-primary btn-sm">View Details</button>
-                            <button class="btn btn-success btn-sm">Resolve</button>
-                        </div>
-                    </div>
-                    <div class="notification-card">
-                        <div class="notification-header">
-                            <div class="notification-title">Driver Verification</div>
-                            <div class="notification-time">1 day ago</div>
-                        </div>
-                        <div class="notification-content">
-                            chiran submitted new vehicle registration documents for verification as a driver.
-                        </div>
-                        <div class="notification-actions">
-                            <button class="btn btn-primary btn-sm">View Details</button>
-                            <button class="btn btn-success btn-sm">Verify</button>
-                        </div>
-                    </div>
-                    <div class="notification-card">
-                        <div class="notification-header">
-                            <div class="notification-title">Itinerary Cancellation</div>
-                            <div class="notification-time">1 day ago</div>
-                        </div>
-                        <div class="notification-content">
-                            akila requests cancellation of itinerary ITN-005 due to personal emergency.
-                        </div>
-                        <div class="notification-actions">
-                            <button class="btn btn-primary btn-sm">View Details</button>
-                            <button class="btn btn-warning btn-sm">Process</button>
-                        </div>
-                    </div>
+                <div class="notifications-grid" id="notificationsContainer">
+                    <p style="text-align: center; padding: 20px; color: #999;">Loading notifications...</p>
                 </div>
             </div>
         </div>
@@ -1907,7 +1856,131 @@
         // Call on page load
         document.addEventListener('DOMContentLoaded', function() {
             setMaxDateForDOB();
+            loadDashboardStats();
+            loadRecentNotifications();
         });
+
+        // Load dashboard statistics
+        function loadDashboardStats() {
+            fetch('<?php echo URL_ROOT; ?>/Admin/getDashboardStats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.stats;
+                        
+                        // Update trips completed
+                        document.getElementById('tripsCompleted').textContent = 
+                            stats.trips_completed.toLocaleString();
+                        
+                        // Update total earnings
+                        document.getElementById('totalEarnings').textContent = 
+                            'Rs. ' + stats.total_earnings.toLocaleString();
+                        
+                        // Update total users
+                        document.getElementById('totalUsers').textContent = 
+                            stats.total_users.toLocaleString();
+                        
+                        // Update total bookings
+                        document.getElementById('totalBookings').textContent = 
+                            stats.total_bookings.toLocaleString();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard stats:', error);
+                });
+        }
+
+        // Load recent notifications
+        function loadRecentNotifications() {
+            fetch('<?php echo URL_ROOT; ?>/Admin/getRecentNotifications')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.notifications.length > 0) {
+                        const container = document.getElementById('notificationsContainer');
+                        container.innerHTML = '';
+                        
+                        data.notifications.forEach(notification => {
+                            const timeAgo = getTimeAgo(notification.created_at);
+                            const buttonClass = getNotificationButtonClass(notification.notification_type);
+                            const buttonText = getNotificationButtonText(notification.notification_type);
+                            
+                            const card = document.createElement('div');
+                            card.className = 'notification-card';
+                            card.innerHTML = `
+                                <div class="notification-header">
+                                    <div class="notification-title">${escapeHtml(notification.title)}</div>
+                                    <div class="notification-time">${timeAgo}</div>
+                                </div>
+                                <div class="notification-content">
+                                    ${escapeHtml(notification.content)}
+                                </div>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm">View Details</button>
+                                    <button class="btn ${buttonClass} btn-sm">${buttonText}</button>
+                                </div>
+                            `;
+                            container.appendChild(card);
+                        });
+                    } else {
+                        document.getElementById('notificationsContainer').innerHTML = 
+                            '<p style="text-align: center; padding: 20px; color: #999;">No notifications available.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    document.getElementById('notificationsContainer').innerHTML = 
+                        '<p style="text-align: center; padding: 20px; color: #e74c3c;">Error loading notifications.</p>';
+                });
+        }
+
+        // Helper function to calculate time ago
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const created = new Date(timestamp);
+            const diffMs = now - created;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 60) {
+                return diffMins <= 1 ? '1 minute ago' : `${diffMins} minutes ago`;
+            } else if (diffHours < 24) {
+                return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+            } else {
+                return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
+            }
+        }
+
+        // Helper function to get button class based on notification type
+        function getNotificationButtonClass(type) {
+            const classes = {
+                'payment': 'btn-success',
+                'verification': 'btn-success',
+                'help': 'btn-success',
+                'cancellation': 'btn-warning',
+                'general': 'btn-info'
+            };
+            return classes[type] || 'btn-success';
+        }
+
+        // Helper function to get button text based on notification type
+        function getNotificationButtonText(type) {
+            const texts = {
+                'payment': 'Resolve',
+                'verification': 'Verify',
+                'help': 'Resolve',
+                'cancellation': 'Process',
+                'general': 'Action'
+            };
+            return texts[type] || 'Resolve';
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // Additional client-side validation for date of birth
         function validateDateOfBirth(dateString) {
