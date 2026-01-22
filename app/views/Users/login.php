@@ -54,6 +54,7 @@
             font-weight: 700;
             line-height: 1.1;
             margin-bottom: 30px;
+            font-family: 'Geologica', sans-serif;
         }
 
         .left-section p {
@@ -61,12 +62,13 @@
             line-height: 1.6;
             max-width: 400px;
             opacity: 0.9;
+            font-family: 'Geologica', sans-serif;
         }
 
         .right-section {
             flex: 1.5;
             background: #ffffff;
-            padding: 60px 80px;
+            padding: 40px 60px;
             overflow-y: auto;
             display: flex;
             justify-content: center;
@@ -74,10 +76,10 @@
         }
 
         .form-container {
-            max-width: 550px;
+            max-width: 450px;
             width: 100%;
             margin: 0 auto;
-            padding: 50px;
+            padding: 30px;
             border-radius: 12px;
             background: #ffffff;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -85,41 +87,45 @@
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .header h2 {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            font-family: 'Geologica', sans-serif;
         }
 
         .header p {
             color: #6b7280;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            font-family: 'Geologica', sans-serif;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            margin-bottom: 25px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+            font-family: 'Geologica', sans-serif;
         }
 
         .form-group input {
-            padding: 14px 18px;
+            padding: 10px 12px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             background: white;
             transition: border-color 0.2s;
+            font-family: 'Geologica', sans-serif;
         }
 
         .form-group input:focus {
@@ -130,6 +136,7 @@
 
         .form-group input::placeholder {
             color: #9ca3af;
+            font-family: 'Geologica', sans-serif;
         }
 
         /* valid input state */
@@ -140,27 +147,57 @@
 
         .password-container {
             position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            width: 100%;
+            padding-right: 45px; /* Make room for the eye icon */
         }
 
         .toggle-password {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #6b7280;
-            font-size: 0.95rem;
+            font-size: 1.2rem;
+            user-select: none;
+            transition: color 0.2s;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .toggle-password:hover {
             color: #35939e;
         }
 
+        /* Closed (hidden) eye icon by default */
+        .toggle-password::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'/%3E%3Cline x1='1' y1='1' x2='23' y2='23'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block;
+        }
+
+        /* Open (visible) eye when the .visible class is present */
+        .toggle-password.visible::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+        }
+
         .remember-forgot {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 35px;
+            margin-bottom: 20px;
         }
 
         .remember-me {
@@ -169,6 +206,7 @@
             gap: 10px;
             color: #6b7280;
             font-size: 0.95rem;
+            font-family: 'Geologica', sans-serif;
         }
 
         .remember-me input {
@@ -181,6 +219,7 @@
             text-decoration: none;
             font-size: 0.95rem;
             font-weight: 600;
+            font-family: 'Geologica', sans-serif;
         }
 
         .forgot-password:hover {
@@ -188,28 +227,31 @@
         }
 
         .login-button {
-            background: #35939e;
+            background: #006a71;
             color: white;
             border: none;
-            padding: 16px 36px;
-            border-radius: 22px;
-            font-size: 1.15rem;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
             width: 100%;
             margin-top: 10px;
+            font-family: 'Geologica', sans-serif;
         }
 
         .login-button:hover {
-            background: #236666;
+            background: #005a61;
+            transform: translateY(-1px);
         }
 
         .signup-link {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 16px;
             color: #6b7280;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            font-family: 'Geologica', sans-serif;
         }
 
         .signup-link a {
@@ -224,9 +266,10 @@
 
         .error-message {
             color: #ef4444;
-            font-size: 0.9rem;
-            margin-top: 6px;
+            font-size: 0.85rem;
+            margin-top: 4px;
             display: none;
+            font-family: 'Geologica', sans-serif;
         }
 
         .form-group input.error {
@@ -242,6 +285,7 @@
             display: none;
             text-align: center;
             font-size: 1.1rem;
+            font-family: 'Geologica', sans-serif;
         }
 
         .error-message-global {
@@ -253,6 +297,7 @@
             display: none;
             text-align: center;
             font-size: 1.1rem;
+            font-family: 'Geologica', sans-serif;
         }
 
         /* Loading spinner */
@@ -323,14 +368,14 @@
                         <label for="email">Email Address *</label>
                         <input type="email" id="email" name="email" placeholder="youremail@gmail.com" required>
                         <div class="error-message" id="email-error">Valid email is required</div>
-                        <div class="success-message" id="email-success" style="display:none; background:transparent; color:#065f46; padding:0; font-size:0.9rem; margin-top:6px;">Email looks good</div>
+                        <div class="success-message" id="email-success" style="display:none; background:transparent; color:#065f46; padding:0; font-size:0.9rem; margin:0;">Email looks good</div>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password *</label>
                         <div class="password-container">
                             <input type="password" id="password" name="password" placeholder="••••••••" required>
-                            <span class="toggle-password" id="togglePassword">Show</span>
+                            <span class="toggle-password" id="togglePassword"></span>
                         </div>
                         <div class="error-message" id="password-error">Password is required</div>
                     </div>
@@ -359,9 +404,11 @@
         // Toggle password visibility
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? 'Show' : 'Hide';
+            const isHidden = passwordInput.getAttribute('type') === 'password';
+            // Toggle input type
+            passwordInput.setAttribute('type', isHidden ? 'text' : 'password');
+            // Add/remove visible class to reflect open-eye (visible) state
+            this.classList.toggle('visible', isHidden);
         });
 
         // Clear error messages
@@ -492,7 +539,7 @@
                                     redirectUrl = '<?php echo URL_ROOT; ?>/dashboard/guide';
                                     break;
                                 case 'tourist':
-                                    redirectUrl = '<?php echo URL_ROOT; ?>/User/account';
+                                    redirectUrl = '<?php echo URL_ROOT; ?>/RegUser/home';
                                     break;
                                 default:
                                     redirectUrl = '<?php echo URL_ROOT; ?>/dashboard';

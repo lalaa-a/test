@@ -25,4 +25,13 @@
 
     // ROOT_PATH real root
     define('ROOT_PATH', dirname(dirname(dirname(__FILE__))));
+
+    // Email Configuration
+    define('SMTP_HOST', 'smtp.gmail.com');
+    define('SMTP_USERNAME', 'lwravishan@gmail.com'); // Replace with your email
+    define('SMTP_PASSWORD', 'ydzg bbdc wnsk bbty'); // Replace with your app password
+    define('SMTP_PORT', 587);
+    define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
+    define('FROM_EMAIL', 'noreply@travelapp.com');
+    define('FROM_NAME', 'Travel App');
 ?>

@@ -1,7 +1,14 @@
 <?php
     require_once '../app/helpers/session_helper.php';
     require_once '../app/helpers/upload_helper.php';
-    
+
+    // Import PHPMailer classes
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
+
+    // Load Composer's autoloader
+    require_once '../vendor/autoload.php';
+
     class User extends Controller{
         
         private $userModel;
@@ -132,8 +139,14 @@
                     return;
                 }
 
+                // Check if email is verified
+                if (!isset($_SESSION['email_verified']) || $_SESSION['email_verified'] !== $email) {
+                    echo json_encode(['success' => false, 'message' => 'Email verification required']);
+                    return;
+                }
+
                 // Upload profile photo
-                $profilePhoto = uploadFile($_FILES['profile_photo'] ?? null, 'profile');
+                $profilePhoto = uploadFile($_FILES['profile_photo'] ?? null,'/signup/profile','profile');
                 if (!$profilePhoto) {
                     echo json_encode(['success' => false, 'message' => 'Profile photo is required and must be a valid image (JPG/PNG, max 5MB)']);
                     return;
@@ -144,35 +157,28 @@
                 $guideTouristData = null;
 
                 if ($accountType === 'driver') {
-                    $vehicleNumber = trim($_POST['vehicle_number'] ?? '');
                     $licenseNumber = trim($_POST['license_number'] ?? '');
                     $licenseExpireDate = trim($_POST['license_expire_date'] ?? '');
 
-                    if (empty($vehicleNumber) || empty($licenseNumber) || empty($licenseExpireDate)) {
+                    if ( empty($licenseNumber) || empty($licenseExpireDate)) {
                         echo json_encode(['success' => false, 'message' => 'All driver fields are required']);
                         return;
                     }
 
-                    $licenseFront = uploadFile($_FILES['licenseFront'] ?? null, 'license_front');
-                    $licenseBack = uploadFile($_FILES['licenseBack'] ?? null, 'license_back');
-                    $vehicleDoc = uploadFile($_FILES['vehicleDoc'] ?? null, 'vehicle_doc');
-                    $insurance = uploadFile($_FILES['insurance'] ?? null, 'insurance');
-                    $idFront = uploadFile($_FILES['idFront'] ?? null, 'id_front');
-                    $idBack = uploadFile($_FILES['idBack'] ?? null, 'id_back');
-
-                    if (!$licenseFront || !$licenseBack || !$vehicleDoc || !$insurance || !$idFront || !$idBack) {
+                    $licenseFront = uploadFile($_FILES['licenseFront'] ?? null,'/signup/license','license_front',);
+                    $licenseBack = uploadFile($_FILES['licenseBack'] ?? null, '/signup/license','license_back',);
+                    $idFront = uploadFile($_FILES['idFront'] ?? null, '/signup/nic','nic_front_driver');
+                    $idBack = uploadFile($_FILES['idBack'] ?? null, '/signup/nic','nic_back_driver');
+                    if (!$licenseFront || !$licenseBack || !$idFront || !$idBack) {
                         echo json_encode(['success' => false, 'message' => 'All driver documents are required']);
                         return;
                     }
 
                     $driverData = json_encode([
-                        'vehicle_number' => $vehicleNumber,
                         'license_number' => $licenseNumber,
                         'license_expire_date' => $licenseExpireDate,
                         'license_front' => $licenseFront,
                         'license_back' => $licenseBack,
-                        'vehicle_doc' => $vehicleDoc,
-                        'insurance' => $insurance,
                         'id_front' => $idFront,
                         'id_back' => $idBack
                     ]);
@@ -184,8 +190,8 @@
                         return;
                     }
 
-                    $nicFront = uploadFile($_FILES['nic_front'] ?? null, 'nic_front');
-                    $nicBack = uploadFile($_FILES['nic_back'] ?? null, 'nic_back');
+                    $nicFront = uploadFile($_FILES['nic_front'] ?? null, '/signup/nic','nic_front');
+                    $nicBack = uploadFile($_FILES['nic_back'] ?? null, '/signup/nic','nic_back');
 
                     if (!$nicFront || !$nicBack) {
                         echo json_encode(['success' => false, 'message' => 'Both NIC/Passport images are required']);
@@ -227,6 +233,7 @@
 
                 try {
                     if ($this->userModel->create($userData)) {
+                        unset($_SESSION['email_verified']); // Clear email verification after successful registration
                         echo json_encode(['success' => true, 'message' => 'Account created successfully']);
                     } else {
                         echo json_encode(['success' => false, 'message' => 'Failed to create account. Please try again.']);
@@ -248,6 +255,140 @@
                 // Load view
                 $this->view('Users/register');
             }
+        }
+
+        public function sendOTP() {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $email = trim($input['email'] ?? '');
+
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['success' => false, 'message' => 'Valid email is required']);
+                return;
+            }
+
+            // Check if email already exists
+            if ($this->userModel->emailExists($email)) {
+                echo json_encode(['success' => false, 'message' => 'This email is already registered']);
+                return;
+            }
+
+            // Generate 6-digit OTP
+            $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            
+            // Store OTP in session with expiration (10 minutes)
+            $_SESSION['otp'] = [
+                'code' => $otp,
+                'email' => $email,
+                'expires' => time() + (10 * 60) // 10 minutes
+            ];
+
+            // Send email with OTP using PHPMailer
+            $mail = new PHPMailer(true);
+
+            try {
+                // Server settings
+                $mail->isSMTP();
+                $mail->Host       = SMTP_HOST;
+                $mail->SMTPAuth   = true;
+                $mail->Username   = SMTP_USERNAME;
+                $mail->Password   = SMTP_PASSWORD;
+                $mail->SMTPSecure = SMTP_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port       = SMTP_PORT;
+
+                // Recipients
+                $mail->setFrom(FROM_EMAIL, FROM_NAME);
+                $mail->addAddress($email);
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = 'Email Verification - Tripingoo';
+                $mail->Body    = "
+                <html>
+                <head>
+                    <title>Email Verification</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background-color: #006a71; color: white; padding: 20px; text-align: center; }
+                        .content { padding: 30px 20px; background-color: #f9f9f9; }
+                        .otp-code { font-size: 32px; font-weight: bold; color: #006a71; letter-spacing: 5px; text-align: center; margin: 20px 0; }
+                        .footer { background-color: #006a71; color: white; padding: 15px; text-align: center; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>Welcome to Tripingoo!</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Email Verification</h2>
+                            <p>Your verification code is:</p>
+                            <div class='otp-code'>{$otp}</div>
+                            <p>This code will expire in 10 minutes.</p>
+                            <p>If you didn't request this code, please ignore this email.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>Best regards,<br>Travel App Team</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                ";
+
+                $mail->AltBody = "Welcome to Tripingoo!\n\nYour verification code is: {$otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nTripingoo Team";
+
+                $mail->send();
+                echo json_encode(['success' => true, 'message' => 'OTP sent successfully']);
+
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => 'Failed to send OTP. Please try again. Error: ' . $mail->ErrorInfo]);
+            }
+        }
+
+        public function verifyOTP() {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $email = trim($input['email'] ?? '');
+            $otp = trim($input['otp'] ?? '');
+
+            if (empty($email) || empty($otp)) {
+                echo json_encode(['success' => false, 'message' => 'Email and OTP are required']);
+                return;
+            }
+
+            // Check if OTP exists in session
+            if (!isset($_SESSION['otp']) || 
+                $_SESSION['otp']['email'] !== $email || 
+                $_SESSION['otp']['code'] !== $otp) {
+                echo json_encode(['success' => false, 'message' => 'Invalid OTP']);
+                return;
+            }
+
+            // Check if OTP is expired
+            if (time() > $_SESSION['otp']['expires']) {
+                unset($_SESSION['otp']);
+                echo json_encode(['success' => false, 'message' => 'OTP has expired. Please request a new one.']);
+                return;
+            }
+
+            // OTP is valid
+            $_SESSION['email_verified'] = $email;
+            unset($_SESSION['otp']); // Clear the OTP after successful verification
+            
+            echo json_encode(['success' => true, 'message' => 'Email verified successfully']);
         }
 
         //For login a user
@@ -344,6 +485,7 @@
 
         //For logout a user
         public function logout() {
+        
             // Clear remember me cookie
             clearRememberMeCookie();
             
@@ -493,7 +635,7 @@
                 }
 
                 // Upload new profile photo
-                $profilePhoto = uploadFile($_FILES['profile_photo'], 'profile');
+                $profilePhoto = uploadFile($_FILES['profile_photo'], 'profile','/signup/profile');
                 if (!$profilePhoto) {
                     echo json_encode(['success' => false, 'message' => 'Failed to upload image. Please ensure it\'s a valid JPG/PNG file under 5MB']);
                     return;
@@ -532,7 +674,7 @@
                 case 'guide':
                     return URL_ROOT . '/dashboard/guide';
                 case 'tourist':
-                    return URL_ROOT . '/User/account';
+                    return URL_ROOT . '/RegUser/home';
                 case 'site_moderator':
                     return URL_ROOT . '/dashboard/siteModerator';
                 case 'business_manager':

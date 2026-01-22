@@ -38,6 +38,10 @@
 
             this.startTimeInput = document.getElementById('start-time');
             this.endTimeInput = document.getElementById('end-time');
+
+            this.startTime = null;
+            this.endTime = null;
+
             this.spotTypeSelect = document.getElementById('spot-type');
             this.eventTypeData = document.getElementById('event-type-data');
             this.locationSelect = document.getElementById('location-select');
@@ -52,11 +56,15 @@
 
             this.tripId = document.getElementById('trip-id-value')
             this.eventsContainer = document.getElementById('events-container');
+            
+            // Initialize Flatpickr for time inputs
+            this.initializeFlatpickr();
         }
 
         attachEventListeners(){
             this.addEventButton.addEventListener('click', () => {
                 this.addTravelSpotPopup.classList.add('show');
+                this.setNextEventStartTime(this.tripId.textContent, this.currentSelectedDate);
             });
 
             this.popupCloseBtn.addEventListener('click', () => {
@@ -76,22 +84,7 @@
                 }
             });
 
-            this.startTimeInput.addEventListener('change', ()=> {
-
-                if((this.spotTypeSelect.value === "travelSpot")&&(this.selectedSpot)){
-                    this.handleSpotSelection(this.selectedSpot.spotId);
-                } else if((this.spotTypeSelect.value === "location")&&(this.selectedLocation)){
-                    this.handleLocationSelection(this.selectedLocation);
-                }
-            });
-
-            this.endTimeInput.addEventListener('change', () => {
-                 if((this.spotTypeSelect.value === "travelSpot")&&(this.selectedSpot)){
-                    this.handleSpotSelection(this.selectedSpot.spotId);
-                } else if((this.spotTypeSelect.value === "location")&&(this.selectedLocation)){
-                    this.handleLocationSelection(this.selectedLocation);
-                }
-            })
+            // Time input change listeners are now handled by Flatpickr onChange callbacks
 
             this.eventStatusSelect.addEventListener('change',() => {
                 if((this.spotTypeSelect.value === "travelSpot")&&(this.selectedSpot)){
@@ -149,6 +142,106 @@
             return div.innerHTML;
         }
 
+        initializeFlatpickr() {
+            // Initialize start time picker
+            this.startTimePicker = flatpickr(this.startTimeInput, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "h:i K",
+                time_24hr: false,
+                minTime: "00:00",
+                maxTime: "23:59",
+                onChange: (selectedDates, dateStr) => {
+                    
+                    // Update end time min when start time changes
+                    if (selectedDates.length > 0) {
+                        
+                        const selectedTime = selectedDates[0];
+                        const hours = selectedTime.getHours().toString().padStart(2, '0');
+                        const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+                        const time24 = `${hours}:${minutes}`;
+                        
+                        // Set minimum time for end time picker
+                        this.endTimePicker.set('minTime', time24);
+                        
+                        // If end time is set and is earlier than start time, clear it
+                        if (this.endTimePicker.selectedDates[0]) {
+                            // Get the end time value and compare
+                            const endTimeInstance = this.endTimePicker.selectedDates[0];
+                            if (endTimeInstance && endTimeInstance < selectedTime) {
+                                this.endTimePicker.clear();
+                                alert('End time must be later than start time. Please select a new end time.');
+                            }
+                        }
+                    }
+
+                    // Trigger card update if spot/location selected
+                    if((this.spotTypeSelect.value === "travelSpot") && this.selectedSpot){
+                        this.handleSpotSelection(this.selectedSpot.spotId);
+                    } else if((this.spotTypeSelect.value === "location") && this.selectedLocation){
+                        this.handleLocationSelection(this.selectedLocation);
+                    }
+                }
+            });
+
+            // Initialize end time picker
+            this.endTimePicker = flatpickr(this.endTimeInput, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "h:i K",
+                time_24hr: false,
+                minTime: "00:00",
+                maxTime: "23:59",
+                onChange: (selectedDates, dateStr) => {
+                    // Validate end time is not earlier than start time
+                    if (selectedDates.length > 0 && this.startTimePicker.selectedDates.length > 0) {
+                        const startTime = this.startTimePicker.selectedDates[0];
+                        const endTime = selectedDates[0];
+                        
+                        if (endTime < startTime) {
+                            alert('End time cannot be earlier than start time.');
+                            this.endTimePicker.clear();
+                            return;
+                        }
+                    }
+
+                    // Trigger card update if spot/location selected
+                    if((this.spotTypeSelect.value === "travelSpot") && this.selectedSpot){
+                        this.handleSpotSelection(this.selectedSpot.spotId);
+                    } else if((this.spotTypeSelect.value === "location") && this.selectedLocation){
+                        this.handleLocationSelection(this.selectedLocation);
+                    }
+                }
+            });
+        }
+
+        async setNextEventStartTime(tripId, eventDate) {
+
+            try{
+                const lastAddedEvent = await fetch(this.URL_ROOT+`/RegUser/getLastAddedEvent/${tripId}/${eventDate}`);
+                const data = await lastAddedEvent.json();
+
+                if (data.success && data.eventCard) {
+                    console.log(data.eventCard);
+                    
+                    // Parse 24-hour time and set to Flatpickr
+                    const timeString = data.eventCard.endTime;
+                    const [hours, minutes] = timeString.split(':');
+
+                    const time = `${hours}:${minutes}`;
+                    console.log(time);
+
+                    this.startTimePicker.setDate(time); //setting the start time to prvious event end time (user can change it this assigns automatically for ease)
+                    this.endTimePicker.set('minTime', time); //setiing the endTime min to start time begining
+                } else {
+                    
+                }
+            } catch (error){
+                console.error('Error fetching last added event:', error);
+            }
+            
+        }
+
         formatTimeToAMPM(time) {
             if (!time) return '';
             
@@ -164,6 +257,22 @@
             hour = hour % 12 || 12; // Convert 0 to 12 for midnight
             
             return `${hour}:${minute} ${period}`;
+        }
+
+        convertTo24Hour(time12h) {
+            if (!time12h) return '';
+            
+            const [time, period] = time12h.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours, 10);
+            
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
 
         // Guide booking functionality
@@ -224,8 +333,15 @@
         }
 
         resetForm(){
-            this.startTimeInput.value = '';
-            this.endTimeInput.value = '';
+            // Clear Flatpickr instances
+            if (this.startTimePicker) {
+                this.startTimePicker.clear();
+            }
+            if (this.endTimePicker) {
+                this.endTimePicker.clear();
+                this.endTimePicker.set('minTime', '00:00'); // Reset min time
+            }
+            
             this.spotTypeSelect.value = '';
             this.eventStatusSelect.value = '';
             this.locationDescription.value = '';
@@ -237,8 +353,14 @@
                 availableEventCard.remove();
             }
 
+            const availableEventCardLo = this.selectedLocationContainer.querySelector(".event-card-wrapper");
+            if(availableEventCardLo) {
+                availableEventCardLo.remove();
+            }
+
             this.gotoTravelSpotsElement.style.display = 'block';
             this.selectedSpot = null;
+            this.selectedLocation = null;
 
             document.getElementById('autocomplete-container').style.display = 'block';
             this.selectedLocationContainer.innerHTML = '';
@@ -334,22 +456,25 @@
 
         async saveEvent(){
         
-            const startTime = this.startTimeInput.value;
-            const endTime = this.endTimeInput.value;
             const type = this.spotTypeSelect.value;
             const eventStatus = this.eventStatusSelect.value;
             const locationDescription = this.locationDescription.value;
-
-            console.log(startTime);
 
             if(!this.validateInput()){
                 return;
             }
 
+            // Convert 12-hour format to 24-hour format strings (HH:MM)
+            const startTime24 = this.convertTo24Hour(this.startTimeInput.value);
+            const endTime24 = this.convertTo24Hour(this.endTimeInput.value);
+
+            console.log('Start time 24h:', startTime24);
+            console.log('End time 24h:', endTime24);
+
             let eventData = {
                 eventDate: this.currentSelectedDate,
-                startTime: startTime,
-                endTime: endTime,
+                startTime: startTime24,
+                endTime: endTime24,
                 eventType: type,
                 eventStatus: eventStatus,
                 tripId : this.tripId.textContent
@@ -365,7 +490,6 @@
                 eventData.travelSpotId = this.selectedSpot.spotId;
             }
             //console.log("event data ", eventData);
-            console.log(startTime);
 
             let URL;
             let msg;
@@ -404,11 +528,11 @@
                 this.loadEventCardsForDate(this.currentSelectedDate);
                 //this.submitBtn.disabled = false;
                 //this.submitBtn.textContent = 'Add Travel Spot';
+                this.resetForm();
             }
         }
 
         async loadEventCardsForDate(eventDate){
-
             try{
                 const response = await fetch(this.URL_ROOT+`/RegUser/getEventCardsByDate/${this.tripId.textContent}/${eventDate}`);
                 const data = await response.json();
@@ -541,8 +665,13 @@
                 if(data.success){
                     console.log(data.eventData);
                     this.resetForm();
-                    this.startTimeInput.value = data.eventData.startTime;
-                    this.endTimeInput.value = data.eventData.endTime;
+
+                    const [startHours,startMinutes] = data.eventData.startTime.split(':');
+                    const [endHours, endMinutes]= data.eventData.endTime.split(':');
+                    
+                    this.startTimePicker.setDate(`${startHours}:${startMinutes}`);
+                    this.endTimePicker.setDate(`${endHours}:${endMinutes}`)
+
                     this.spotTypeSelect.value = data.eventData.eventType;
                     this.eventStatusSelect.value = data.eventData.eventStatus;
 
@@ -628,6 +757,83 @@
             }
         }
 
+        async addEventAbove(tripId,selectedEventId,selectedEventStartTime){
+            console.log("add event above ", selectedEventStartTime);
+            
+            this.resetForm();
+            
+            try {
+                const aboveEventDetails = await fetch(this.URL_ROOT + `/RegUser/retrieveAboveEventEndTime/${tripId}/${selectedEventId}/${this.currentSelectedDate}`);
+                const data = await aboveEventDetails.json();
+
+                if(data.success && data.eventData){
+                    console.log("Above event data:", data.eventData);
+                    
+                    // Extract the end time of the above event (24-hour format from database)
+                    const aboveEndTime = data.eventData.endTime;
+                    const [aboveEndHours, aboveEndMinutes] = aboveEndTime.split(':');
+                    
+                    // Set minimum start time to the above event's end time
+                    this.startTimePicker.set('minTime', `${aboveEndHours}:${aboveEndMinutes}`);
+                    this.endTimePicker.set('minTime', `${aboveEndHours}:${aboveEndMinutes}`);
+                    
+                } else {
+                    console.log("No above event found, setting min time to 00:00");
+                    // No event above, so allow any start time
+                    this.startTimePicker.set('minTime', '00:00');
+                }
+                
+                const [selectedStartHours, selectedStartMinutes] = selectedEventStartTime.split(':');
+                // Set maximum end time to the selected event's start time (already in 24-hour format)
+                this.endTimePicker.set('maxTime', `${selectedStartHours}:${selectedStartMinutes}`);
+                this.startTimePicker.set('maxTime', `${selectedStartHours}:${selectedStartMinutes}`);
+                
+                this.addTravelSpotPopup.classList.add('show');
+
+            } catch (error) {
+                console.error('Error fetching above event data:', error);
+                alert('Error loading event data. Please try again.');
+            }
+        }
+
+        async addEventBelow(tripId,selectedEventId,selectedEventEndTime){
+
+            console.log("add event below ");
+            this.resetForm();
+            
+            try {
+
+                const belowEventDetails = await fetch(this.URL_ROOT + `/RegUser/retrieveBelowEventStartTime/${tripId}/${selectedEventId}/${this.currentSelectedDate}`);
+                const data = await belowEventDetails.json();
+
+                if(data.success && data.eventData){
+                    console.log("Below event data:", data.eventData);
+                    // Extract the start time of the below event (24-hour format from database)
+                    const belowStartTime = data.eventData.startTime;
+                    const [belowStartHours, belowStartMinutes] = belowStartTime.split(':'); 
+                    // Set maximum start time to the below event's start time
+                    this.startTimePicker.set('maxTime', `${belowStartHours}:${belowStartMinutes}`);
+                    this.endTimePicker.set('maxTime', `${belowStartHours}:${belowStartMinutes}`);
+                } else {
+                    console.log("No below event found, setting max time to 23:59");
+                    // No event below, so allow any end time
+                    this.endTimePicker.set('maxTime', '23:59');
+                }
+
+                // Set minimum start time to the selected event's end time (already in 24-hour format)
+                const [selectedEndHours, selectedEndMinutes] = selectedEventEndTime.split(':');
+                this.startTimePicker.set('minTime', `${selectedEndHours}:${selectedEndMinutes}`);
+                this.endTimePicker.set('minTime', `${selectedEndHours}:${selectedEndMinutes}`);
+
+                this.addTravelSpotPopup.classList.add('show');
+
+            } catch (error) {
+                console.error('Error fetching below event data:', error);
+                alert('Error loading event data. Please try again.');
+            }
+        }
+
+
         //for render a selected spot or a location (follow the spot object data pattern)
         renderSelectedSpot(spot ,isPopup, eventFormData){
 
@@ -677,9 +883,10 @@
             card.innerHTML = `
                                 <div class="event-time-section">
                                     <div class="time-label">START</div>
-                                    <div class="event-start-time">${this.escapeHtml(this.formatTimeToAMPM(eventFormData.startTime))}</div>
+
+                                    <div class="event-start-time">${this.escapeHtml(isPopup ? eventFormData.startTime : this.formatTimeToAMPM(eventFormData.startTime))}</div>
                                     <div class="time-label">END</div>
-                                    <div class="event-end-time">${this.escapeHtml(this.formatTimeToAMPM(eventFormData.endTime))}</div>
+                                    <div class="event-end-time">${this.escapeHtml(isPopup ? eventFormData.endTime : this.formatTimeToAMPM(eventFormData.endTime))}</div>
                                 </div>
                                 <div class="event-image">
                                     <i class="${currentType.icon}"></i>
@@ -701,10 +908,10 @@
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
                                                     <div class="dot-menu-dropdown" id="event-menu-${eventFormData.eventId}">
-                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventAbove(${this.tripId.textContent},${eventFormData.eventId})">
+                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventAbove(${this.tripId.textContent},${eventFormData.eventId},'${eventFormData.startTime}')">
                                                             <i class="fa-solid fa-arrow-up"></i> Add event above
                                                         </button>
-                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventBelow(${this.tripId.textContent},${eventFormData.eventId})">
+                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventBelow(${this.tripId.textContent},${eventFormData.eventId},'${eventFormData.endTime}')">
                                                             <i class="fa-solid fa-arrow-down"></i> Add event below
                                                         </button>
                                                         <button class="dot-menu-item edit" onclick="tripEventListManager.editEvent(${this.tripId.textContent},${eventFormData.eventId})">
@@ -782,8 +989,8 @@
         }
 
         validateInput() {
-            const startTime = this.startTimeInput.value;
-            const endTime = this.endTimeInput.value;
+            const startTime = this.startTimePicker.selectedDates[0];
+            const endTime = this.endTimePicker.selectedDates[0];
             const type = this.spotTypeSelect.value;
             const eventStatus = this.eventStatusSelect.value;
             const locationDescription = this.locationDescription.value;
@@ -796,6 +1003,12 @@
                 alert("Please fill in location End time");
                 return false;
             }
+            
+            if(endTime < startTime){
+                alert("End time must be later than start time");
+                return false;
+            }
+
             if(!type){
                 alert("Please fill in location spot type");
                 return false;

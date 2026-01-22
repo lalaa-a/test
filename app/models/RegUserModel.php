@@ -175,4 +175,68 @@ class RegUserModel {
         $this->db->bind(':tripId', $tripId);
         return $this->db->single();
     }
+
+    public function getLastAddedEvent($userId, $tripId, $eventDate) {
+        $this->db->query('SELECT * FROM trip_events 
+                        WHERE userId = :userId 
+                        AND tripId = :tripId 
+                        AND eventDate = :eventDate 
+                        ORDER BY endTime DESC LIMIT 1');
+        
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':eventDate', $eventDate);
+        
+        $result = $this->db->single();
+        return $result;
+    }
+
+    public function getAboveEventEndTime($userId, $tripId, $eventId, $eventDate) {
+        $this->db->query('
+                            SELECT te.* 
+                            FROM trip_events te
+                            WHERE te.userId = :userId 
+                            AND te.tripId = :tripId 
+                            AND te.eventDate = :eventDate
+                            AND CAST(te.endTime AS TIME) <= (
+                                SELECT CAST(startTime AS TIME) 
+                                FROM trip_events 
+                                WHERE eventId = :eventId
+                            )
+                            ORDER BY CAST(te.endTime AS TIME) DESC, te.eventId DESC
+                            LIMIT 1' );
+        
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':eventId', $eventId);
+        $this->db->bind(':eventDate', $eventDate);
+
+        $result = $this->db->single();
+        return $result;
+    } 
+
+    public function getBelowEventStartTime($userId, $tripId, $eventId, $eventDate) {
+        $this->db->query('
+                            SELECT te.* 
+                            FROM trip_events te
+                            WHERE te.userId = :userId 
+                            AND te.tripId = :tripId 
+                            AND te.eventDate = :eventDate
+                            AND CAST(te.startTime AS TIME) >= (
+                                SELECT CAST(endTime AS TIME) 
+                                FROM trip_events 
+                                WHERE eventId = :eventId
+                            )
+                            ORDER BY CAST(te.startTime AS TIME) ASC, te.eventId ASC
+                            LIMIT 1' );
+        
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':eventId', $eventId);
+        $this->db->bind(':eventDate', $eventDate);
+
+        $result = $this->db->single();
+        return $result;
+    }
+    
 }

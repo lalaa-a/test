@@ -230,6 +230,194 @@
             transform: translateY(-1px);
         }
 
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-action-btn {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #006A71;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-action-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .header-action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .notification-badge,
+        .message-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .message-badge {
+            background: #28a745;
+        }
+
+        /* Sidebar User Section at Bottom */
+        .sidebar-user-section {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-top: 10px;
+            padding-left: 3px;
+            padding-right: 3px;
+            border-top: 1px solid #e9ecef;
+            background: white;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-auth-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Geologica';
+        }
+
+        .sidebar-login-btn {
+            background: white;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .sidebar-login-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 106, 113, 0.2);
+        }
+
+        .sidebar-signup-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-signup-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 106, 113, 0.3);
+        }
+
+        .sidebar-user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .sidebar-user-info:hover {
+            background: var(--primary);
+        }
+
+        .sidebar-user-info:hover .sidebar-user-name,
+        .sidebar-user-info:hover .sidebar-user-role,
+        .sidebar-user-info:hover .sidebar-dropdown-icon {
+            color: white;
+        }
+
+        .sidebar-user-info:hover .sidebar-user-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #008891 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 106, 113, 0.2);
+        }
+
+        .sidebar-user-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-dropdown-icon {
+            color: var(--primary);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-user-info[aria-expanded="true"] .sidebar-dropdown-icon {
+            transform: rotate(180deg);
+        }
+
         /* User Dropdown (post-login) — ENHANCED UX */
         .user-info {
             position: relative;
@@ -276,6 +464,73 @@
         .user-info:focus .user-name {
             color: var(--primary);
             text-decoration: underline;
+        }
+
+        /* Sidebar Dropdown Menu */
+        .sidebar-dropdown-menu {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 -4px 20px rgba(0, 106, 113, 0.15);
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sidebar-dropdown-menu.show {
+            display: block;
+        }
+
+        .sidebar-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-dropdown-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-dropdown-item i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .sidebar-dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }
+
+        .sidebar-logout-item {
+            color: #dc3545;
+        }
+
+        .sidebar-logout-item:hover {
+            background: #dc3545;
+            color: white;
         }
 
         /* Dropdown Menu — Smooth Animation */
@@ -498,6 +753,23 @@
                 display: none;
             }
 
+            .sidebar-user-section {
+                padding: 10px;
+            }
+
+            .sidebar-user-details {
+                display: none;
+            }
+
+            .sidebar-dropdown-icon {
+                display: none;
+            }
+
+            .sidebar:hover .sidebar-user-details,
+            .sidebar:hover .sidebar-dropdown-icon {
+                display: flex;
+            }
+
             .main-content {
                 margin-left: 70px;
             }
@@ -505,6 +777,15 @@
             .header {
                 left: 70px;
                 width: calc(100% - 70px);
+            }
+
+            .header-actions {
+                gap: 10px;
+            }
+
+            .header-action-btn {
+                padding: 8px;
+                font-size: 1rem;
             }
 
             .stats-grid,
@@ -528,36 +809,55 @@
             <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fas fa-user-check"></i></i> <span>Verification</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>    
         </ul>
+
+        <!-- User Info Section -->
+        <div class="sidebar-user-section">
+            <!-- Pre-login: buttons -->
+            <div id="sidebarAuthContainer" class="sidebar-auth-buttons">
+                <button class="sidebar-auth-btn sidebar-login-btn" id="sidebarLoginBtn">Login</button>
+                <button class="sidebar-auth-btn sidebar-signup-btn" id="sidebarSignupBtn">Sign Up</button>
+            </div>
+
+            <!-- Post-login: user info + dropdown -->
+            <div id="sidebarUserContainer" class="sidebar-user-info" tabindex="0" style="display: none;" role="button" aria-haspopup="true" aria-expanded="false">
+                <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
+                <div class="sidebar-user-details">
+                    <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
+                    <span class="sidebar-user-role">Moderator</span>
+                </div>
+                <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
+                <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">
+                    <a href="#" class="sidebar-dropdown-item" id="sidebarProfileSettingsBtn">
+                        <i class="fas fa-cog"></i> Profile Settings
+                    </a>
+                    <a href="#" class="sidebar-dropdown-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <div class="sidebar-dropdown-divider"></div>
+                    <a href="#" class="sidebar-dropdown-item sidebar-logout-item" id="sidebarLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            
             <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
-            <!-- Pre-login: buttons -->
-            <div id="authContainer" class="auth-buttons">
-                <button class="auth-btn login-btn" id="loginBtn">Login</button>
-                <button class="auth-btn signup-btn" id="signupBtn">Sign Up</button>
-            </div>
-
-            <!-- Post-login: user info + dropdown -->
-            <div id="userContainer" class="user-info" tabindex="0" style="display: none;" role="button" aria-haspopup="true" aria-expanded="false">
-                <div class="user-avatar" id="userAvatar">A</div>
-                <span class="user-name" id="userName">Admin</span>
-                <div class="dropdown-menu" id="userDropdown">
-                    <a href="#" class="dropdown-item" id="profileSettingsBtn">
-                        <i class="fas fa-cog"></i> Profile Settings
-                    </a>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-user-circle"></i> My Profile
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item logout-item" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                </div>
+            
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <button class="header-action-btn" id="notificationsBtn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </button>
+                <button class="header-action-btn" id="messagesBtn" title="Messages">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageBadge" style="display: none;">0</span>
+                </button>
             </div>
         </div>
 
@@ -568,15 +868,16 @@
 
         let isLoggedIn = false;
 
-        const authContainer = document.getElementById('authContainer');
-        const userContainer = document.getElementById('userContainer');
-        const userAvatar = document.getElementById('userAvatar');
-        const userName = document.getElementById('userName');
-        const userDropdown = document.getElementById('userDropdown');
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const profileSettingsBtn = document.getElementById('profileSettingsBtn');
+        // Sidebar elements
+        const sidebarAuthContainer = document.getElementById('sidebarAuthContainer');
+        const sidebarUserContainer = document.getElementById('sidebarUserContainer');
+        const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        const sidebarUserDropdown = document.getElementById('sidebarUserDropdown');
+        const sidebarLoginBtn = document.getElementById('sidebarLoginBtn');
+        const sidebarSignupBtn = document.getElementById('sidebarSignupBtn');
+        const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+        const sidebarProfileSettingsBtn = document.getElementById('sidebarProfileSettingsBtn');
         
         let encodedData;
 
@@ -727,25 +1028,25 @@
 
         // Toggle dropdown
         function toggleDropdown() {
-            const isShown = userDropdown.classList.contains('show');
-            userDropdown.classList.toggle('show', !isShown);
-            userContainer.setAttribute('aria-expanded', !isShown);
+            const isShown = sidebarUserDropdown.classList.contains('show');
+            sidebarUserDropdown.classList.toggle('show', !isShown);
+            sidebarUserContainer.setAttribute('aria-expanded', !isShown);
         }
 
         // Close dropdown
         function closeDropdown() {
-            userDropdown.classList.remove('show');
-            userContainer.setAttribute('aria-expanded', 'false');
+            sidebarUserDropdown.classList.remove('show');
+            sidebarUserContainer.setAttribute('aria-expanded', 'false');
         }
 
         // Bind click to user container (avatar + name)
-        userContainer.addEventListener('click', function(e) {
+        sidebarUserContainer.addEventListener('click', function(e) {
             e.stopPropagation();
             toggleDropdown();
         });
 
         // Keyboard: Enter/Space to open dropdown
-        userContainer.addEventListener('keydown', function(e) {
+        sidebarUserContainer.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 toggleDropdown();
@@ -759,32 +1060,74 @@
         });
 
         // Prevent closing when clicking inside dropdown
-        userDropdown.addEventListener('click', function(e) {
+        sidebarUserDropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
 
         // Login action
-        loginBtn.addEventListener('click', function() {
+        sidebarLoginBtn.addEventListener('click', function() {
             window.location.href = '<?php echo URL_ROOT.'/User/login'?>';
         });
 
         //Register button
-        signupBtn.addEventListener('click', function() {
+        sidebarSignupBtn.addEventListener('click', function() {
            window.location.href = '<?php echo URL_ROOT.'/User/register'?>';
         });
 
         // Logout
-        logoutBtn.addEventListener('click', function(e) {
+        sidebarLogoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             if (confirm('🔒 Are you sure you want to log out?')) {
                 window.location.href = '<?php echo URL_ROOT.'/User/logout'?>';
             }
         });
 
-        profileSettingsBtn.addEventListener('click', function(e) {
+        sidebarProfileSettingsBtn.addEventListener('click', function(e) {
             e.preventDefault();
             alert('⚙️ Opening Profile Settings...');
         });
+
+        // Notification button
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        notificationsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('🔔 Opening Notifications...');
+            // Reset badge count when opened
+            notificationBadge.textContent = '0';
+            notificationBadge.style.display = 'none';
+        });
+
+        // Messages button
+        const messagesBtn = document.getElementById('messagesBtn');
+        const messageBadge = document.getElementById('messageBadge');
+
+        messagesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('💬 Opening Messages...');
+            // Reset badge count when opened
+            messageBadge.textContent = '0';
+            messageBadge.style.display = 'none';
+        });
+
+        // Simulate receiving notifications (for demo purposes)
+        function simulateNotifications() {
+            setTimeout(() => {
+                notificationBadge.textContent = '3';
+                notificationBadge.style.display = 'flex';
+            }, 3000);
+
+            setTimeout(() => {
+                messageBadge.textContent = '2';
+                messageBadge.style.display = 'flex';
+            }, 5000);
+        }
+
+        // Start simulation if user is logged in
+        if (<?php echo isLoggedIn() ? 'true' : 'false'?>) {
+            simulateNotifications();
+        }
 
 
         //To update the username and profile displaying
@@ -794,15 +1137,15 @@
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
-                authContainer.style.display = 'none';
-                userContainer.style.display = 'flex';
+                sidebarAuthContainer.style.display = 'none';
+                sidebarUserContainer.style.display = 'flex';
 
                 const initial = userNameValue.charAt(0).toUpperCase();
-                userAvatar.textContent = initial;
-                userName.textContent = userNameValue;
+                sidebarUserAvatar.textContent = initial;
+                sidebarUserName.textContent = userNameValue;
             } else {
-                authContainer.style.display = 'flex';
-                userContainer.style.display = 'none';
+                sidebarAuthContainer.style.display = 'flex';
+                sidebarUserContainer.style.display = 'none';
                 closeDropdown();
             }
         }

@@ -145,7 +145,7 @@ function redirectIfLoggedIn($redirect_url = '/dashboard') {
                 $redirect_url = '/dashboard/guide';
                 break;
             case 'tourist':
-                $redirect_url = '/User/account';
+                $redirect_url = '/RegUser/home';
                 break;
         }
         header('Location: ' . URL_ROOT . $redirect_url);

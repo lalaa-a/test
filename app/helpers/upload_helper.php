@@ -1,7 +1,14 @@
 <?php
 // app/helpers/upload_helper.php
+/**
+ * Sends an OTP to the user's email
+ *
+ * @param string $path the path to upload the file (starting with a '/')
+ * @param array $file The file information from the $_FILES superglobal
+ * @param string $prefix A prefix to add to the uploaded file name
+ */
 
-function uploadFile($file, $prefix = '') {
+function uploadFile($file, $path, $prefix = '') {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
         return false;
     }
@@ -20,7 +27,7 @@ function uploadFile($file, $prefix = '') {
         return false;
     }
 
-    $uploadDir = ROOT_PATH . '/public/img/signup';
+    $uploadDir = ROOT_PATH .'/public/uploads' . $path;
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -29,7 +36,7 @@ function uploadFile($file, $prefix = '') {
     $filePath = $uploadDir . '/' . $fileName;
 
     if (move_uploaded_file($file['tmp_name'], $filePath)) {
-        return 'img/signup/' . $fileName; // Return web-accessible path
+        return $path . '/' . $fileName; // Return web-accessible path
     }
 
     return false;

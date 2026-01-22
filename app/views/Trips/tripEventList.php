@@ -108,11 +108,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="start-time">Start Time</label>
-                            <input type="time" id="start-time" class="form-input">
+                            <input type="text" id="start-time" class="form-input" placeholder="Select start time" readonly>
                         </div>
                         <div class="form-group">
                             <label for="end-time">End Time</label>
-                            <input type="time" id="end-time" class="form-input">
+                            <input type="text" id="end-time" class="form-input" placeholder="Select end time" readonly>
                         </div>
                     </div>
 

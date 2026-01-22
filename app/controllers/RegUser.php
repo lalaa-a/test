@@ -12,6 +12,7 @@ require_once '../app/helpers/travel_spot_helper.php';
 
         public function destinations() {
 
+            requireLogin();
             $structCardData = [];
 
             $moderatorModel = $this->model('ModeratorModel');
@@ -97,12 +98,12 @@ require_once '../app/helpers/travel_spot_helper.php';
             ];
             
             ob_start();
-            $this->view('Explore/driver/index1', $data);
+            $this->view('Explore/driver/allDrivers', $data);
             $fullcontent = ob_get_clean();
 
-            $html = extractSection($fullcontent,'HTML');
-            $css = extractSection($fullcontent,'CSS');
-            $js = extractSection($fullcontent,'JS');
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/regUser/explore/drivers/allDrivers.css';
+            $js = URL_ROOT.'/public/js/regUser/explore/drivers/allDrivers.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -133,12 +134,12 @@ require_once '../app/helpers/travel_spot_helper.php';
             ];
             
             ob_start();
-            $this->view('Explore/guide/index1', $data);
+            $this->view('Explore/guide/allGuides', $data);
             $fullcontent = ob_get_clean();
 
-            $html = extractSection($fullcontent,'HTML');
-            $css = extractSection($fullcontent,'CSS');
-            $js = extractSection($fullcontent,'JS');
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/regUser/explore/guides/allGuides.css';
+            $js = URL_ROOT.'/public/js/regUser/explore/guides/allGuides.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -367,6 +368,42 @@ require_once '../app/helpers/travel_spot_helper.php';
 
         }
 
+        public function getLastAddedEvent($tripId, $eventDate){
+
+            header('Content-Type: application/json');
+
+            $date = new DateTime($eventDate);
+            $eventDate = $date->format('Y-m-d');
+
+            $userId = getSession('user_id');
+            error_log("getting last added event for userId: ". $userId. " tripId: ". $tripId. " eventDate: ". $eventDate);
+
+            try{
+                $eventCard = $this->regUserModel->getLastAddedEvent($userId, $tripId, $eventDate);
+                error_log("last added event card: ". print_r($eventCard,true));
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving last added event(getLastAddedEvent)'.$e->getMessage()]);
+                return;
+
+            }
+
+            if($eventCard){
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Last added event Got Successfully",
+                    'eventCard' => $eventCard
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error getting Last added event card NO event card recieved',
+                    'eventCard' => null
+                ]);
+            }
+
+        }   
+
         public function selectTravelSpot(){
 
             $structCardData = [];
@@ -458,6 +495,51 @@ require_once '../app/helpers/travel_spot_helper.php';
                                 ]);
             } else {
                 echo json_encode([ 'success' => false,'eventData' => null, 'message'=>'No event found for the given ID']);
+            }
+        }
+
+        public function retrieveAboveEventEndTime($tripId, $selectedEventId, $eventDate){
+            header('Content-Type: application/json');
+            $userId = getSession('user_id');
+            try{
+                $eventData = $this->regUserModel->getAboveEventEndTime($userId, $tripId, $selectedEventId, $eventDate);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'eventData' => null, 'message' => 'Database error occurred when retrieving above event data(retrieveAboveEventData)'.$e->getMessage()]);
+                return;
+            }
+
+            if($eventData){
+                echo json_encode([ 'success' => true,
+                                    'eventData' => $eventData, 
+                                    'message'=>'Above event data recieved successfully..' 
+                                ]);
+            } else {
+                echo json_encode([ 'success' => false,'eventData' => null, 'message'=>'No above event found for the given ID']);
+            }
+        }
+
+        public function retrieveBelowEventStartTime($tripId, $selectedEventId, $eventDate){
+
+            header('Content-Type: application/json');
+            $userId = getSession('user_id');
+            try{
+                $eventData = $this->regUserModel->getBelowEventStartTime($userId, $tripId, $selectedEventId, $eventDate);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'eventData' => null, 'message' => 'Database error occurred when retrieving below event data(retrieveBelowEventData)'.$e->getMessage()]);
+                return;
+            }
+
+            if($eventData){
+                echo json_encode([ 'success' => true,
+                                    'eventData' => $eventData, 
+                                    'message'=>'Below event data recieved successfully..' 
+                                ]);
+            } else {
+                echo json_encode([ 'success' => false,'eventData' => null, 'message'=>'No below event found for the given ID']);
             }
         }
 
