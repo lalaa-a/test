@@ -806,11 +806,11 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="<?php echo URL_ROOT.'/Driver/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-location-dot"></i> <span>Vehicles</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/tours'?>" data-tab="tours"><i class="fa-solid fa-car"></i> <span>Tours</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-compass"></i> <span>Earnings</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/requests'?>" data-tab="requests"><i class="fa-solid fa-box-open"></i> <span>Requests</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/tours'?>" data-tab="tours"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/requests'?>" data-tab="requests"><i class="fa-solid fa-code-pull-request"></i> <span>Requests</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-car"></i></i> <span>Vehicles</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
         </ul>
 
         <!-- User Info Section -->
@@ -883,11 +883,14 @@
         const sidebarProfileSettingsBtn = document.getElementById('sidebarProfileSettingsBtn');
         
         let encodedData;
+        let userProfilePhoto = '';
 
         document.addEventListener('DOMContentLoaded', function() {
             
             encodedData = <?php echo json_encode($loadingContent)?>;
             const tabId = <?php echo json_encode($tabId)?>;
+            // Expose logged-in user's profile photo URL to JS (empty string if none)
+            userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
 
             updateUI();
             setActiveTab(tabId);
@@ -1151,8 +1154,14 @@
                 sidebarAuthContainer.style.display = 'none';
                 sidebarUserContainer.style.display = 'flex';
 
-                const initial = userNameValue.charAt(0).toUpperCase();
-                sidebarUserAvatar.textContent = initial;
+                // If a profile photo URL is available, render the image inside the avatar container
+                if (userProfilePhoto && userProfilePhoto.trim() !== '') {
+                    sidebarUserAvatar.innerHTML = `<img src="${userProfilePhoto}" alt="Avatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">`;
+                } else {
+                    const initial = userNameValue.charAt(0).toUpperCase();
+                    sidebarUserAvatar.textContent = initial;
+                }
+
                 sidebarUserName.textContent = userNameValue;
             } else {
                 sidebarAuthContainer.style.display = 'flex';
@@ -1162,7 +1171,81 @@
         }
 
 
+        // Global Notification System
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10001;
+                animation: slideInRight 0.3s ease;
+                max-width: 400px;
+            `;
+
+            // Set colors based on type
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Make it globally available
+        window.showNotification = showNotification;
+
+
     </script>
+
+    <style>
+        /* Notification Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>
 

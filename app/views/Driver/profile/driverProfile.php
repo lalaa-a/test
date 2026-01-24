@@ -385,7 +385,12 @@
                             </div>
                             <div class="form-group">
                                 <label for="languages">Languages</label>
-                                <input type="text" id="languages" name="languages" placeholder="English, Sinhala, Tamil (separate with commas)">
+                                <div class="chip-input-container" id="languagesChipContainer">
+                                    <div class="chips-display" id="languagesChips"></div>
+                                    <input type="text" id="languagesInput" class="chip-input" placeholder="Type a language and press Enter">
+                                </div>
+                                <input type="hidden" id="languages" name="languages">
+                                <small class="form-hint">Type a language and press Enter or comma to add</small>
                             </div>
                         </div>
                     </form>

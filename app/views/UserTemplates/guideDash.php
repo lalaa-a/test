@@ -806,12 +806,11 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="<?php echo URL_ROOT.'/RegUser/home'?>" class="active" data-tab="home"><i class="fa-solid fa-house"></i> <span>Home</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/RegUser/destinations'?>" data-tab="destinations"><i class="fa-solid fa-location-dot"></i> <span>Destinations</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/RegUser/drivers'?>" data-tab="drivers"><i class="fa-solid fa-car"></i> <span>Drivers</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/RegUser/guides'?>" data-tab="guides"><i class="fa-solid fa-compass"></i> <span>Guides</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/RegUser/packages'?>" data-tab="packages"><i class="fa-solid fa-box-open"></i> <span>Packages</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/RegUser/trips'?>" data-tab="trips"><i class="fa-solid fa-suitcase-rolling"></i> <span>Trips</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/tours'?>" data-tab="tours"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/requests'?>" data-tab="requests"><i class="fa-solid fa-code-pull-request"></i> <span>Requests</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-car"></i></i> <span>Vehicles</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
         </ul>
 
         <!-- User Info Section -->
@@ -827,14 +826,14 @@
                 <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
                 <div class="sidebar-user-details">
                     <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
-                    <span class="sidebar-user-role">Traveller</span>
+                    <span class="sidebar-user-role">Driver</span>
                 </div>
                 <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
                 <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">
                     <a href="#" class="sidebar-dropdown-item" id="sidebarProfileSettingsBtn">
                         <i class="fas fa-cog"></i> Profile Settings
                     </a>
-                    <a href="#" class="sidebar-dropdown-item">
+                    <a href="<?php echo URL_ROOT.'/Guide/guideProfile'?>" class="sidebar-dropdown-item">
                         <i class="fas fa-user-circle"></i> My Profile
                     </a>
                     <div class="sidebar-dropdown-divider"></div>
@@ -927,12 +926,15 @@
                 </div>
             `;
 
+             console.log('Loaded data for tab:', encodedData);
+
+
             try {
 
                 const data = encodedData;
 
                 cleanupPreviousAssets(tabId);
-                
+            
                 // Inject HTML
                 tabElement.innerHTML =  data.html;
                 
@@ -1160,7 +1162,81 @@
         }
 
 
+        // Global Notification System
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10001;
+                animation: slideInRight 0.3s ease;
+                max-width: 400px;
+            `;
+
+            // Set colors based on type
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Make it globally available
+        window.showNotification = showNotification;
+
+
     </script>
+
+    <style>
+        /* Notification Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>
 

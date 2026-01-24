@@ -73,6 +73,13 @@ class DriverProfileManager {
         this.displayInstagram = document.getElementById('displayInstagram');
         this.displayFacebook = document.getElementById('displayFacebook');
         this.displayLanguages = document.getElementById('displayLanguages');
+        this.languagesChipContainer = document.getElementById('languagesChipContainer');
+        this.languagesChipsDisplay = document.getElementById('languagesChips');
+        this.languagesInput = document.getElementById('languagesInput');
+        this.languagesHiddenInput = document.getElementById('languages');
+        
+        // Store language chips
+        this.languageChips = [];
 
         // Driver License Elements
         this.driverLicenseView = document.getElementById('driverLicenseView');
@@ -247,6 +254,23 @@ class DriverProfileManager {
             });
         }
 
+        // Language chip input
+        if (this.languagesInput) {
+            this.languagesInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    this.addLanguageChip();
+                }
+            });
+            
+            this.languagesInput.addEventListener('blur', () => {
+                // Add chip on blur if there's text
+                if (this.languagesInput.value.trim()) {
+                    this.addLanguageChip();
+                }
+            });
+        }
+
         // Edit cover photos button
         if (this.editCoverPhotosBtn) {
             this.editCoverPhotosBtn.addEventListener('click', () => {
@@ -313,17 +337,17 @@ class DriverProfileManager {
                 await this.loadCoverPhotos();
             } else {
                 console.error('Failed to load profile data:', data.message);
-                this.showNotification('Failed to load profile data. Please refresh the page.', 'error');
+                window.showNotification('Failed to load profile data. Please refresh the page.', 'error');
             }
         } catch (error) {
             console.error('Error loading profile data:', error);
-            this.showNotification('An error occurred while loading profile data.', 'error');
+            window.showNotification('An error occurred while loading profile data.', 'error');
         }
     }
 
     async loadCoverPhotos() {
         try {
-            const response = await fetch(`${this.URL_ROOT}/Driver/getCoverPhotos`);
+            const response = await fetch(`${this.URL_ROOT}/ProfileController/getCoverPhotos`);
             const data = await response.json();
             
             if (data.success && data.photos) {
@@ -402,7 +426,19 @@ class DriverProfileManager {
         // Languages
         if (this.displayLanguages) {
             const languages = data.languages ? String(data.languages) : '';
-            this.displayLanguages.textContent = languages || '-';
+            if (languages && languages !== '-') {
+                // Split languages and create tags
+                const languageArray = languages.split(',').map(lang => lang.trim()).filter(lang => lang.length > 0);
+                if (languageArray.length > 0) {
+                    this.displayLanguages.innerHTML = languageArray.map(lang => 
+                        `<span class="language-tag"><i class="fas fa-language"></i> ${lang}</span>`
+                    ).join('');
+                } else {
+                    this.displayLanguages.innerHTML = '<span class="no-data">-</span>';
+                }
+            } else {
+                this.displayLanguages.innerHTML = '<span class="no-data">-</span>';
+            }
         }
 
         // Update current email display
@@ -541,15 +577,8 @@ class DriverProfileManager {
             if (this.savePersonalBtn) this.savePersonalBtn.style.display = 'none';
         }
 
-        // Ensure driver license shows verified state initially
-        if (this.driverLicenseView && this.driverLicenseReview && this.driverLicenseEdit && this.editDriverLicenseBtn) {
-            this.driverLicenseView.style.display = 'block';
-            this.driverLicenseReview.style.display = 'none';
-            this.driverLicenseEdit.style.display = 'none';
-            this.editDriverLicenseBtn.style.display = 'inline-flex';
-            if (this.cancelDriverLicenseBtn) this.cancelDriverLicenseBtn.style.display = 'none';
-            if (this.updateDriverLicenseBtn) this.updateDriverLicenseBtn.style.display = 'none';
-        }
+        // Driver license state depends on submission and verification status
+        this.initializeDriverLicenseState();
 
         // Tourist license state depends on submission status
         this.initializeTouristLicenseState();
@@ -602,6 +631,47 @@ class DriverProfileManager {
         }
     }
 
+    initializeDriverLicenseState() {
+        if (!this.driverLicenseView || !this.driverLicenseReview || !this.driverLicenseEdit || !this.editDriverLicenseBtn) return;
+
+        // Get current data to check submission and verification status
+        const isDriverLicenseVerified = this.currentData?.dLicenseStatus === true ||
+                                       this.currentData?.dLicenseStatus === '1' ||
+                                       this.currentData?.dLicenseStatus === 1;
+
+        // Check if driver license data exists (indicates it has been submitted)
+        const hasDriverLicenseData = this.currentData?.licenseNumber ||
+                                    this.currentData?.licenseExpiry ||
+                                    this.currentData?.driverLicenseFrontPhoto ||
+                                    this.currentData?.driverLicenseBackPhoto;
+
+        if (isDriverLicenseVerified) {
+            // Show verified state
+            this.driverLicenseView.style.display = 'block';
+            this.driverLicenseReview.style.display = 'none';
+            this.driverLicenseEdit.style.display = 'none';
+            this.editDriverLicenseBtn.style.display = 'inline-flex';
+            if (this.cancelDriverLicenseBtn) this.cancelDriverLicenseBtn.style.display = 'none';
+            if (this.updateDriverLicenseBtn) this.updateDriverLicenseBtn.style.display = 'none';
+        } else if (hasDriverLicenseData) {
+            // Show under review state (submitted but not verified)
+            this.driverLicenseView.style.display = 'none';
+            this.driverLicenseReview.style.display = 'block';
+            this.driverLicenseEdit.style.display = 'none';
+            this.editDriverLicenseBtn.style.display = 'none'; // Hide edit button when under review
+            if (this.cancelDriverLicenseBtn) this.cancelDriverLicenseBtn.style.display = 'none';
+            if (this.updateDriverLicenseBtn) this.updateDriverLicenseBtn.style.display = 'none';
+        } else {
+            // Show edit state (not submitted)
+            this.driverLicenseView.style.display = 'none';
+            this.driverLicenseReview.style.display = 'none';
+            this.driverLicenseEdit.style.display = 'block';
+            this.editDriverLicenseBtn.style.display = 'none';
+            if (this.cancelDriverLicenseBtn) this.cancelDriverLicenseBtn.style.display = 'none';
+            if (this.updateDriverLicenseBtn) this.updateDriverLicenseBtn.style.display = 'inline-flex';
+        }
+    }
+
     populateFormData(data) {
         Object.keys(data).forEach(key => {
             const field = document.querySelector(`[name="${key}"]`);
@@ -625,6 +695,108 @@ class DriverProfileManager {
         }
     }
 
+    addLanguageChip() {
+        if (!this.languagesInput) return;
+        
+        let value = this.languagesInput.value.trim().replace(/,+$/g, ''); // Remove trailing commas
+        if (!value) return;
+        
+        // Check if already exists
+        if (this.languageChips.includes(value)) {
+            window.showNotification('Language already added', 'warning');
+            this.languagesInput.value = '';
+            return;
+        }
+        
+        // Add to array
+        this.languageChips.push(value);
+        
+        // Create chip element
+        const chip = document.createElement('div');
+        chip.className = 'language-chip';
+        chip.innerHTML = `
+            <span>${value}</span>
+            <button type="button" class="chip-remove" data-language="${value}">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // Add remove listener
+        chip.querySelector('.chip-remove').addEventListener('click', (e) => {
+            const lang = e.currentTarget.getAttribute('data-language');
+            this.removeLanguageChip(lang);
+        });
+        
+        // Add to display
+        this.languagesChipsDisplay.appendChild(chip);
+        
+        // Update hidden input
+        this.updateLanguagesHiddenInput();
+        
+        // Clear input
+        this.languagesInput.value = '';
+    }
+    
+    removeLanguageChip(language) {
+        // Remove from array
+        this.languageChips = this.languageChips.filter(lang => lang !== language);
+        
+        // Remove from display
+        const chips = this.languagesChipsDisplay.querySelectorAll('.language-chip');
+        chips.forEach(chip => {
+            const chipLang = chip.querySelector('.chip-remove').getAttribute('data-language');
+            if (chipLang === language) {
+                chip.remove();
+            }
+        });
+        
+        // Update hidden input
+        this.updateLanguagesHiddenInput();
+    }
+    
+    updateLanguagesHiddenInput() {
+        if (this.languagesHiddenInput) {
+            this.languagesHiddenInput.value = this.languageChips.join(',');
+        }
+    }
+    
+    populateLanguageChips(languagesString) {
+        // Clear existing chips
+        this.languageChips = [];
+        if (this.languagesChipsDisplay) {
+            this.languagesChipsDisplay.innerHTML = '';
+        }
+        
+        if (!languagesString) return;
+        
+        // Parse comma-separated string
+        const languages = languagesString.split(',').map(lang => lang.trim()).filter(lang => lang.length > 0);
+        
+        // Add each language as a chip
+        languages.forEach(lang => {
+            this.languageChips.push(lang);
+            
+            const chip = document.createElement('div');
+            chip.className = 'language-chip';
+            chip.innerHTML = `
+                <span>${lang}</span>
+                <button type="button" class="chip-remove" data-language="${lang}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            chip.querySelector('.chip-remove').addEventListener('click', (e) => {
+                const language = e.currentTarget.getAttribute('data-language');
+                this.removeLanguageChip(language);
+            });
+            
+            this.languagesChipsDisplay.appendChild(chip);
+        });
+        
+        // Update hidden input
+        this.updateLanguagesHiddenInput();
+    }
+
     togglePersonalInfo() {
         if (!this.editPersonalBtn || !this.cancelPersonalBtn || !this.savePersonalBtn) return;
 
@@ -646,6 +818,11 @@ class DriverProfileManager {
             this.cancelPersonalBtn.style.display = 'inline-flex';
             this.savePersonalBtn.style.display = 'inline-flex';
             this.currentSection = this.editPersonalBtn.closest('.profile-section');
+            
+            // Populate language chips from current data
+            if (this.currentData && this.currentData.languages) {
+                this.populateLanguageChips(this.currentData.languages);
+            }
         }
     }
 
@@ -1001,7 +1178,7 @@ class DriverProfileManager {
             fileInput.value = '';
         }
         
-        this.showNotification('Photo will be removed when you save changes', 'info');
+        window.showNotification('Photo will be removed when you save changes', 'info');
     }
 
     showAllPhotosModal() {
@@ -1011,7 +1188,7 @@ class DriverProfileManager {
         });
         
         if (photos.length === 0) {
-            this.showNotification('No photos to display', 'info');
+            window.showNotification('No photos to display', 'info');
             return;
         }
         
@@ -1252,7 +1429,7 @@ class DriverProfileManager {
     async saveCoverPhotos() {
         try {
             // Show loading notification
-            this.showNotification('Saving changes...', 'info');
+            window.showNotification('Saving changes...', 'info');
             
             const formData = new FormData();
             let fileCount = 0;
@@ -1278,11 +1455,11 @@ class DriverProfileManager {
             
             // Allow save if there are changes (uploads OR deletions)
             if (fileCount === 0 && this.deletedPhotos.length === 0) {
-                this.showNotification('No changes to save', 'info');
+                window.showNotification('No changes to save', 'info');
                 return;
             }
             
-            const response = await fetch(`${this.URL_ROOT}/Driver/saveCoverPhotos`, {
+            const response = await fetch(`${this.URL_ROOT}/ProfileController/saveCoverPhotos`, {
                 method: 'POST',
                 body: formData
             });
@@ -1294,7 +1471,7 @@ class DriverProfileManager {
                 if (data.uploaded > 0) message.push(`${data.uploaded} photo(s) uploaded`);
                 if (data.deleted > 0) message.push(`${data.deleted} photo(s) deleted`);
                 
-                this.showNotification(message.join(', ') + '!', 'success');
+                window.showNotification(message.join(', ') + '!', 'success');
                 
                 // Reload cover photos from server
                 await this.loadCoverPhotos();
@@ -1314,12 +1491,12 @@ class DriverProfileManager {
                 }
                 this.deletedPhotos = [];
             } else {
-                this.showNotification(data.message || 'Failed to save changes', 'error');
+                window.showNotification(data.message || 'Failed to save changes', 'error');
             }
             
         } catch (error) {
             console.error('Error saving cover photos:', error);
-            this.showNotification('An error occurred while saving changes', 'error');
+            window.showNotification('An error occurred while saving changes', 'error');
         }
     }
 
@@ -1362,7 +1539,7 @@ class DriverProfileManager {
             });
 
             if (!isValid) {
-                this.showNotification('Please fix the errors before saving.', 'error');
+                window.showNotification('Please fix the errors before saving.', 'error');
                 return;
             }
 
@@ -1371,7 +1548,7 @@ class DriverProfileManager {
             console.log('Saving personal info...', Object.fromEntries(formData));
 
             // Show loading state
-            this.showNotification('Updating profile...', 'info');
+            window.showNotification('Updating profile...', 'info');
 
             try {
                 // Make API call to update personal info
@@ -1397,15 +1574,15 @@ class DriverProfileManager {
                     }
 
                     // Show success message
-                    this.showNotification('Profile updated successfully!', 'success');
+                    window.showNotification('Profile updated successfully!', 'success');
 
                 } else {
                     // Show error message from server
-                    this.showNotification(result.message || 'Failed to update profile. Please try again.', 'error');
+                    window.showNotification(result.message || 'Failed to update profile. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error updating profile:', error);
-                this.showNotification('An error occurred while updating your profile. Please try again.', 'error');
+                window.showNotification('An error occurred while updating your profile. Please try again.', 'error');
             }
 
             return;
@@ -1426,7 +1603,7 @@ class DriverProfileManager {
         });
 
         if (!isValid) {
-            this.showNotification('Please fix the errors before saving.', 'error');
+            window.showNotification('Please fix the errors before saving.', 'error');
             return;
         }
 
@@ -1572,7 +1749,7 @@ class DriverProfileManager {
         // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
-            this.showNotification('Please select a valid image file (JPEG, JPG, or PNG).', 'error');
+            window.showNotification('Please select a valid image file (JPEG, JPG, or PNG).', 'error');
             input.value = '';
             return;
         }
@@ -1580,7 +1757,7 @@ class DriverProfileManager {
         // Validate file size (5MB max)
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-            this.showNotification('File size must be less than 5MB.', 'error');
+            window.showNotification('File size must be less than 5MB.', 'error');
             input.value = '';
             return;
         }
@@ -1588,6 +1765,12 @@ class DriverProfileManager {
         // Handle cover photo uploads from gallery
         if (input.id.startsWith('photoUpload')) {
             this.showCoverPhotoPreview(input, file);
+            return;
+        }
+
+        // Handle profile photo uploads
+        if (input.id === 'photoInput') {
+            this.handleProfilePhotoUpload(file);
             return;
         }
 
@@ -1624,7 +1807,7 @@ class DriverProfileManager {
                 uploadBtn.style.background = 'var(--primary)';
             }
             
-            this.showNotification('Photo selected successfully', 'success');
+            window.showNotification('Photo selected successfully', 'success');
         };
         reader.readAsDataURL(file);
     }
@@ -1656,9 +1839,41 @@ class DriverProfileManager {
                 removeBtn.style.display = 'flex';
             }
             
-            this.showNotification('Photo selected for upload', 'success');
+            window.showNotification('Photo selected for upload', 'success');
         };
         reader.readAsDataURL(file);
+    }
+
+    async handleProfilePhotoUpload(file) {
+        try {
+            const formData = new FormData();
+            formData.append('profilePhoto', file);
+
+            const response = await fetch(`${this.URL_ROOT}/ProfileController/changeProfilePhoto`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update the profile avatar with the new photo
+                const avatarImg = document.querySelector('.profile-avatar img');
+                if (avatarImg) {
+                    avatarImg.src = result.photoPath;
+                }
+
+                // Refresh profile data if needed
+                await this.loadProfileData();
+
+                window.showNotification('Profile photo updated successfully', 'success');
+            } else {
+                throw new Error(result.message || 'Failed to update profile photo');
+            }
+        } catch (error) {
+            console.error('Profile photo upload error:', error);
+            window.showNotification('Failed to update profile photo: ' + error.message, 'error');
+        }
     }
 
     showEmailChangeModal() {
@@ -1668,6 +1883,9 @@ class DriverProfileManager {
             if (currentEmailField && this.currentEmailDisplay) {
                 currentEmailField.value = this.currentEmailDisplay.textContent;
             }
+
+            // Attach event listeners
+            this.attachEmailModalListeners();
 
             this.emailChangeModal.classList.add('show');
         }
@@ -1690,37 +1908,308 @@ class DriverProfileManager {
             return;
         }
 
-        // Simulate sending verification code
-        console.log('Sending verification code to:', data.newEmail);
+        // Disable button and show loading
+        const sendBtn = document.getElementById('sendVerificationBtn');
+        const originalText = sendBtn.textContent;
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Sending...';
 
-        // Show success message and close modal
-        this.showNotification('Verification code sent to your new email address!', 'success');
-        this.closeModal();
-
-        // In real implementation, this would make an AJAX call to send verification code
-        // and then show a verification input modal
+        // Make AJAX call to send OTP
+        fetch(`${this.URL_ROOT}/ProfileController/sendEmailChangeOTP`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Show OTP verification form
+                this.showOTPVerificationForm(data.newEmail);
+                window.showNotification('Verification code sent to your new email address!', 'success');
+            } else {
+                window.showNotification(result.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending verification code:', error);
+            window.showNotification('An error occurred while sending the verification code.', 'error');
+        })
+        .finally(() => {
+            // Re-enable button
+            sendBtn.disabled = false;
+            sendBtn.textContent = originalText;
+        });
     }
 
     validateEmailChangeForm(data) {
         // Check if new emails match
         if (data.newEmail !== data.confirmNewEmail) {
-            this.showNotification('New email addresses do not match.', 'error');
+            window.showNotification('New email addresses do not match.', 'error');
             return false;
         }
 
         // Check if new email is different from current
         if (data.newEmail === data.currentEmail) {
-            this.showNotification('New email must be different from current email.', 'error');
+            window.showNotification('New email must be different from current email.', 'error');
             return false;
         }
 
         // Check password is provided
         if (!data.password) {
-            this.showNotification('Please enter your current password.', 'error');
+            window.showNotification('Please enter your current password.', 'error');
             return false;
         }
 
         return true;
+    }
+
+    showOTPVerificationForm(newEmail) {
+        const modalBody = this.emailChangeModal.querySelector('.modal-body');
+        const modalActions = this.emailChangeModal.querySelector('.modal-actions');
+        const modalHeader = this.emailChangeModal.querySelector('.modal-header h3');
+
+        // Update header
+        modalHeader.textContent = 'Verify New Email Address';
+
+        // Replace form content with OTP input
+        modalBody.innerHTML = `
+            <div class="otp-verification">
+                <p>A verification code has been sent to <strong>${newEmail}</strong></p>
+                <p>Please enter the 6-digit code below:</p>
+                <div class="form-group">
+                    <label for="emailOTP">Verification Code</label>
+                    <input type="text" id="emailOTP" name="otp" maxlength="6" required>
+                    <div class="form-hint">Enter the 6-digit code sent to your new email address.</div>
+                </div>
+                <div class="otp-timer">
+                    <p>Code expires in: <span id="otpTimer">10:00</span></p>
+                    <button type="button" id="resendOTPBtn" class="btn-link" style="display: none;">Resend Code</button>
+                </div>
+            </div>
+        `;
+
+        // Update modal actions
+        modalActions.innerHTML = `
+            <button class="btn-cancel" id="cancelOTPBtn">Cancel</button>
+            <button type="button" class="btn-save" id="verifyOTPBtn">Verify & Update Email</button>
+        `;
+
+        // Add event listeners
+        const otpInput = document.getElementById('emailOTP');
+        const verifyBtn = document.getElementById('verifyOTPBtn');
+        const cancelBtn = document.getElementById('cancelOTPBtn');
+        const resendBtn = document.getElementById('resendOTPBtn');
+
+        // Auto-focus OTP input
+        otpInput.focus();
+
+        // Start countdown timer
+        this.startOTPTimer();
+
+        // Verify OTP button
+        verifyBtn.addEventListener('click', () => {
+            this.verifyEmailOTP(newEmail);
+        });
+
+        // Cancel button
+        cancelBtn.addEventListener('click', () => {
+            this.resetEmailChangeModal();
+        });
+
+        // Resend button
+        resendBtn.addEventListener('click', () => {
+            this.resendEmailOTP(newEmail);
+        });
+
+        // Allow Enter key to submit
+        otpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.verifyEmailOTP(newEmail);
+            }
+        });
+    }
+
+    startOTPTimer() {
+        let timeLeft = 10 * 60; // 10 minutes
+        const timerElement = document.getElementById('otpTimer');
+        const resendBtn = document.getElementById('resendOTPBtn');
+
+        const timer = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                clearInterval(timer);
+                timerElement.textContent = 'Expired';
+                resendBtn.style.display = 'inline-block';
+            }
+        }, 1000);
+    }
+
+    verifyEmailOTP(newEmail) {
+        const otpInput = document.getElementById('emailOTP');
+        const otp = otpInput.value.trim();
+
+        if (!otp || otp.length !== 6) {
+            window.showNotification('Please enter a valid 6-digit verification code.', 'error');
+            return;
+        }
+
+        // Disable button and show loading
+        const verifyBtn = document.getElementById('verifyOTPBtn');
+        const originalText = verifyBtn.textContent;
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verifying...';
+
+        // Make AJAX call to verify OTP
+        fetch(`${this.URL_ROOT}/ProfileController/verifyEmailChangeOTP`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ otp: otp })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Update the displayed email
+                if (this.currentEmailDisplay) {
+                    this.currentEmailDisplay.textContent = newEmail;
+                }
+
+                // Update current data
+                if (this.currentData) {
+                    this.currentData.email = newEmail;
+                }
+
+                window.showNotification('Email address updated successfully!', 'success');
+                this.closeModal();
+                this.resetEmailChangeModal();
+            } else {
+                window.showNotification(result.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error verifying OTP:', error);
+            window.showNotification('An error occurred while verifying the code.', 'error');
+        })
+        .finally(() => {
+            // Re-enable button
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = originalText;
+        });
+    }
+
+    resendEmailOTP(newEmail) {
+        // Get form data again
+        const currentEmail = document.getElementById('currentEmail').value;
+        const password = document.getElementById('password').value;
+
+        const data = {
+            newEmail: newEmail,
+            confirmNewEmail: newEmail, // Same as new email
+            currentEmail: currentEmail,
+            password: password
+        };
+
+        // Disable resend button
+        const resendBtn = document.getElementById('resendOTPBtn');
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Sending...';
+
+        // Make AJAX call to resend OTP
+        fetch(`${this.URL_ROOT}/ProfileController/sendEmailChangeOTP`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.showNotification('Verification code resent successfully!', 'success');
+                // Restart timer
+                this.startOTPTimer();
+                resendBtn.style.display = 'none';
+            } else {
+                window.showNotification(result.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error resending verification code:', error);
+            window.showNotification('An error occurred while resending the code.', 'error');
+        })
+        .finally(() => {
+            // Re-enable resend button
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend Code';
+        });
+    }
+
+    resetEmailChangeModal() {
+        const modalBody = this.emailChangeModal.querySelector('.modal-body');
+        const modalActions = this.emailChangeModal.querySelector('.modal-actions');
+        const modalHeader = this.emailChangeModal.querySelector('.modal-header h3');
+
+        // Reset header
+        modalHeader.textContent = 'Change Email Address';
+
+        // Reset form content
+        modalBody.innerHTML = `
+            <form id="emailChangeForm">
+                <div class="form-group">
+                    <label for="currentEmail">Current Email</label>
+                    <input type="email" id="currentEmail" name="currentEmail" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">New Email Address</label>
+                    <input type="email" id="newEmail" name="newEmail" required>
+                    <div class="form-hint">A verification code will be sent to this email address.</div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewEmail">Confirm New Email</label>
+                    <input type="email" id="confirmNewEmail" name="confirmNewEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Current Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="form-hint">Enter your current password to confirm this change.</div>
+                </div>
+            </form>
+        `;
+
+        // Reset modal actions
+        modalActions.innerHTML = `
+            <button class="btn-cancel">Cancel</button>
+            <button type="button" class="btn-save" id="sendVerificationBtn">Send Verification Code</button>
+        `;
+
+        // Re-attach event listeners
+        this.attachEmailModalListeners();
+    }
+
+    attachEmailModalListeners() {
+        // Send verification button
+        const sendBtn = document.getElementById('sendVerificationBtn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', () => {
+                this.sendEmailVerification();
+            });
+        }
+
+        // Cancel button
+        const cancelBtn = this.emailChangeModal.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
     }
 
     async handleDriverLicenseSubmission(formData) {
@@ -1738,7 +2227,7 @@ class DriverProfileManager {
         }
 
         // Show loading notification
-        this.showNotification('Updating driver license...', 'info');
+        window.showNotification('Updating driver license...', 'info');
 
         try {
             // Make API call to update driver license
@@ -1751,7 +2240,7 @@ class DriverProfileManager {
 
             if (result.success) {
                 // Show success message
-                this.showNotification('Driver license updated successfully!', 'success');
+                window.showNotification('Driver license updated successfully!', 'success');
 
                 // Switch to under review state
                 const viewDiv = document.getElementById('driverLicenseView');
@@ -1788,12 +2277,12 @@ class DriverProfileManager {
 
             } else {
                 // Show error message from server
-                this.showNotification(result.message || 'Failed to update driver license. Please try again.', 'error');
+                window.showNotification(result.message || 'Failed to update driver license. Please try again.', 'error');
             }
 
         } catch (error) {
             console.error('Error updating driver license:', error);
-            this.showNotification('An error occurred while updating driver license. Please try again.', 'error');
+            window.showNotification('An error occurred while updating driver license. Please try again.', 'error');
         }
     }
 
@@ -1834,7 +2323,7 @@ class DriverProfileManager {
         }
 
         // Show verification complete message
-        this.showNotification('Driver license verified successfully!', 'success');
+        window.showNotification('Driver license verified successfully!', 'success');
 
         // Reset current section
         this.currentSection = null;
@@ -1860,14 +2349,14 @@ class DriverProfileManager {
                                    this.currentData?.tLicenseSubmitted === 1;
 
         const apiUrl = isAlreadySubmitted
-            ? `${this.URL_ROOT}/Driver/editTouristLicense`
-            : `${this.URL_ROOT}/Driver/submitTLicense`;
+            ? `${this.URL_ROOT}/ProfileController/editTouristLicense`
+            : `${this.URL_ROOT}/ProfileController/submitTLicense`;
 
         const actionMessage = isAlreadySubmitted ? 'Updating tourist license...' : 'Submitting tourist license...';
         const successMessage = isAlreadySubmitted ? 'Tourist license updated successfully!' : 'Tourist license submitted for review!';
 
         // Show loading notification
-        this.showNotification(actionMessage, 'info');
+        window.showNotification(actionMessage, 'info');
 
         try {
             // Make API call to submit/update tourist license
@@ -1880,7 +2369,7 @@ class DriverProfileManager {
 
             if (result.success) {
                 // Show success message
-                this.showNotification(successMessage, 'success');
+                window.showNotification(successMessage, 'success');
 
                 // Switch to under review state
                 const verifiedDiv = document.getElementById('touristLicenseVerified');
@@ -1919,12 +2408,12 @@ class DriverProfileManager {
 
             } else {
                 // Show error message from server
-                this.showNotification(result.message || 'Failed to process tourist license. Please try again.', 'error');
+                window.showNotification(result.message || 'Failed to process tourist license. Please try again.', 'error');
             }
 
         } catch (error) {
             console.error('Error processing tourist license:', error);
-            this.showNotification('An error occurred while processing tourist license. Please try again.', 'error');
+            window.showNotification('An error occurred while processing tourist license. Please try again.', 'error');
         }
     }
 
@@ -1965,85 +2454,19 @@ class DriverProfileManager {
         }
 
         // Show verification complete message
-        this.showNotification('Tourist license verified successfully!', 'success');
+        window.showNotification('Tourist license verified successfully!', 'success');
 
         // Reset current section
         this.currentSection = null;
-    }
-
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 10001;
-            animation: slideInRight 0.3s ease;
-            max-width: 400px;
-        `;
-
-        // Set colors based on type
-        const colors = {
-            success: '#28a745',
-            error: '#dc3545',
-            warning: '#ffc107',
-            info: '#17a2b8'
-        };
-
-        notification.style.background = colors[type] || colors.info;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            ${message}
-        `;
-
-        document.body.appendChild(notification);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 5000);
     }
 }
 
 window.DriverProfileManager = DriverProfileManager;
 window.driverProfileManager = new DriverProfileManager();
 
-// Add notification animations to CSS dynamically
+// Add field validation styles to CSS dynamically
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-
     .field-error {
         color: #dc3545;
         font-size: 0.8rem;

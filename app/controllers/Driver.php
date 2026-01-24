@@ -3,8 +3,10 @@
     class Driver extends Controller{
         
         private $driverModel;
+        private $userModel;
         public function __construct() {
             $this->driverModel = $this->model('DriverModel');
+            $this->userModel = $this->model('UserModel');
         }
 
         public function index() {
@@ -34,6 +36,29 @@
 
             $unEncodedResponse = [
                 'tabId'=>'my-profile',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
+        public function vehicles() {
+
+            ob_start();
+            $this->view('Driver/vehicles/driverVehicles');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/vehicles/driverVehicles.css';
+            $js = URL_ROOT.'/public/js/driver/vehicles/driverVehicles.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'vehicles',
                 'loadingContent'=>$loadingContent
             ];
             $this->view('UserTemplates/driverDash', $unEncodedResponse);
@@ -90,6 +115,11 @@
                 $updateSuccess = $this->driverModel->updateDriverPersonalInfo($userId, $input);
 
                 if ($updateSuccess) {
+                    // Update session data if full name changed
+                    if (isset($input['fullName'])) {
+                        setSession('user_fullname', $input['fullName']);
+                    }
+
                     echo json_encode(['success' => true, 'message' => 'Driver personal info updated successfully']);
                 } else {
                     http_response_code(500);
@@ -99,238 +129,6 @@
             } catch(PDOException $e) {
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Database error occurred when updating driver info: ' . $e->getMessage()]);
-            }
-        }
-
-        public function getCoverPhotos() {
-            header('Content-Type: application/json');
-            
-            $userId = getSession('user_id');
-            
-            if (!$userId) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not logged in']);
-                return;
-            }
-            
-            try {
-                $photos = $this->driverModel->getCoverPhotos($userId);
-                echo json_encode(['success' => true, 'photos' => $photos]);
-            } catch(PDOException $e) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-            }
-        }
-
-        public function saveCoverPhotos() {
-            header('Content-Type: application/json');
-            
-            $userId = getSession('user_id');
-            
-            if (!$userId) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not logged in']);
-                return;
-            }
-            
-            // Log incoming data
-            error_log("saveCoverPhotos called for userId: " . $userId);
-            error_log("FILES received: " . print_r($_FILES, true));
-            error_log("POST received: " . print_r($_POST, true));
-            
-            try {
-                $uploadedPhotos = [];
-                $deletedCount = 0;
-                $specPath = 'drivers/' . $userId . '/cover_photos';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
-                
-                // Handle deletions first
-                if (isset($_POST['deletedPhotos'])) {
-                    $deletedPhotoIds = json_decode($_POST['deletedPhotos'], true);
-                    if (is_array($deletedPhotoIds) && !empty($deletedPhotoIds)) {
-                        error_log("Deleting photos: " . implode(', ', $deletedPhotoIds));
-                        $deletedCount = $this->driverModel->deleteCoverPhotos($deletedPhotoIds);
-                        error_log("Deleted $deletedCount photo(s)");
-                    }
-                }
-                
-                // Create directory if it doesn't exist
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                    error_log("Created directory: " . $uploadDir);
-                }
-                
-                // Process each uploaded file
-                for ($i = 1; $i <= 10; $i++) {
-                    $fileKey = 'photo' . $i;
-                    
-                    if (isset($_FILES[$fileKey])) {
-                        error_log("Processing $fileKey: error=" . $_FILES[$fileKey]['error']);
-                        
-                        if ($_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
-                            $file = $_FILES[$fileKey];
-                            
-                            // Validate file type
-                            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                            if (!in_array($file['type'], $allowedTypes)) {
-                                error_log("File type not allowed: " . $file['type']);
-                                continue;
-                            }
-                            
-                            // Validate file size (5MB max)
-                            if ($file['size'] > 5 * 1024 * 1024) {
-                                error_log("File too large: " . $file['size']);
-                                continue;
-                            }
-                            
-                            // Generate unique filename
-                            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                            $filename = 'cover_' . time() . '_' . $i . '.' . $extension;
-                            $filepath = $uploadDir . '/' . $filename;
-                            
-                            // Move uploaded file
-                            if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                                // Store with photo_order as key (i-1 because slots are 1-10, but order is 0-9)
-                                $uploadedPhotos[$i - 1] = $specPath . '/' . $filename;
-                                error_log("Successfully uploaded to slot " . ($i - 1) . ": " . $filename);
-                            } else {
-                                error_log("Failed to move file: " . $file['tmp_name'] . " to " . $filepath);
-                            }
-                        }
-                    }
-                }
-                
-                error_log("Total photos uploaded: " . count($uploadedPhotos));
-                
-                // Save new photos to database if any
-                if (!empty($uploadedPhotos)) {
-                    $saveSuccess = $this->driverModel->saveCoverPhotos($userId, $uploadedPhotos);
-                    if (!$saveSuccess) {
-                        http_response_code(500);
-                        echo json_encode(['success' => false, 'message' => 'Failed to save photos to database']);
-                        return;
-                    }
-                }
-                
-                // Return success with counts
-                echo json_encode([
-                    'success' => true, 
-                    'message' => 'Changes saved successfully',
-                    'uploaded' => count($uploadedPhotos),
-                    'deleted' => $deletedCount
-                ]);
-                
-            } catch(Exception $e) {
-                error_log("Exception in saveCoverPhotos: " . $e->getMessage());
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
-            }
-        }
-
-
-        public function submitTLicense() {
-            header('Content-Type: application/json');
-
-            $userId = getSession('user_id');
-
-            if (!$userId) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not logged in']);
-                return;
-            }
-
-            // Log incoming data
-            error_log("submitTLicense called for userId: " . $userId);
-            error_log("POST received: " . print_r($_POST, true));
-            error_log("FILES received: " . print_r($_FILES, true));
-
-            try {
-                $uploadedFiles = [];
-                $specPath = 'drivers/' . $userId . '/licenses';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
-
-                // Create directory if it doesn't exist
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                    error_log("Created directory: " . $uploadDir);
-                }
-
-                // Process uploaded files
-                $fileFields = ['tLicensePhotoFront', 'tLicensePhotoBack'];
-                foreach ($fileFields as $fieldName) {
-                    if (isset($_FILES[$fieldName])) {
-                        error_log("Processing $fieldName: error=" . $_FILES[$fieldName]['error']);
-
-                        if ($_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {
-                            $file = $_FILES[$fieldName];
-
-                            // Validate file type
-                            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                            if (!in_array($file['type'], $allowedTypes)) {
-                                error_log("File type not allowed: " . $file['type']);
-                                http_response_code(400);
-                                echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPEG, JPG, and PNG are allowed.']);
-                                return;
-                            }
-
-                            // Validate file size (5MB max)
-                            if ($file['size'] > 5 * 1024 * 1024) {
-                                error_log("File too large: " . $file['size']);
-                                http_response_code(400);
-                                echo json_encode(['success' => false, 'message' => 'File size must be less than 5MB.']);
-                                return;
-                            }
-
-                            // Generate unique filename
-                            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                            $filename = 'tourist_license_' . $fieldName . '_' . time() . '.' . $extension;
-                            $filepath = $uploadDir . '/' . $filename;
-
-                            // Move uploaded file
-                            if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                                $uploadedFiles[$fieldName] = $specPath . '/' . $filename;
-                                error_log("Successfully uploaded $fieldName to: " . $filename);
-                            } else {
-                                error_log("Failed to move file: " . $file['tmp_name'] . " to " . $filepath);
-                                http_response_code(500);
-                                echo json_encode(['success' => false, 'message' => 'Failed to save uploaded file.']);
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                // Update profile_details table
-                $updateData = [
-                    'tLicenseNumber' => $_POST['touristLicenseNumber'] ?? '',
-                    'tLicenseExpiryDate' => $_POST['touristLicenseExpiry'] ?? '',
-                    'tlSubmitted' => true
-                ];
-
-                // Add file paths if uploaded
-                if (isset($uploadedFiles['tLicensePhotoFront'])) {
-                    $updateData['tLicensePhotoFront'] = $uploadedFiles['tLicensePhotoFront'];
-                }
-                if (isset($uploadedFiles['tLicensePhotoBack'])) {
-                    $updateData['tLicensePhotoBack'] = $uploadedFiles['tLicensePhotoBack'];
-                }
-
-                $updateSuccess = $this->driverModel->submitTouristLicense($userId, $updateData);
-
-                if ($updateSuccess) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => 'Tourist license submitted successfully for review'
-                    ]);
-                } else {
-                    http_response_code(500);
-                    echo json_encode(['success' => false, 'message' => 'Failed to update tourist license information']);
-                }
-
-            } catch (Exception $e) {
-                error_log("Exception in submitTLicense: " . $e->getMessage());
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             }
         }
 
@@ -440,7 +238,7 @@
             }
         }
 
-        public function editTouristLicense() {
+        public function addVehicle() {
             header('Content-Type: application/json');
 
             $userId = getSession('user_id');
@@ -452,98 +250,239 @@
             }
 
             // Log incoming data
-            error_log("editTouristLicense called for userId: " . $userId);
+            error_log("addVehicle called for userId: " . $userId);
             error_log("POST received: " . print_r($_POST, true));
             error_log("FILES received: " . print_r($_FILES, true));
 
             try {
                 $uploadedFiles = [];
-                $specPath = 'drivers/' . $userId . '/licenses';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
 
-                // Create directory if it doesn't exist
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                    error_log("Created directory: " . $uploadDir);
-                }
-
-                // Process uploaded files
-                $fileFields = ['tLicensePhotoFront', 'tLicensePhotoBack'];
+                // Process uploaded files using upload_helper
+                $fileFields = ['front', 'back', 'side', 'interior1', 'interior2', 'interior3'];
                 foreach ($fileFields as $fieldName) {
                     if (isset($_FILES[$fieldName])) {
                         error_log("Processing $fieldName: error=" . $_FILES[$fieldName]['error']);
 
-                        if ($_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {
-                            $file = $_FILES[$fieldName];
-
-                            // Validate file type
-                            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                            if (!in_array($file['type'], $allowedTypes)) {
-                                error_log("File type not allowed: " . $file['type']);
-                                http_response_code(400);
-                                echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPEG, JPG, and PNG are allowed.']);
-                                return;
-                            }
-
-                            // Validate file size (5MB max)
-                            if ($file['size'] > 5 * 1024 * 1024) {
-                                error_log("File too large: " . $file['size']);
-                                http_response_code(400);
-                                echo json_encode(['success' => false, 'message' => 'File size must be less than 5MB.']);
-                                return;
-                            }
-
-                            // Generate unique filename
-                            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                            $filename = 'tourist_license_' . $fieldName . '_' . time() . '.' . $extension;
-                            $filepath = $uploadDir . '/' . $filename;
-
-                            // Move uploaded file
-                            if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                                $uploadedFiles[$fieldName] = $specPath . '/' . $filename;
-                                error_log("Successfully uploaded $fieldName to: " . $filename);
-                            } else {
-                                error_log("Failed to move file: " . $file['tmp_name'] . " to " . $filepath);
-                                http_response_code(500);
-                                echo json_encode(['success' => false, 'message' => 'Failed to save uploaded file.']);
-                                return;
-                            }
+                        $uploadPath =  '/drivers/' . $userId. '/vehicles';
+                        $prefix = 'vehicle_' . $fieldName;
+                        
+                        $uploadedPath = uploadFile($_FILES[$fieldName], $uploadPath, $prefix);
+                        
+                        if ($uploadedPath === false) {
+                            error_log("Failed to upload file for $fieldName");
+                            http_response_code(400);
+                            echo json_encode(['success' => false, 'message' => 'Failed to upload file for ' . $fieldName . '. Please check file type (JPEG, JPG, PNG only) and size (max 5MB).']);
+                            return;
                         }
+                        
+                        $uploadedFiles[$fieldName] = $uploadedPath;
+                        error_log("Successfully uploaded $fieldName to: " . $uploadedPath);
                     }
                 }
 
-                // Update profile_details table (don't set tlSubmitted since it's already submitted)
-                $updateData = [
-                    'tLicenseNumber' => $_POST['touristLicenseNumber'] ?? '',
-                    'tLicenseExpiryDate' => $_POST['touristLicenseExpiry'] ?? ''
+                // Prepare vehicle data
+                $vehicleData = [
+                    'make' => $_POST['vehicleMake'] ?? '',
+                    'model' => $_POST['vehicleModel'] ?? '',
+                    'year' => intval($_POST['vehicleYear'] ?? 0),
+                    'color' => $_POST['vehicleColor'] ?? '',
+                    'licensePlate' => $_POST['licensePlate'] ?? '',
+                    'seatingCapacity' => intval($_POST['seatingCapacity'] ?? 4),
+                    'childSeats' => intval($_POST['childSeats'] ?? 0),
+                    'fuelEfficiency' => $_POST['fuelEfficiency'] ? floatval($_POST['fuelEfficiency']) : null,
+                    'description' => $_POST['description'] ?? '',
+                    'frontViewPhoto' => $uploadedFiles['front'] ?? null,
+                    'backViewPhoto' => $uploadedFiles['back'] ?? null,
+                    'sideViewPhoto' => $uploadedFiles['side'] ?? null,
+                    'interiorPhoto1' => $uploadedFiles['interior1'] ?? null,
+                    'interiorPhoto2' => $uploadedFiles['interior2'] ?? null,
+                    'interiorPhoto3' => $uploadedFiles['interior3'] ?? null,
                 ];
 
-                // Add file paths if uploaded
-                if (isset($uploadedFiles['tLicensePhotoFront'])) {
-                    $updateData['tLicensePhotoFront'] = $uploadedFiles['tLicensePhotoFront'];
-                }
-                if (isset($uploadedFiles['tLicensePhotoBack'])) {
-                    $updateData['tLicensePhotoBack'] = $uploadedFiles['tLicensePhotoBack'];
-                }
+                error_log("Vehicle data prepared: " . print_r($vehicleData, true));
 
-                $updateSuccess = $this->driverModel->updateTouristLicense($userId, $updateData);
+                // Add vehicle
+                $addSuccess = $this->driverModel->addVehicle($userId, $vehicleData);
 
-                if ($updateSuccess) {
+                if ($addSuccess) {
                     echo json_encode([
                         'success' => true,
-                        'message' => 'Tourist license updated successfully'
+                        'message' => 'Vehicle added successfully'
                     ]);
                 } else {
+                    error_log("addVehicle returned false");
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'message' => 'Failed to update tourist license information']);
+                    echo json_encode(['success' => false, 'message' => 'Failed to add vehicle']);
                 }
 
             } catch (Exception $e) {
-                error_log("Exception in editTouristLicense: " . $e->getMessage());
+                error_log("Exception in addVehicle: " . $e->getMessage());
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             }
         }
+
+        public function getVehicles() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            error_log("getVehicles called, userId: " . ($userId ?: 'null'));
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $vehicles = $this->driverModel->getDriverVehicles($userId);
+                error_log("Found " . count($vehicles) . " vehicles for user $userId");
+                echo json_encode([
+                    'success' => true,
+                    'vehicles' => $vehicles
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving vehicles: ' . $e->getMessage()]);
+            }
+        }
+
+        public function deleteVehicle() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $vehicleId = $_POST['vehicleId'] ?? null;
+
+            if (!$vehicleId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Vehicle ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->driverModel->deleteVehicle($userId, $vehicleId);
+                
+                if ($result['success']) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => $result['message']
+                    ]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $result['message']
+                    ]);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
+            }
+        }
+
+        public function toggleVehicle() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $vehicleId = $_POST['vehicleId'] ?? null;
+            $isActive = $_POST['isActive'] ?? null;
+
+            if (!$vehicleId || $isActive === null) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Vehicle ID and active status are required']);
+                return;
+            }
+
+            // Validate isActive is boolean
+            if (!is_bool($isActive) && !in_array($isActive, ['true', 'false', '1', '0'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Active status must be a boolean value']);
+                return;
+            }
+
+            // Convert string to boolean if needed
+            if (is_string($isActive)) {
+                $isActive = $isActive === 'true' || $isActive === '1';
+            }
+
+            try {
+                $result = $this->driverModel->toggleVehicleStatus($userId, $vehicleId, $isActive);
+                
+                if ($result['success']) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => $result['message']
+                    ]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $result['message']
+                    ]);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getVehicleStats() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $vehicles = $this->driverModel->getDriverVehicles($userId);
+                
+                // Calculate stats
+                $total = count($vehicles['approved']) + count($vehicles['pending']);
+                $approved = count($vehicles['approved']);
+                $pending = count($vehicles['pending']);
+                $active = count(array_filter($vehicles['approved'], function($v) { return $v['is_active']; }));
+                $inactive = $approved - $active;
+
+                $stats = [
+                    'total' => $total,
+                    'approved' => $approved,
+                    'pending' => $pending,
+                    'active' => $active,
+                    'inactive' => $inactive
+                ];
+
+                echo json_encode([
+                    'success' => true,
+                    'stats' => $stats
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving stats: ' . $e->getMessage()]);
+            }
+        }
+        
 
     }
 

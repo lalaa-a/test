@@ -1,7 +1,7 @@
 <?php
 // app/helpers/upload_helper.php
 /**
- * Sends an OTP to the user's email
+ * Uploads a file to the specified path after validating its type and size.
  *
  * @param string $path the path to upload the file (starting with a '/')
  * @param array $file The file information from the $_FILES superglobal

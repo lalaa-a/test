@@ -1,13 +1,10 @@
 <?php
     require_once '../app/helpers/session_helper.php';
     require_once '../app/helpers/upload_helper.php';
-
-    // Import PHPMailer classes
-    use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\Exception;
+    require_once '../app/helpers/mail_helper.php';
 
     // Load Composer's autoloader
-    require_once '../vendor/autoload.php';
+    
 
     class User extends Controller{
         
@@ -289,67 +286,10 @@
                 'expires' => time() + (10 * 60) // 10 minutes
             ];
 
-            // Send email with OTP using PHPMailer
-            $mail = new PHPMailer(true);
-
-            try {
-                // Server settings
-                $mail->isSMTP();
-                $mail->Host       = SMTP_HOST;
-                $mail->SMTPAuth   = true;
-                $mail->Username   = SMTP_USERNAME;
-                $mail->Password   = SMTP_PASSWORD;
-                $mail->SMTPSecure = SMTP_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port       = SMTP_PORT;
-
-                // Recipients
-                $mail->setFrom(FROM_EMAIL, FROM_NAME);
-                $mail->addAddress($email);
-
-                // Content
-                $mail->isHTML(true);
-                $mail->Subject = 'Email Verification - Tripingoo';
-                $mail->Body    = "
-                <html>
-                <head>
-                    <title>Email Verification</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                        .header { background-color: #006a71; color: white; padding: 20px; text-align: center; }
-                        .content { padding: 30px 20px; background-color: #f9f9f9; }
-                        .otp-code { font-size: 32px; font-weight: bold; color: #006a71; letter-spacing: 5px; text-align: center; margin: 20px 0; }
-                        .footer { background-color: #006a71; color: white; padding: 15px; text-align: center; font-size: 12px; }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <div class='header'>
-                            <h1>Welcome to Tripingoo!</h1>
-                        </div>
-                        <div class='content'>
-                            <h2>Email Verification</h2>
-                            <p>Your verification code is:</p>
-                            <div class='otp-code'>{$otp}</div>
-                            <p>This code will expire in 10 minutes.</p>
-                            <p>If you didn't request this code, please ignore this email.</p>
-                        </div>
-                        <div class='footer'>
-                            <p>Best regards,<br>Travel App Team</p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                ";
-
-                $mail->AltBody = "Welcome to Tripingoo!\n\nYour verification code is: {$otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nTripingoo Team";
-
-                $mail->send();
-                echo json_encode(['success' => true, 'message' => 'OTP sent successfully']);
-
-            } catch (Exception $e) {
-                echo json_encode(['success' => false, 'message' => 'Failed to send OTP. Please try again. Error: ' . $mail->ErrorInfo]);
-            }
+            // Send OTP email using helper function
+            $result = sendOTPEmail($email, $otp);
+            
+            echo json_encode($result);
         }
 
         public function verifyOTP() {
