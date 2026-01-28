@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Registration</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&family=Outfit&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.10.40/libphonenumber-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Geologica', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .left-section1 {
+            flex: 1.5;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(<?php echo IMG_ROOT.'/explore/drivers/portrait-young-asian-handsome-man-with-backpack-trekking-hat-pretty-girlfriend-standing-checking-direction-paper-map-while-walking-forest-trail-backpack-travel-concept_1150-48388.jpg'?>);
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+        }
+        .left-section2 {
+            flex: 1.5;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/50C878/FFFFFF?text=Guide');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+        }
+        .left-section3 {
+            flex: 1.5;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://placehold.co/800x600/FF6B6B/FFFFFF?text=Tourist');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+        }
+        .location-icon1 {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>') no-repeat center center;
+            background-size: contain;
+            vertical-align: middle;
+            margin-right: 15px;
+        }
+        .location-icon2 {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center center;
+            background-size: contain;
+            vertical-align: middle;
+            margin-right: 15px;
+        }
+        .location-icon3 {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>') no-repeat center center;
+            background-size: contain;
+            vertical-align: middle;
+            margin-right: 15px;
+        }
+        .left-section1 h1, 
+        .left-section2 h1, 
+        .left-section3 h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 30px;
+        }
+        .left-section1 p, 
+        .left-section2 p, 
+        .left-section3 p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 400px;
+            opacity: 2;
+        }
+        .right-section {
+            flex: 1.5;
+            background: #f8f9fa;
+            padding: 40px 60px;
+            overflow-y: auto;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 0px solid #49a6afbc;
+            border-radius: 12px;
+            background: #ffffffb8;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.241);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        .progress-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .step.active {
+            background: #006A71;
+            color: white;
+        }
+        .step.inactive {
+            background: #a7d4d4;
+            color: white;
+        }
+        .step-connector {
+            width: 130px;
+            height: 2px;
+            background: #a7d4d4;
+            margin: 0 0px;
+        }
+        .step-connector.active {
+            background: #006A71;
+        }
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-left: 15px;
+        }
+        .step-labels .step-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .step-labels .active-label {
+            color: #2d7a7a;
+            font-weight: 600;
+        }
+        .account-selection {
+            margin-bottom: 20px;
+        }
+        .account-selection h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+        .account-option {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .account-option:hover {
+            border-color: #2d7a7a;
+        }
+        .account-option.selected {
+            border-color: #2d7a7a;
+            background: #f0f9f9;
+        }
+        .account-option input[type="radio"] {
+            margin-right: 16px;
+            width: 20px;
+            height: 20px;
+        }
+        .account-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            opacity: 1.5;
+        }
+        .account-details h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+        .account-details p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .form-grid3 {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            opacity: 1;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea,
+        .form-group input[type="file"] {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'Geologica', sans-serif;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 16px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2d7a7a;
+            box-shadow: 0 0 0 3px rgba(45, 122, 122, 0.1);
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #9ca3af;
+            font-family: 'Geologica', sans-serif;
+        }
+        .img-contain {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background: white;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            width: 100px;
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        .photo-upload img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        .photo-upload.show-image img {
+            display: block;
+        }
+        .photo-upload-icon {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-upload-icon::before {
+            content: '📷';
+            font-size: 25px;
+            margin-top: -10px;
+        }
+        .file-info {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+        .file-info1 {
+            margin-left: 140px;
+            padding: 10px;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+        .previous-button {
+            background: #e5e7eb;
+            color: #111827;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .previous-button:hover {
+            background: #d1d5db;
+        }
+        .next-button,
+        .next-button1 {
+            background: #006a71;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .next-button1 {
+            margin-left: 460px;
+        }
+        .next-button:hover,
+        .next-button1:hover {
+            background: #005a61;
+            transform: translateY(-1px);
+        }
+        .form-page {
+            display: none;
+        }
+        .form-page.active {
+            display: block;
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            display: none;
+        }
+        .form-group input.error,
+        .form-group select.error,
+        .form-group textarea.error {
+            border-color: #ef4444;
+        }
+        .success-message {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error-message-global {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .left-section2 {
+                min-height: 40vh;
+                padding: 20px;
+            }
+            .left-section2 h1 {
+                font-size: 2.5rem;
+            }
+            .right-section {
+                padding: 40px 20px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .next-button1 {
+                margin-left: 0;
+                width: 100%;
+            }
+            .photo-upload {
+                margin-left: 0;
+            }
+            .file-info1 {
+                margin-left: 0;
+                text-align: center;
+            }
+            .form-grid3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section1">
+            <div class=""></div>
+            <h1>Register to your account</h1>
+            <p>Get the ultimate experience with us</p>
+        </div>
+        <div class="right-section">
+            <div class="form-container">
+                <div class="success-message" id="success-message">
+                    Account created successfully! Redirecting to login...
+                </div>
+                <div class="error-message-global" id="error-message-global"></div>
+                <!-- Page 1: Personal Information -->
+                <div class="form-page active" id="page1">
+                    <div class="header">
+                        <h2>Create Your Account</h2>
+                        <p>Join our community and start your journey today</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step active">1</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">2</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label active-label">Personal Info</span>
+                            <span class="step-label">Contact Details</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
+                        </div>
+                    </div>
+                    <div class="account-selection">
+                        <h3>Choose Your Account</h3>
+                        <div class="account-option" onclick="selectAccount('tourist')">
+                            <input type="radio" name="account-type" id="tourist">
+                            <div class="account-icon">👤</div>
+                            <div class="account-details">
+                                <h4>Tourist</h4>
+                                <p>Explore destination</p>
+                            </div>
+                        </div>
+                        <div class="account-option" onclick="selectAccount('guide')">
+                            <input type="radio" name="account-type" id="guide">
+                            <div class="account-icon">📍</div>
+                            <div class="account-details">
+                                <h4>Guide</h4>
+                                <p>Share local expertise</p>
+                            </div>
+                        </div>
+                        <div class="account-option" onclick="selectAccount('driver')">
+                            <input type="radio" name="account-type" id="driver">
+                            <div class="account-icon">🚗</div>
+                            <div class="account-details">
+                                <h4>Driver</h4>
+                                <p>Provide transportation</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="display:none">
+                        <div class="form-group">
+                            <label for="fullname">Full Name *</label>
+                            <input type="text" id="fullname" placeholder="Enter your full name" required>
+                            <div class="error-message" id="fullname-error">Full name is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="language">Preferred Language *</label>
+                            <select id="language" required>
+                                <option value="">Select Language</option>
+                                <option value="Sinhala">Sinhala</option>
+                                <option value="English">English</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                            </select>
+                            <div class="error-message" id="language-error">Please select a language</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth *</label>
+                            <input type="date" id="dob" placeholder="mm/dd/yyyy" required>
+                            <div class="error-message" id="dob-error">Date of birth is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender *</label>
+                            <select id="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="error-message" id="gender-error">Please select gender</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Profile Photo *</label>
+                            <div class="photo-upload" id="profile-upload">
+                                <div class="photo-upload-icon"></div>
+                                <img id="profile-preview" src="" alt="Profile Preview">
+                            </div>
+                            <div class="file-info1" id="profile-file-info">
+                                <strong>Choose File</strong> No file chosen
+                            </div>
+                            <div class="error-message" id="profile-error">Profile photo is required</div>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="display:none">
+                        <button class="next-button1" onclick="navigateTo(2)">Next</button>
+                    </div>
+                </div>
+                <!-- Page 2: Contact Details -->
+                <div class="form-page" id="page2">
+                    <div class="header">
+                        <h2>Create Your Account</h2>
+                        <p>Join our community and start your journey today</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step active">1</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">2</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label">Personal Info</span>
+                            <span class="step-label active-label">Contact Details</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pnumber">Phone Number *</label>
+                            <input type="tel" id="pnumber" placeholder="Enter phone number" required>
+                            <div class="error-message" id="pnumber-error">Valid phone number is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="spnumber">Secondary Phone (Optional)</label>
+                            <input type="tel" id="spnumber" placeholder="Enter phone number">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="address">Complete Address *</label>
+                            <textarea id="address" rows="4" placeholder="Enter your full address including city, state and postal code" required></textarea>
+                            <div class="error-message" id="address-error">Address is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <input type="password" id="password" placeholder="Enter your password (min 8 characters)" required>
+                            <div class="error-message" id="password-error">Password must be at least 8 characters long</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password *</label>
+                            <input type="password" id="confirm_password" placeholder="Confirm your password" required>
+                            <div class="error-message" id="confirm_password-error">Passwords do not match</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="previous-button" onclick="navigateTo(1)">Previous</button>
+                        <button class="next-button" onclick="navigateTo(3)">Next</button>
+                    </div>
+                </div>
+                <!-- Page 3: Email Verification -->
+                <div class="form-page" id="page3">
+                    <div class="header">
+                        <h2>Verify Your Email</h2>
+                        <p>Enter your email address and verify it to continue</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step active">1</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">2</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label">Personal Info</span>
+                            <span class="step-label">Contact Details</span>
+                            <span class="step-label active-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
+                        </div>
+                    </div>
+                    <!-- Email Input Section -->
+                    <div id="email-section" class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" placeholder="youremail@gmail.com" required>
+                            <div class="error-message" id="email-error">Valid email is required</div>
+                        </div>
+                    </div>
+                    <!-- OTP Verification Section (hidden initially) -->
+                    <div id="otp-section" class="form-grid" style="display: none;">
+                        <div class="form-group full-width">
+                            <label for="otp">Enter Verification Code *</label>
+                            <input type="text" id="otp" placeholder="Enter 6-digit code" maxlength="6" required>
+                            <div class="error-message" id="otp-error">Please enter a valid 6-digit code</div>
+                            <div class="success-message" id="otp-success" style="display:none; background:transparent; color:#065f46; padding:0; font-size:0.9rem; margin-top:6px;">Code verified successfully!</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 12px;">
+                                Didn't receive the code? 
+                                <button type="button" id="resend-otp" style="background: none; border: none; color: #006a71; text-decoration: underline; cursor: pointer; font-size: 0.9rem;">Resend Code</button>
+                            </p>
+                            <div id="otp-timer" style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 12px;">Resend available in 60 seconds</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="previous-button" onclick="navigateTo(2)">Previous</button>
+                        <button id="send-otp-btn" class="next-button" onclick="sendOTPFromPage()">Send OTP</button>
+                        <button id="verify-otp-btn" class="next-button" onclick="verifyOTP()" style="display: none;">Verify & Continue</button>
+                    </div>
+                </div>
+                <!-- Page 4: Verification (content switches by account type) -->
+                <div class="form-page" id="page4">
+                    <div class="header">
+                        <h2>Create Your Account</h2>
+                        <p>Join our community and start your journey today</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step active">1</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">2</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">3</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">4</div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label">Personal Info</span>
+                            <span class="step-label">Contact Details</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label active-label">Documents</span>
+                        </div>
+                    </div>
+                    <div class="account-selection">
+                        <h3 id="documents-title">Documents & Information</h3>
+                    </div>
+                    <!-- Driver Documents -->
+                    <div class="form-grid3" id="driver-documents" style="display: none;">
+                        <div class="form-group">
+                            <label for="license">Driving License Number</label>
+                            <input type="text" id="license" placeholder="License number">
+                            <div class="error-message" id="license-error">License number is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="expireDate">License Expire Date</label>
+                            <input type="date" id="expireDate" placeholder="mm/dd/yyyy">
+                            <div class="error-message" id="expireDate-error">License expire date is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="licenseFront">Driving License (Front)</label>
+                            <input type="file" id="licenseFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseFront')">
+                            <div class="error-message" id="licenseFront-error">License front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="licenseBack">Driving License (Back)</label>
+                            <input type="file" id="licenseBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseBack')">
+                            <div class="error-message" id="licenseBack-error">License back image is required</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idFront">National ID Card (Front)</label>
+                            <input type="file" id="idFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'idFront')">
+                            <div class="error-message" id="idFront-error">ID card front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="idBack">National ID Card (Back)</label>
+                            <input type="file" id="idBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'idBack')">
+                            <div class="error-message" id="idBack-error">ID card back image is required</div>
+                        </div>
+                        
+                    </div>
+                    <!-- Guide/Tourist Documents -->
+                    <div class="form-grid3" id="guide-tourist-documents" style="display: none;">
+                        <div class="form-group">
+                            <label for="nic">NIC/Passport Number</label>
+                            <input type="text" id="nic" placeholder="Enter NIC or Passport number">
+                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="nicFront">NIC/Passport (Front)</label>
+                            <input type="file" id="nicFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'nicFront')">
+                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="nicBack">NIC/Passport (Back)</label>
+                            <input type="file" id="nicBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'nicBack')">
+                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="previous-button" onclick="navigateTo(3)">Previous</button>
+                        <button class="next-button" onclick="submitForm()">Create Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let selectedAccountType = null;
+        let profileFile = null;
+        let uploadedFiles = {};
+        let emailVerified = false;
+        let otpSent = false;
+        let otpTimer = null;
+        let otpCountdown = 60;
+        // DOM elements
+        let leftSection;
+        let progressSteps;
+        let stepConnectors;
+        let stepLabels;
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeElements();
+            setupEventListeners();
+            updateProgressIndicator();
+            updatePage1Visibility();
+        });
+        // Initialize DOM elements
+        function initializeElements() {
+            leftSection = document.querySelector('.left-section1');
+            progressSteps = document.querySelectorAll('.step');
+            stepConnectors = document.querySelectorAll('.step-connector');
+            stepLabels = document.querySelectorAll('.step-label');
+            // Ensure no account is selected on load
+            const accountOptions = document.querySelectorAll('.account-option');
+            accountOptions.forEach(option => {
+                option.classList.remove('selected');
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio) radio.checked = false;
+            });
+            selectedAccountType = null;
+        }
+        // Helper: toggle visibility of step-1 content until a selection is made
+        function updatePage1Visibility() {
+            const page1 = document.getElementById('page1');
+            if (!page1) return;
+            const grids = page1.querySelectorAll('.form-grid');
+            const actions = page1.querySelectorAll('.form-actions');
+            const nextButtons = page1.querySelectorAll('.next-button, .next-button1');
+            const shouldShow = !!selectedAccountType;
+            grids.forEach(el => { el.style.display = shouldShow ? '' : 'none'; });
+            actions.forEach(el => { el.style.display = shouldShow ? '' : 'none'; });
+            nextButtons.forEach(btn => { if (btn) btn.disabled = !shouldShow; });
+        }
+        // Setup event listeners
+        function setupEventListeners() {
+            // Account selection radio buttons
+            const accountOptions = document.querySelectorAll('.account-option');
+            accountOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (!radio) return;
+                    const accountType = radio.id;
+                    selectAccount(accountType);
+                    updatePage1Visibility();
+                });
+            });
+            // File upload functionality
+            const profileUpload = document.getElementById('profile-upload');
+            if (profileUpload) {
+                profileUpload.addEventListener('click', function() {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = function(e) {
+                        handleFileUpload(e.target.files[0], 'profile');
+                    };
+                    input.click();
+                });
+            }
+            // Add input event listeners for real-time validation
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearError(this);
+                });
+            });
+            
+            // Add specific event listeners for password fields
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirm_password');
+            
+            if (passwordField) {
+                passwordField.addEventListener('input', function() {
+                    clearError(this);
+                    if (confirmPasswordField.value && this.value !== confirmPasswordField.value) {
+                        showError('confirm_password', 'Passwords do not match');
+                    } else {
+                        clearError(confirmPasswordField);
+                    }
+                });
+            }
+            
+            if (confirmPasswordField) {
+                confirmPasswordField.addEventListener('input', function() {
+                    clearError(this);
+                    if (passwordField.value !== this.value) {
+                        showError('confirm_password', 'Passwords do not match');
+                    }
+                });
+            }
+            
+            // OTP input event listener
+            const otpInput = document.getElementById('otp');
+            if (otpInput) {
+                otpInput.addEventListener('input', function() {
+                    clearError('otp');
+                    document.getElementById('otp-success').style.display = 'none';
+                    // Allow only numbers and limit to 6 digits
+                    this.value = this.value.replace(/\D/g, '').substring(0, 6);
+                });
+            }
+            
+            // Email input event listener for real-time validation
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    clearError('email');
+                });
+            }
+            
+            // Resend OTP button event listener
+            const resendButton = document.getElementById('resend-otp');
+            if (resendButton) {
+                resendButton.addEventListener('click', resendOTP);
+            }
+        }
+        // Navigate between pages
+        function navigateTo(pageNumber) {
+            if (pageNumber < 1 || pageNumber > 4) return;
+            // Block navigation if no account type chosen yet
+            if (pageNumber > 1 && !selectedAccountType) {
+                alert('Please select Driver, Guide, or Tourist first.');
+                return;
+            }
+            // Validate current page before navigating
+            if (pageNumber === 2 && !validatePage1()) {
+                return;
+            }
+            if (pageNumber === 3 && !validatePage2()) {
+                return;
+            }
+            // Note: Page 4 validation happens only on form submission, not navigation
+            // Special handling for email verification - reset state when moving to page 3
+            if (pageNumber === 3 && currentPage === 2) {
+                // Reset email verification state when entering page 3
+                emailVerified = false;
+                otpSent = false;
+                showEmailInputMode();
+            }
+            // Hide current page
+            const currentPageElement = document.getElementById(`page${currentPage}`);
+            if (currentPageElement) {
+                currentPageElement.classList.remove('active');
+            }
+            // Show target page
+            const targetPageElement = document.getElementById(`page${pageNumber}`);
+            if (targetPageElement) {
+                targetPageElement.classList.add('active');
+            }
+            // Update current page
+            currentPage = pageNumber;
+            
+            // Show appropriate document fields when navigating to page 4
+            if (pageNumber === 4) {
+                updateDocumentFields();
+            }
+            
+            // Update progress indicator
+            updateProgressIndicator();
+            
+            // Reset email verification state when going back from page 3
+            if (currentPage < 3) {
+                emailVerified = false;
+                otpSent = false;
+                if (otpTimer) {
+                    clearInterval(otpTimer);
+                }
+            }
+        }
+        // Update progress indicator
+        function updateProgressIndicator() {
+            // Work only within the currently visible page
+            const activePage = document.querySelector('.form-page.active');
+            if (!activePage) return;
+            const localSteps = activePage.querySelectorAll('.step');
+            const localConnectors = activePage.querySelectorAll('.step-connector');
+            const localLabels = activePage.querySelectorAll('.step-label');
+            // Update step circles
+            localSteps.forEach((step, index) => {
+                if (index + 1 <= currentPage) {
+                    step.classList.add('active');
+                    step.classList.remove('inactive');
+                } else {
+                    step.classList.remove('active');
+                    step.classList.add('inactive');
+                }
+            });
+            // Update step connectors
+            localConnectors.forEach((connector, index) => {
+                if (index + 1 < currentPage) {
+                    connector.classList.add('active');
+                } else {
+                    connector.classList.remove('active');
+                }
+            });
+            // Update step labels
+            localLabels.forEach((label, index) => {
+                if (index + 1 === currentPage) {
+                    label.classList.add('active-label');
+                } else {
+                    label.classList.remove('active-label');
+                }
+            });
+        }
+        // Select account type and update left section
+        function selectAccount(accountType) {
+            selectedAccountType = accountType;
+            // Update radio button selection
+            const accountOptions = document.querySelectorAll('.account-option');
+            accountOptions.forEach(option => {
+                option.classList.remove('selected');
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio.id === accountType) {
+                    option.classList.add('selected');
+                    radio.checked = true;
+                } else {
+                    radio.checked = false;
+                }
+            });
+            // Update left section based on account type
+            updateLeftSection(accountType);
+            // Update 3rd step content based on account type
+            updateThirdStepContent(accountType);
+        }
+        // Update left section image and content
+        function updateLeftSection(accountType) {
+            if (!leftSection) return;
+            // Remove existing classes
+            leftSection.classList.remove('left-section1', 'left-section2', 'left-section3');
+            // Add appropriate class and update background
+            switch (accountType) {
+                case 'driver':
+                    leftSection.classList.add('left-section1');
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero2.jpg')`;
+                    leftSection.style.backgroundSize = 'cover';
+                    leftSection.style.backgroundPosition = 'center';
+                    // Update icon
+                    const driverIcon = leftSection.querySelector('.location-icon1, .location-icon2, .location-icon3');
+                    if (driverIcon) {
+                        driverIcon.className = 'location-icon1';
+                    }
+                    // Update text content
+                    const driverTitle = leftSection.querySelector('h1');
+                    if (driverTitle) driverTitle.textContent = 'Provide Safe Transportation';
+                    const driverDesc = leftSection.querySelector('p');
+                    if (driverDesc) driverDesc.textContent = 'Help tourists and locals get around safely while earning from your driving skills.';
+                    break;
+                case 'guide':
+                    leftSection.classList.add('left-section2');
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero3.jpg')`;
+                    leftSection.style.backgroundSize = 'cover';
+                    leftSection.style.backgroundPosition = 'center';
+                    // Update icon
+                    const guideIcon = leftSection.querySelector('.location-icon1, .location-icon2, .location-icon3');
+                    if (guideIcon) {
+                        guideIcon.className = 'location-icon2';
+                    }
+                    // Update text content
+                    const guideTitle = leftSection.querySelector('h1');
+                    if (guideTitle) guideTitle.textContent = 'Share Your Local Expertise';
+                    const guideDesc = leftSection.querySelector('p');
+                    if (guideDesc) guideDesc.textContent = 'Connect with travelers and showcase the best of your local area with authentic experiences.';
+                    break;
+                case 'tourist':
+                    leftSection.classList.add('left-section3');
+                    leftSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('http://localhost/test/public/img/explore/destinations/hero1.jpg')`;
+                    leftSection.style.backgroundSize = 'cover';
+                    leftSection.style.backgroundPosition = 'center';
+                    // Update icon
+                    const touristIcon = leftSection.querySelector('.location-icon1, .location-icon2, .location-icon3');
+                    if (touristIcon) {
+                        touristIcon.className = 'location-icon3';
+                    }
+                    // Update text content
+                    const touristTitle = leftSection.querySelector('h1');
+                    if (touristTitle) touristTitle.textContent = 'Explore Amazing Destinations';
+                    const touristDesc = leftSection.querySelector('p');
+                    if (touristDesc) touristDesc.textContent = 'Discover new places, connect with local guides, and create unforgettable travel memories.';
+                    break;
+            }
+        }
+        // Handle file upload
+        function handleFileUpload(file, type) {
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('File size should be less than 5MB');
+                return;
+            }
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+            const fileType = file.type;
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+            if (!allowedTypes.includes(fileType) || !allowedExtensions.includes(fileExtension)) {
+                alert('Invalid file type. Only JPG, PNG, and PDF files are allowed.');
+                return;
+            }
+            if (type === 'profile') {
+                profileFile = file;
+                const fileInfo = document.getElementById('profile-file-info');
+                if (fileInfo) {
+                    fileInfo.innerHTML = `<strong>Selected:</strong> ${file.name}`;
+                }
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const photoUpload = document.getElementById('profile-upload');
+                        const preview = document.getElementById('profile-preview');
+                        if (photoUpload && preview) {
+                            preview.src = e.target.result;
+                            photoUpload.classList.add('show-image');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                uploadedFiles[type] = file;
+                // Handle preview for other file uploads
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewElement = document.getElementById(`${type}-preview`);
+                        if (previewElement) {
+                            previewElement.src = e.target.result;
+                            previewElement.parentElement.classList.add('show-image');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+        
+        // Update document fields based on account type
+        function updateDocumentFields() {
+            const documentsTitle = document.getElementById('documents-title');
+            const driverDocs = document.getElementById('driver-documents');
+            const guideTouristDocs = document.getElementById('guide-tourist-documents');
+            
+            if (selectedAccountType === 'driver') {
+                documentsTitle.textContent = 'Driver Documents & Information';
+                driverDocs.style.display = 'grid';
+                guideTouristDocs.style.display = 'none';
+            } else if (selectedAccountType === 'guide') {
+                documentsTitle.textContent = 'Guide Documents & Information';
+                driverDocs.style.display = 'none';
+                guideTouristDocs.style.display = 'grid';
+            } else if (selectedAccountType === 'tourist') {
+                documentsTitle.textContent = 'Tourist Documents & Information';
+                driverDocs.style.display = 'none';
+                guideTouristDocs.style.display = 'grid';
+            }
+        }
+        
+        // OTP Functions
+        function showEmailInputMode() {
+            document.getElementById('email-section').style.display = 'grid';
+            document.getElementById('otp-section').style.display = 'none';
+            document.getElementById('send-otp-btn').style.display = 'inline-block';
+            document.getElementById('verify-otp-btn').style.display = 'none';
+            document.querySelector('#page3 .header h2').textContent = 'Verify Your Email';
+            document.querySelector('#page3 .header p').textContent = 'Enter your email address and verify it to continue';
+            // Clear any previous OTP data
+            document.getElementById('otp').value = '';
+            document.getElementById('otp-success').style.display = 'none';
+            clearError('otp');
+            if (otpTimer) {
+                clearInterval(otpTimer);
+            }
+        }
+
+        function showOTPInputMode() {
+            document.getElementById('email-section').style.display = 'none';
+            document.getElementById('otp-section').style.display = 'grid';
+            document.getElementById('send-otp-btn').style.display = 'none';
+            document.getElementById('verify-otp-btn').style.display = 'inline-block';
+            document.querySelector('#page3 .header h2').textContent = 'Verify Your Email';
+            document.querySelector('#page3 .header p').textContent = 'We\'ve sent a verification code to your email address';
+        }
+
+        function sendOTPFromPage() {
+            const email = document.getElementById('email').value.trim();
+            
+            // Validate email
+            if (!email) {
+                showError('email', 'Email is required');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('email', 'Valid email is required');
+                return;
+            }
+
+            // Show loading state
+            const sendButton = document.getElementById('send-otp-btn');
+            const originalText = sendButton.textContent;
+            sendButton.textContent = 'Sending...';
+            sendButton.disabled = true;
+
+            // Send OTP request
+            fetch('/test/User/sendOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    otpSent = true;
+                    showOTPInputMode();
+                    startOTPTimer();
+                } else {
+                    showError('email', data.message || 'Failed to send OTP. Please try again.');
+                    sendButton.textContent = originalText;
+                    sendButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('email', 'An error occurred while sending OTP. Please try again.');
+                sendButton.textContent = originalText;
+                sendButton.disabled = false;
+            });
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otp').value.trim();
+            if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                showError('otp', 'Please enter a valid 6-digit code');
+                return;
+            }
+
+            // Show loading state
+            const verifyButton = document.querySelector('#page3 .next-button');
+            const originalText = verifyButton.textContent;
+            verifyButton.textContent = 'Verifying...';
+            verifyButton.disabled = true;
+
+            const email = document.getElementById('email').value.trim();
+
+            // Verify OTP request
+            fetch('/test/User/verifyOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, otp: otp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    emailVerified = true;
+                    document.getElementById('otp-success').style.display = 'block';
+                    document.getElementById('otp-error').style.display = 'none';
+                    setTimeout(() => {
+                        navigateTo(4);
+                    }, 1500);
+                } else {
+                    showError('otp', data.message || 'Invalid OTP. Please try again.');
+                    verifyButton.textContent = originalText;
+                    verifyButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('otp', 'An error occurred. Please try again.');
+                verifyButton.textContent = originalText;
+                verifyButton.disabled = false;
+            });
+        }
+
+        function startOTPTimer() {
+            otpCountdown = 60;
+            updateOTPTimer();
+
+            otpTimer = setInterval(() => {
+                otpCountdown--;
+                updateOTPTimer();
+
+                if (otpCountdown <= 0) {
+                    clearInterval(otpTimer);
+                    document.getElementById('otp-timer').textContent = '';
+                    document.getElementById('resend-otp').disabled = false;
+                }
+            }, 1000);
+        }
+
+        function updateOTPTimer() {
+            const timerElement = document.getElementById('otp-timer');
+            const resendButton = document.getElementById('resend-otp');
+
+            if (otpCountdown > 0) {
+                timerElement.textContent = `Resend available in ${otpCountdown} seconds`;
+                resendButton.disabled = true;
+            } else {
+                timerElement.textContent = '';
+                resendButton.disabled = false;
+            }
+        }
+
+        function resendOTP() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                alert('Email address not found.');
+                return;
+            }
+
+            // Show loading state
+            const resendButton = document.getElementById('resend-otp');
+            const originalText = resendButton.textContent;
+            resendButton.textContent = 'Sending...';
+            resendButton.disabled = true;
+
+            // Resend OTP request
+            fetch('/test/User/sendOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    startOTPTimer();
+                    alert('OTP sent successfully!');
+                } else {
+                    alert(data.message || 'Failed to resend OTP. Please try again.');
+                    resendButton.textContent = originalText;
+                    resendButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while resending OTP. Please try again.');
+                resendButton.textContent = originalText;
+                resendButton.disabled = false;
+            });
+        }
+        // Validation functions
+        function validatePage3() {
+            // Check if email is verified
+            if (!emailVerified) {
+                alert('Please verify your email address before proceeding.');
+                return false;
+            }
+            return true;
+        }
+        function validatePage1() {
+            let isValid = true;
+            // Full name validation
+            const fullname = document.getElementById('fullname');
+            if (!fullname.value.trim()) {
+                showError('fullname', 'Full name is required');
+                isValid = false;
+            }
+            // Language validation
+            const language = document.getElementById('language');
+            if (!language.value) {
+                showError('language', 'Please select a language');
+                isValid = false;
+            }
+            // Date of birth validation
+            const dob = document.getElementById('dob');
+            if (!dob.value) {
+                showError('dob', 'Date of birth is required');
+                isValid = false;
+            }
+            // Gender validation
+            const gender = document.getElementById('gender');
+            if (!gender.value) {
+                showError('gender', 'Please select gender');
+                isValid = false;
+            }
+            // Profile photo validation
+            if (!profileFile) {
+                showError('profile', 'Profile photo is required');
+                isValid = false;
+            }
+            return isValid;
+        }
+        function validatePage2() {
+            let isValid = true;
+            // Phone number validation with libphonenumber
+            const pnumber = document.getElementById('pnumber');
+            const pnumberValue = pnumber.value.trim();
+            if (!pnumberValue) {
+                showError('pnumber', 'Phone number is required');
+                isValid = false;
+            } else {
+                try {
+                    const phoneNumber = libphonenumber.parsePhoneNumber(pnumberValue);
+                    if (!phoneNumber || !phoneNumber.isValid()) {
+                        showError('pnumber', 'Please enter a valid phone number');
+                        isValid = false;
+                    }
+                } catch (error) {
+                    showError('pnumber', 'Please enter a valid phone number');
+                    isValid = false;
+                }
+            }
+            // Secondary phone validation (optional)
+            const spnumber = document.getElementById('spnumber');
+            const spnumberValue = spnumber.value.trim();
+            if (spnumberValue) {
+                try {
+                    const phoneNumber = libphonenumber.parsePhoneNumber(spnumberValue);
+                    if (!phoneNumber || !phoneNumber.isValid()) {
+                        showError('spnumber', 'Please enter a valid secondary phone number');
+                        isValid = false;
+                    }
+                } catch (error) {
+                    showError('spnumber', 'Please enter a valid secondary phone number');
+                    isValid = false;
+                }
+            }
+            // Address validation
+            const address = document.getElementById('address');
+            if (!address.value.trim()) {
+                showError('address', 'Address is required');
+                isValid = false;
+            }
+            
+            // Password validation
+            const password = document.getElementById('password');
+            if (!password.value) {
+                showError('password', 'Password is required');
+                isValid = false;
+            } else if (password.value.length < 8) {
+                showError('password', 'Password must be at least 8 characters long');
+                isValid = false;
+            }
+            
+            // Confirm password validation
+            const confirmPassword = document.getElementById('confirm_password');
+            if (!confirmPassword.value) {
+                showError('confirm_password', 'Please confirm your password');
+                isValid = false;
+            } else if (password.value !== confirmPassword.value) {
+                showError('confirm_password', 'Passwords do not match');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        function validatePage4() {
+            let isValid = true;
+            if (selectedAccountType === 'driver') {
+                const license = document.getElementById('license');
+                const expireDate = document.getElementById('expireDate');
+                if (!license || !license.value.trim()) {
+                    showError('license', 'License number is required');
+                    isValid = false;
+                }
+                if (!expireDate || !expireDate.value) {
+                    showError('expireDate', 'License expire date is required');
+                    isValid = false;
+                }
+                // Check required files for driver
+                const requiredFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
+                requiredFiles.forEach(fileId => {
+                    if (!uploadedFiles[fileId]) {
+                        showError(fileId, `${fileId.replace(/([A-Z])/g, ' $1')} is required`);
+                        isValid = false;
+                    }
+                });
+            } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
+                const nic = document.getElementById('nic');
+                if (!nic || !nic.value.trim()) {
+                    showError('nic', 'NIC/Passport is required');
+                    isValid = false;
+                }
+                // Check required files for guide/tourist
+                if (!uploadedFiles['nicFront']) {
+                    showError('nicFront', 'NIC/Passport front image is required');
+                    isValid = false;
+                }
+                if (!uploadedFiles['nicBack']) {
+                    showError('nicBack', 'NIC/Passport back image is required');
+                    isValid = false;
+                }
+            }
+            return isValid;
+        }
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            const fieldElement = document.getElementById(fieldId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+            if (fieldElement) {
+                fieldElement.classList.add('error');
+            }
+        }
+        function clearError(elementOrId) {
+            let fieldId, element;
+            if (typeof elementOrId === 'string') {
+                fieldId = elementOrId;
+                element = document.getElementById(fieldId);
+            } else {
+                element = elementOrId;
+                fieldId = element.id;
+            }
+
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+            if (element) {
+                element.classList.remove('error');
+            }
+        }
+        // Submit form to backend
+        function submitForm() {
+            if (!emailVerified) {
+                alert('Please verify your email address before proceeding.');
+                navigateTo(3);
+                return;
+            }
+            if (!validatePage4()) {
+                return;
+            }
+            // Create FormData object
+            const formData = new FormData();
+            formData.append('account_type', selectedAccountType);
+            // Page 1 data
+            formData.append('fullname', document.getElementById('fullname').value);
+            formData.append('language', document.getElementById('language').value);
+            formData.append('dob', document.getElementById('dob').value);
+            formData.append('gender', document.getElementById('gender').value);
+            if (profileFile) {
+                formData.append('profile_photo', profileFile);
+            }
+            // Page 2 data
+            formData.append('phone', document.getElementById('pnumber').value);
+            formData.append('secondary_phone', document.getElementById('spnumber').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+
+            
+            formData.append('confirm_password', document.getElementById('confirm_password').value);
+            // Page 3 data based on account type
+            if (selectedAccountType === 'driver') {
+                formData.append('license_number', document.getElementById('license').value);
+                formData.append('license_expire_date', document.getElementById('expireDate').value);
+                // Add driver files
+                const driverFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
+                driverFiles.forEach(fileId => {
+                    if (uploadedFiles[fileId]) {
+                        formData.append(fileId, uploadedFiles[fileId]);
+                    }
+                });
+            } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
+                formData.append('nic_passport', document.getElementById('nic').value);
+                // Add guide/tourist files
+                if (uploadedFiles['nicFront']) {
+                    formData.append('nic_front', uploadedFiles['nicFront']);
+                }
+                if (uploadedFiles['nicBack']) {
+                    formData.append('nic_back', uploadedFiles['nicBack']);
+                }
+            }
+            // Show loading message
+            const submitButton = document.querySelector('#page4 .next-button');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Creating Account...';
+            submitButton.disabled = true;
+            // Send to PHP backend
+            fetch('/test/User/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    document.getElementById('success-message').style.display = 'block';
+                    document.getElementById('error-message-global').style.display = 'none';
+                    // Redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/test/User/login';     //redirect to the login page if it a success
+                    }, 3000);
+                } else {
+                    // Show error message
+                    const errorDiv = document.getElementById('error-message-global');
+                    errorDiv.textContent = data.message;
+                    errorDiv.style.display = 'block';
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorDiv = document.getElementById('error-message-global');
+                errorDiv.textContent = 'An error occurred during registration. Please try again.';
+                errorDiv.style.display = 'block';
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
+        }
+        // Update 3rd step content based on account type
+        function updateThirdStepContent(accountType) {
+            const page3 = document.getElementById('page3');
+            if (!page3) return;
+            const accountSelection = page3.querySelector('.account-selection');
+            const formGrid = page3.querySelector('.form-grid3');
+            if (!accountSelection || !formGrid) return;
+            switch (accountType) {
+                case 'driver':
+                    accountSelection.innerHTML = '<h3>Driver Documents & Information</h3>';
+                    formGrid.innerHTML = `
+                        <div class="form-group">
+                            <label for="license">Driving License Number *</label>
+                            <input type="text" id="license" placeholder="License number" required>
+                            <div class="error-message" id="license-error">License number is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="expireDate">License Expire Date *</label>
+                            <input type="date" id="expireDate" placeholder="mm/dd/yyyy" required>
+                            <div class="error-message" id="expireDate-error">License expire date is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="licenseFront">Driving License (Front) *</label>
+                            <input type="file" id="licenseFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseFront')">
+                            <div class="error-message" id="licenseFront-error">License front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="licenseBack">Driving License (Back) *</label>
+                            <input type="file" id="licenseBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseBack')">
+                            <div class="error-message" id="licenseBack-error">License back image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="idFront">National ID Card (Front) *</label>
+                            <input type="file" id="idFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idFront')">
+                            <div class="error-message" id="idFront-error">ID card front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="idBack">National ID Card (Back) *</label>
+                            <input type="file" id="idBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idBack')">
+                            <div class="error-message" id="idBack-error">ID card back image is required</div>
+                        </div>
+                    `;
+                    break;
+                case 'guide':
+                    accountSelection.innerHTML = '<h3>Guide Documents & Information</h3>';
+                    formGrid.innerHTML = `
+                        <div class="form-group">
+                            <label for="nic">NIC/Passport *</label>
+                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
+                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="img-contain">
+                                <div class="file-info">
+                                    <strong>Front img: </strong>NIC/Passport *
+                                </div>
+                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
+                                    <div class="photo-upload-icon"></div>
+                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
+                                </div>
+                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
+                            </div>
+                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="img-contain">
+                                <div class="file-info">
+                                    <strong>Back img: </strong>NIC/Passport *
+                                </div>
+                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
+                                    <div class="photo-upload-icon"></div>
+                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
+                                </div> 
+                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
+                            </div>
+                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
+                        </div>
+                    `;
+                    break;
+                case 'tourist':
+                    accountSelection.innerHTML = '<h3>Tourist Documents & Information</h3>';
+                    formGrid.innerHTML = `
+                        <div class="form-group">
+                            <label for="nic">NIC/Passport *</label>
+                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
+                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="img-contain">
+                                <div class="file-info">
+                                    <strong>Front img: </strong>NIC/Passport *
+                                </div>
+                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
+                                    <div class="photo-upload-icon"></div>
+                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
+                                </div>
+                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
+                            </div>
+                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="img-contain">
+                                <div class="file-info">
+                                    <strong>Back img: </strong>NIC/Passport *
+                                </div>
+                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
+                                    <div class="photo-upload-icon"></div>
+                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
+                                </div> 
+                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
+                            </div>
+                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
+                        </div>
+                    `;
+                    break;
+            }
+            // Reattach event listeners for new file inputs
+            const newFileInputs = formGrid.querySelectorAll('input[type="file"]');
+            newFileInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    if (e.target.files[0]) {
+                        const fieldId = e.target.id;
+                        handleFileUpload(e.target.files[0], fieldId);
+                        clearError(e.target);
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

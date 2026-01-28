@@ -86,9 +86,19 @@
 
       if (!name) { showToast('Please enter a trip name'); return; }
       if (!startDate) { showToast('Please select your dates'); return; }
+      
+      // Validate that start date is not in the past
+      const startDateObj = new Date(startDate);
+      const todayStart = dayStart(today);
+      if (dayStart(startDateObj) < todayStart) {
+        showToast('Cannot create trip with past dates. Please select dates from today onwards.');
+        return;
+      }
 
       const payload = { name, description, startDate, endDate };
       const url = root.dataset.postUrl || '';
+      const isEditMode = form.dataset.editMode === 'true';
+      const editTargetId = form.dataset.editTarget;
 
       try {
         if (url) {
@@ -98,22 +108,41 @@
             body: JSON.stringify(payload)
           });
           if (!res.ok) throw new Error('Network error');
-          showToast('Trip created');
+          showToast(isEditMode ? 'Trip updated' : 'Trip created');
         } else {
-          console.log('Create Trip payload:', payload);
-          showToast('Trip created (logged to console)');
+          if (isEditMode && editTargetId) {
+            // Update existing card
+            updateTripCard(editTargetId, payload);
+            showToast('Trip updated successfully!');
+          } else {
+            // Create new card
+            createTripCard(payload);
+            showToast('Trip created successfully!');
+          }
         }
 
         // Clear inputs and selection AFTER successful submit
         clearFields();
+        resetFormToCreateMode();
+        // Close the drawer
+        closeDrawer();
 
       } catch (err) {
         console.error(err);
-        showToast('Failed to create trip');
+        showToast(isEditMode ? 'Failed to update trip' : 'Failed to create trip');
       }
     });
 
     function onDayClick(d) {
+      // Prevent selecting past dates (before today)
+      const todayStart = dayStart(today);
+      const clickedDate = dayStart(d);
+      
+      if (clickedDate < todayStart) {
+        showToast('Cannot select past dates. Please choose a date from today onwards.');
+        return;
+      }
+      
       if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) {
         viewYear = d.getFullYear(); viewMonth = d.getMonth();
         monthSel.value = String(viewMonth); yearSel.value = String(viewYear);
@@ -132,18 +161,31 @@
       const firstOfMonth = new Date(viewYear, viewMonth, 1);
       const startOffset = (firstOfMonth.getDay() + 6) % 7; // Monday-first
       const gridStart = new Date(viewYear, viewMonth, 1 - startOffset);
+      const todayStart = dayStart(today);
 
       for (let i = 0; i < 42; i++) {
         const d = new Date(gridStart); d.setDate(gridStart.getDate() + i);
+        const dayDateStart = dayStart(d);
+        const isPastDate = dayDateStart < todayStart;
+        
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'ctf-day';
         btn.textContent = d.getDate();
         btn.dataset.date = toISO(d);
+        
         if (d.getMonth() !== viewMonth) btn.classList.add('is-outside');
-        if (inRange(d, selStart, selEnd)) btn.classList.add('is-inrange');
-        if (selStart && sameDate(d, selStart)) btn.classList.add('is-start');
-        if (selEnd && sameDate(d, selEnd)) btn.classList.add('is-end');
+        if (isPastDate) {
+          btn.classList.add('is-disabled');
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+          btn.title = 'Past dates cannot be selected';
+        } else {
+          if (inRange(d, selStart, selEnd)) btn.classList.add('is-inrange');
+          if (selStart && sameDate(d, selStart)) btn.classList.add('is-start');
+          if (selEnd && sameDate(d, selEnd)) btn.classList.add('is-end');
+        }
+        
         btn.addEventListener('click', () => onDayClick(d));
         grid.appendChild(btn);
       }
@@ -171,6 +213,60 @@
       // monthSel.value = String(viewMonth); yearSel.value = String(viewYear); render();
     }
 
+    // Reset form to create mode
+    function resetFormToCreateMode() {
+      form.dataset.editMode = 'false';
+      delete form.dataset.editTarget;
+      
+      const title = form.querySelector('.ctf-title');
+      if (title) title.textContent = 'Create a trip';
+      
+      const submitBtn = form.querySelector('.ctf-submit');
+      if (submitBtn) submitBtn.textContent = 'Create Trip';
+    }
+
+    // Close drawer helper
+    function closeDrawer() {
+      const drawer = document.getElementById('tripDrawer');
+      if (drawer) {
+        drawer.classList.remove('is-open');
+        drawer.setAttribute('aria-hidden', 'true');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        const scrollY = parseInt(document.body.dataset.ctdScrollY || '0', 10);
+        delete document.body.dataset.ctdScrollY;
+        window.scrollTo(0, scrollY);
+      }
+    }
+
+    // Pre-fill form with existing dates (for edit mode)
+    window.prefillFormDates = function(startDate, endDate) {
+      if (startDate) {
+        selStart = new Date(startDate);
+        startInput.value = startDate;
+      }
+      if (endDate && endDate !== startDate) {
+        selEnd = new Date(endDate);
+        endInput.value = endDate;
+      } else if (startDate) {
+        selEnd = new Date(startDate);
+        endInput.value = startDate;
+      }
+      
+      // Update calendar view to show the selected dates
+      if (selStart) {
+        viewYear = selStart.getFullYear();
+        viewMonth = selStart.getMonth();
+        monthSel.value = String(viewMonth);
+        yearSel.value = String(viewYear);
+      }
+      
+      render();
+    };
+
     let toastTimer = null;
     function showToast(msg) {
       toast.textContent = msg || 'Dates applied';
@@ -180,6 +276,157 @@
     }
 
     render();
+  }
+
+  // Function to create a new trip card dynamically
+  function createTripCard(tripData) {
+    const { name, description, startDate, endDate } = tripData;
+
+    // Format the date range
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    };
+
+    const startFormatted = formatDate(startDate);
+    const endFormatted = formatDate(endDate);
+    const dateRange = startDate === endDate ? startFormatted : `${startFormatted} → ${endFormatted}`;
+
+    // Generate unique ID for the new card
+    const cardId = 'trip-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+    // Create the card HTML with proper dropdown structure
+    const cardHtml = `
+      <section data-trip-card style="--tc-maxw:1000px;" data-trip-id="${cardId}">
+        <div class="tpc-wrapper">
+          <article class="tpc-card" aria-label="Trip card: ${name}" style="cursor: pointer;" data-clickable>
+            <div class="tpc-image-wrap">
+              <img
+                class="tpc-image"
+                src="${window.IMG_ROOT || window.URL_ROOT + '/public/img'}/explore/destinations/kandy.png"
+                alt="${name}"
+              />
+            </div>
+            <div class="tpc-details" 
+                 data-trip-name="${name}"
+                 data-trip-description="${description || ''}"
+                 data-trip-start-date="${startDate}"
+                 data-trip-end-date="${endDate}">
+              <div class="tpc-header">
+                <h3 class="tpc-title">${name}</h3>
+                <div class="tpc-options-wrapper">
+                  <button class="tpc-options" type="button" aria-label="More options" data-toggle-dropdown>...</button>
+                  <div class="tpc-dropdown" data-dropdown-menu>
+                    <button class="tpc-dropdown-item" data-action="edit" type="button">
+                      <span class="tpc-dropdown-icon">✏️</span>
+                      Edit Trip
+                    </button>
+                    <button class="tpc-dropdown-item" data-action="delete" type="button">
+                      <span class="tpc-dropdown-icon">🗑️</span>
+                      Delete Trip
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p class="tpc-date">${dateRange}</p>
+              <p class="tpc-desc">${description || 'No description provided.'}</p>
+              <div class="tpc-footer">
+                <button class="tpc-status" type="button">Scheduled</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    `;
+
+    // Find the ongoing trips section and add the new card
+    const ongoingSection = document.querySelector('h2.tpc-section-title');
+    if (ongoingSection && ongoingSection.textContent.includes('Ongoing')) {
+      // Find all existing trip cards in the ongoing section
+      let insertPoint = ongoingSection.nextElementSibling;
+      while (insertPoint && !insertPoint.querySelector('[data-trip-card]')) {
+        insertPoint = insertPoint.nextElementSibling;
+      }
+
+      if (insertPoint) {
+        // Insert before the first existing card
+        insertPoint.insertAdjacentHTML('beforebegin', cardHtml);
+      } else {
+        // Insert after the heading if no cards exist
+        ongoingSection.insertAdjacentHTML('afterend', cardHtml);
+      }
+    } else {
+      // Fallback: find a good place to insert
+      const body = document.body;
+      const lastCard = body.querySelector('[data-trip-card]:last-of-type');
+      if (lastCard) {
+        lastCard.insertAdjacentHTML('afterend', cardHtml);
+      } else {
+        body.insertAdjacentHTML('beforeend', cardHtml);
+      }
+    }
+
+    // Re-initialize card actions for the new card
+    if (window.initTripCardActions) {
+      window.initTripCardActions();
+    }
+  }
+
+  // Function to update an existing trip card
+  function updateTripCard(cardId, tripData) {
+    const { name, description, startDate, endDate } = tripData;
+    
+    // Format the date range
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    };
+
+    const startFormatted = formatDate(startDate);
+    const endFormatted = formatDate(endDate);
+    const dateRange = startDate === endDate ? startFormatted : `${startFormatted} → ${endFormatted}`;
+
+    // Find the card to update
+    const card = document.querySelector(`[data-trip-id="${cardId}"]`);
+    if (!card) return;
+
+    // Update the card content
+    const titleElement = card.querySelector('.tpc-title');
+    const dateElement = card.querySelector('.tpc-date');
+    const descElement = card.querySelector('.tpc-desc');
+    const detailsElement = card.querySelector('.tpc-details');
+    const cardElement = card.querySelector('.tpc-card');
+
+    if (titleElement) titleElement.textContent = name;
+    if (dateElement) dateElement.textContent = dateRange;
+    if (descElement) descElement.textContent = description || 'No description provided.';
+    if (cardElement) cardElement.setAttribute('aria-label', `Trip card: ${name}`);
+    
+    // Update data attributes
+    if (detailsElement) {
+      detailsElement.setAttribute('data-trip-name', name);
+      detailsElement.setAttribute('data-trip-description', description || '');
+      detailsElement.setAttribute('data-trip-start-date', startDate);
+      detailsElement.setAttribute('data-trip-end-date', endDate);
+    }
+
+    // Add a subtle update animation
+    card.style.transform = 'scale(1.02)';
+    card.style.transition = 'transform 0.2s ease';
+    setTimeout(() => {
+      card.style.transform = 'scale(1)';
+      setTimeout(() => {
+        card.style.transition = '';
+      }, 200);
+    }, 150);
   }
 
   function initAll() {

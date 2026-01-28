@@ -1,0 +1,79 @@
+/* Date Chip (scoped) — styles only affect elements inside [data-date-chip] */
+[data-date-chip] {
+  /* Design tokens (override per chip inline) */
+  --dc-font: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --dc-teal: #0b6f73;   /* border/text */
+  --dc-teal-2: #9ACBD0; /* focus/hover accent */
+  --dc-bg: #ffffff;
+
+  /* Sizing variables (set these per instance) */
+  --dc-w: 80px;         /* outer width (includes border) */
+  --dc-h: 40px;         /* outer height (includes border) */
+  --dc-fz: 15px;        /* text size */
+
+  /* Visual details */
+  --dc-bw: 2px;         /* border width */
+  --dc-radius: 9999px;  /* pill shape */
+  --dc-ring: 3px;       /* focus ring size */
+
+  display: inline-block;
+  font-family: var(--dc-font);
+  color: var(--dc-teal);
+}
+
+[data-date-chip] * { box-sizing: border-box; }
+
+/* The pill button uses explicit width/height and centers the text */
+[data-date-chip] .dc-pill {
+  appearance: none;
+  border: var(--dc-bw) solid var(--dc-teal);
+  background: var(--dc-bg);
+  color: var(--dc-teal);
+  border-radius: var(--dc-radius);
+
+  width: var(--dc-w);
+  height: var(--dc-h);
+  padding: 0;                        /* exact size control */
+
+  display: inline-grid;              /* perfect centering */
+  place-items: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;                  /* guard long labels */
+  text-overflow: ellipsis;
+  cursor: pointer;
+  text-decoration: none;
+
+  font: 700 var(--dc-fz) var(--dc-font);
+  line-height: 1;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .05s ease;
+}
+
+/* Hover/active */
+[data-date-chip] .dc-pill:hover {
+  background: #f4fafb;
+  border-color: var(--dc-teal-2);
+}
+[data-date-chip] .dc-pill:active { transform: translateY(1px); }
+
+/* Keyboard focus */
+[data-date-chip] .dc-pill:focus-visible {
+  outline: var(--dc-ring) solid var(--dc-teal-2);
+  outline-offset: 2px;
+}
+
+/* Selected (CSS-only variants) */
+[data-date-chip][data-selected] .dc-pill,
+[data-date-chip] .dc-pill[aria-pressed="true"] {
+  background: var(--dc-teal);
+  color: #fff;
+  border-color: var(--dc-teal);
+}
+
+/* Disabled (optional) */
+[data-date-chip] .dc-pill[disabled] {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+[data-date-chip] .dc-text { display: inline-block; }

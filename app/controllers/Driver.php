@@ -482,28 +482,6 @@
                 echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving stats: ' . $e->getMessage()]);
             }
         }
-
-        public function help() {
-            ob_start();
-            $this->view('UserTemplates/help');
-            $html = ob_get_clean();
-
-            $css = URL_ROOT.'/public/css/helper/help.css';
-            $js = URL_ROOT.'/public/js/helper/help.js';
-
-            $loadingContent = [
-                'html' => $html,
-                'css' => $css,
-                'js' => $js
-            ];
-
-            $unEncodedResponse = [
-                'tabId'=>'help',
-                'loadingContent'=>$loadingContent
-            ];
-
-            $this->view('UserTemplates/driverDash', $unEncodedResponse);
-        }
         
 
     }

@@ -739,28 +739,6 @@ require_once '../app/helpers/travel_spot_helper.php';
                 echo json_encode(['success' => false, 'message' => 'Failed to delete trip']);
             }
         }
-
-        public function help() {
-            ob_start();
-            $this->view('UserTemplates/help');
-            $html = ob_get_clean();
-
-            $css = URL_ROOT.'/public/css/helper/help.css';
-            $js = URL_ROOT.'/public/js/helper/help.js';
-
-            $loadingContent = [
-                'html' => $html,
-                'css' => $css,
-                'js' => $js
-            ];
-
-            $unEncodedResponse = [
-                'tabId'=>'help',
-                'loadingContent'=>$loadingContent
-            ];
-
-            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
-        }
         
     }
 

@@ -10,6 +10,23 @@
         public function index() {
             $this->view('Homepage');
         }
+
+        public function trips() {
+            $this->view('Explore/trending');
+        }
+
+        public function dest() {
+            $this->view('Explore/packages');
+        }
+
+        public function drive() {
+            $this->view('Explore/driver/driver_detail');
+        }
+
+        public function test() {
+            $this->view('Admin/adminDash1');
+        }
+
     }
 
 

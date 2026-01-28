@@ -49,6 +49,14 @@
   overflow: hidden;
   box-shadow: var(--tc-shadow);
   margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+/* Clickable card hover effect */
+[data-trip-card] .tpc-card[data-clickable]:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+  border-color: var(--tc-accent);
 }
 
 /* Image */
@@ -83,17 +91,87 @@
   color: var(--tc-text);
   margin: 0;
 }
-/* Options button (dots) */
+/* Options button (dots) and dropdown */
+[data-trip-card] .tpc-options-wrapper {
+  position: relative;
+}
+
 [data-trip-card] .tpc-options {
   background: transparent;
   border: 0;
-  padding: 0 5px;
+  padding: 8px;
   cursor: pointer;
   color: #6c757d;
   font-size: 20px;
   font-weight: 900;
   letter-spacing: 2px;
   line-height: 1;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+[data-trip-card] .tpc-options:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Dropdown menu */
+[data-trip-card] .tpc-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--tc-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 140px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+}
+
+[data-trip-card] .tpc-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+[data-trip-card] .tpc-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tc-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+[data-trip-card] .tpc-dropdown-item:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+[data-trip-card] .tpc-dropdown-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+[data-trip-card] .tpc-dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+[data-trip-card] .tpc-dropdown-item[data-action="delete"]:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+[data-trip-card] .tpc-dropdown-icon {
+  margin-right: 8px;
+  font-size: 16px;
 }
 
 /* Meta text */
@@ -131,6 +209,29 @@
   background: var(--tc-accent-hover);
 }
 
+/* Toast notification */
+.trip-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #0d9488;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10001;
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.3s ease;
+}
+
+.trip-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 /* Optional: small responsive tweak */
 @media (max-width: 580px) {
   [data-trip-card] .tpc-card {
@@ -142,5 +243,16 @@
   }
   [data-trip-card] .tpc-image {
     height: 200px;
+  }
+  
+  .trip-toast {
+    right: 10px;
+    left: 10px;
+    right: 10px;
+    transform: translateY(-100px);
+  }
+  
+  .trip-toast.show {
+    transform: translateY(0);
   }
 }

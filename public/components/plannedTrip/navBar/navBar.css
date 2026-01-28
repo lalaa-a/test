@@ -1,0 +1,84 @@
+/* Tabs with underline on hover (scoped) */
+/* Only affects elements inside [data-tabs="tripnav"] */
+[data-tabs="tripnav"] {
+  --tn-font: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --tn-ink: #0e1213;       /* text + underline color */
+  --tn-gap: 28px;          /* space between tabs */
+  --tn-underline: 2px;     /* underline thickness */
+  --tn-offset: -4px;       /* underline distance from text baseline */
+
+  font-family: var(--tn-font);
+  color: var(--tn-ink);
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 5px;
+}
+
+[data-tabs="tripnav"] * {
+  box-sizing: border-box;
+}
+
+[data-tabs="tripnav"] .tn-tabs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--tn-gap);
+  align-items: center;
+}
+
+[data-tabs="tripnav"] .tn-item {
+  margin: 0;
+  padding: 0;
+}
+
+[data-tabs="tripnav"] .tn-link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  color: var(--tn-ink);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.2;
+  padding: 2px 0; /* larger hover/focus area */
+  outline: none;  /* we'll handle focus below */
+}
+
+/* Hidden underline base */
+[data-tabs="tripnav"] .tn-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--tn-offset);
+  height: var(--tn-underline);
+  background: var(--tn-ink);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .18s ease;
+}
+
+/* Show underline on hover or keyboard focus */
+[data-tabs="tripnav"] .tn-link:hover::after,
+[data-tabs="tripnav"] .tn-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Accessible focus ring for the link itself */
+[data-tabs="tripnav"] .tn-link:focus-visible {
+  outline: 3px solid rgba(154, 203, 208, 0.75);
+  outline-offset: 3px;
+}
+
+/* Optional: keep a tab "active" by adding .is-active to the link */
+[data-tabs="tripnav"] .tn-link.is-active::after {
+  transform: scaleX(1);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  [data-tabs="tripnav"] .tn-link::after {
+    transition: none;
+  }
+}

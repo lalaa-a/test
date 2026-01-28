@@ -1,0 +1,301 @@
+    .scroll-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #fff;
+        }
+
+    .bp-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 9998;
+    }
+    .bp-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ========== PANEL BASE ========== */
+    .bp-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 520px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+      transition: right 0.4s ease;
+      z-index: 9999;
+      font-family: 'Geologica', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      border-top-left-radius: 24px;
+      border-bottom-left-radius: 24px;
+    }
+    .bp-panel.active {
+      right: 0;
+    }
+
+    .bp-body {
+      flex: 1;
+      padding: 24px;
+      /* ensure content can scroll above the footer: add extra bottom padding */
+      padding-bottom: calc(24px + 84px + env(safe-area-inset-bottom));
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* Enhanced scrolling */
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #006A71 #f0f0f0;
+    }
+
+    /* Custom scrollbar for webkit browsers */
+    .bp-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .bp-body::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+
+    .bp-body::-webkit-scrollbar-thumb {
+      background: #006A71;
+      border-radius: 4px;
+    }
+
+    .bp-body::-webkit-scrollbar-thumb:hover {
+      background: #005256;
+    }
+
+    /* Add subtle shadow to indicate scrollable content */
+    .bp-body::before {
+      content: '';
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bp-body::after {
+      content: '';
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bp-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      /* make footer sticky at bottom of panel so it sits flush */
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 18px 24px;
+      /* extra safe-area padding for devices with gesture bars */
+      padding-bottom: calc(18px + env(safe-area-inset-bottom));
+      border-top: 1px solid #ccc;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), #fff);
+      flex-shrink: 0;
+      z-index: 20;
+      box-shadow: 0 -6px 16px rgba(0,0,0,0.12);
+    }
+
+    /* ========== FORM FIELDS ========== */
+    .bp-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .bp-field {
+      margin-bottom: 16px;
+    }
+
+    .bp-field label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .bp-field input,
+    .bp-field select,
+    .bp-field textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #cde3e5;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    /* Booking Summary */
+    .bp-summary {
+      background: #f8fffe;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #e0f2f2;
+    }
+
+    .bp-summary h3 {
+      margin: 0 0 12px 0;
+      color: #006A71;
+      font-size: 16px;
+    }
+
+    .bp-summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .bp-summary-item.total {
+      border-top: 1px solid #ddd;
+      padding-top: 8px;
+      margin-top: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #006A71;
+    }
+
+    /* Card details section */
+    .bp-card-details {
+      background: #f0f8f8;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #d0e8e8;
+    }
+
+    /* Row layout for expiry and CVV */
+    .bp-row {
+      display: flex;
+      gap: 16px;
+    }
+    .bp-row .bp-field {
+      flex: 1;
+    }
+
+    /* Checkbox field */
+    .bp-checkbox-field {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .bp-checkbox-field input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      margin-top: 2px;
+    }
+
+    .bp-checkbox-field label {
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Security notice */
+    .bp-security-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e8f5e8;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #2d5016;
+    }
+
+    .bp-security-icon {
+      font-size: 16px;
+    }
+
+    /* Errors */
+    .bp-error {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* Footer buttons */
+    .bp-cancel {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .bp-pay {
+      background: #28a745;
+      color: #fff;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .bp-pay:hover {
+      background: #218838;
+    }
+
+    .bp-pay:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Responsive design for smaller screens */
+    @media (max-height: 600px) {
+      .bp-body {
+        padding: 16px;
+      }
+      
+      .bp-title {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      
+      .bp-field {
+        margin-bottom: 12px;
+      }
+      
+      .bp-summary {
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .bp-panel {
+        width: 100%;
+        border-radius: 0;
+        border-top-left-radius: 24px;
+      }
+    }

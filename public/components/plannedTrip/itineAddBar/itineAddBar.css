@@ -1,0 +1,74 @@
+/* Scoped to this component only */
+    [data-addbar] { display: inline-block; font: 600 14px/1.1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    [data-addbar] details.ab { display: inline-flex; align-items: center; gap: 14px; }
+
+    /* Remove default summary marker */
+    [data-addbar] summary { list-style: none; cursor: pointer; }
+    [data-addbar] summary::-webkit-details-marker { display: none; }
+
+    /* Vars */
+    [data-addbar]{
+      --ab-bg: #fff;
+      --ab-fg: #006A71;          /* Add button text/icon color */
+      --ab-border: #006A71;
+      --ab-shadow: 0 1px 2px rgba(0,0,0,.06);
+      --ab-h: 44px;              /* Add button height */
+      --ab-radius: 9999px;       /* Extra rounded corners */
+      --ab-icon-size: 44px;      /* Circle icon size */
+      --ab-pin: #0a7772;         /* Location pin color */
+      --ab-camera: #006A71;      /* Camera icon color */
+
+      z-index: 1;
+    }
+
+    /* Add button (summary) — shows + and "Add" text */
+    [data-addbar] .ab-add {
+      display: inline-flex; align-items: center; gap: 10px;
+      height: var(--ab-h); padding: 0 16px;
+      background: var(--ab-bg);
+      color: var(--ab-fg);
+      border: 2px solid var(--ab-border);
+      border-radius: var(--ab-radius);
+      box-shadow: var(--ab-shadow);
+      user-select: none;
+    }
+    [data-addbar] .ab-add:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
+    [data-addbar] .plus {
+      inline-size: 22px; block-size: 22px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: #eaf7f6; color: var(--ab-fg); font-weight: 800;
+    }
+
+    /* Hidden icons container (revealed when details is open) */
+    [data-addbar] .ab-icons {
+      display: flex; gap: 14px;
+      max-width: 0; overflow: hidden;
+      opacity: 0; transform: translateX(-6px) scale(.98);
+      pointer-events: none;
+      transition: max-width .25s ease, opacity .18s ease, transform .18s ease;
+    }
+    [data-addbar] details[open] .ab-icons {
+      max-width: 240px; /* enough room for two 44px circles + gap */
+      opacity: 1; transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Icon circles */
+    [data-addbar] .circ {
+      inline-size: var(--ab-icon-size); block-size: var(--ab-icon-size);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      border: 0; cursor: pointer;
+      box-shadow: var(--ab-shadow);
+      background: #111; color: #fff;
+    }
+    /* Location (pin): white circle with teal ring */
+    [data-addbar] .circ--loc {
+      background: #fff; color: var(--ab-pin); border: 2px solid var(--ab-pin);
+    }
+    /* Camera: teal icon (#006A71) with matching ring */
+    [data-addbar] .circ--cam {
+      background: #fff; color: var(--ab-camera); border: 2px solid var(--ab-camera);
+    }
+
+    [data-addbar] .circ svg { width: 56%; height: 56%; display: block; }

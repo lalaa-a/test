@@ -189,6 +189,17 @@
   cursor: pointer;
 }
 [data-trip-form="create"] .ctf-day.is-outside { color: #c0c6cf; font-weight: 500; }
+[data-trip-form="create"] .ctf-day.is-disabled {
+  color: #d1d5db;
+  background: #f9fafb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+[data-trip-form="create"] .ctf-day.is-disabled:hover {
+  border-color: transparent;
+  background: #f9fafb;
+  cursor: not-allowed;
+}
 [data-trip-form="create"] .ctf-day.is-inrange { background: #e3f1f3; }
 [data-trip-form="create"] .ctf-day.is-start,
 [data-trip-form="create"] .ctf-day.is-end {
@@ -196,7 +207,7 @@
   border-color: var(--tf-accent);
   color: #0b2b2e;
 }
-[data-trip-form="create"] .ctf-day:hover { border-color: var(--tf-accent-2); background: #f2fbfc; }
+[data-trip-form="create"] .ctf-day:hover:not(.is-disabled) { border-color: var(--tf-accent-2); background: #f2fbfc; }
 
 /* Actions under calendar: Clear / Apply, with spacing before footer line */
 [data-trip-form="create"] .ctf-actions {

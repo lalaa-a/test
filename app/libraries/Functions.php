@@ -2,21 +2,25 @@
 
 $GLOBALS['ASSETS'] = ['css'=>[], 'js'=>[], 'names'=>[]];
 
-function addAssets($model,$name) {
-    if (in_array($name.'_'.$model, $GLOBALS['ASSETS']['names'])) return;
+function addAssets($method,$name) {
+    if (in_array($name.'_'.$method, $GLOBALS['ASSETS']['names'])) return;
     
     // File system path
-    $basePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$model/$name";
+    $basePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$method/$name";
     
     // Web URL path
-    $baseUrl = "/test/public/components/$model/$name";
+    $baseUrl = "/test/public/components/$method/$name";
 
     // check config.json for deps
     $cfg = "$basePath/config.json";
 
     if (file_exists($cfg)) {
         $conf = json_decode(file_get_contents($cfg), true);
-        foreach ($conf['dependencies'] ?? [] as $key=>$value) addAssets($key,$value);
+        foreach ($conf['dependencies'] ?? [] as $key=>$values) {
+            foreach($values as $value){
+                addAssets($key,$value);
+            } 
+        }
     }
 
     echo "<!-- File exists: " . (file_exists("$basePath/$name.css") ? 'YES' : 'NO') . " -->\n";
@@ -25,16 +29,16 @@ function addAssets($model,$name) {
     if (file_exists("$basePath/$name.css")) $GLOBALS['ASSETS']['css'][] = "$baseUrl/$name.css";
     if (file_exists("$basePath/$name.js"))  $GLOBALS['ASSETS']['js'][]  = "$baseUrl/$name.js";
 
-    $GLOBALS['ASSETS']['names'][] = $name.'_'.$model;
+    $GLOBALS['ASSETS']['names'][] = $name.'_'.$method;
 }
 
-function renderComponent($model,$name, $props = []) {
+function renderComponent($method,$name, $props = []) {
     
-    addAssets($model,$name);
+    addAssets($method,$name);
     extract($props);
     
     // Use file system path for including PHP files
-    $filePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$model/$name/$name.php";
+    $filePath = $_SERVER['DOCUMENT_ROOT'] . "/test/public/components/$method/$name/$name.php";
     if (file_exists($filePath)) {
         include $filePath;
     } else {
