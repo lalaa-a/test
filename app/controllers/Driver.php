@@ -484,7 +484,30 @@
         }
         
 
+    // Help page within the dashboard
+    public function help() {
+        ob_start();
+        $this->view('Help/helpContent');
+        $fullcontent = ob_get_clean();
+
+        $html = $fullcontent;
+        $css = URL_ROOT.'/public/css/helper/help.css';
+        $js = URL_ROOT.'/public/js/helper/help.js';
+
+        $loadingContent = [
+            'html' => $html,
+            'css' => $css,
+            'js' => $js
+        ];
+
+        $unEncodedResponse = [
+            'tabId'=>'help',
+            'loadingContent'=>$loadingContent
+        ];
+        $this->view('UserTemplates/driverDash', $unEncodedResponse);
     }
+
+}
 
 
     // `/controller/method/parameters

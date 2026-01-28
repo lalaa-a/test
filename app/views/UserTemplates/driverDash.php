@@ -849,7 +849,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
+            <h1>Hello <?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'].' Welcome Back!' : 'Welcome!'; ?></h1>
             
             <!-- Header Actions -->
             <div class="header-actions">
@@ -890,7 +890,7 @@
             encodedData = <?php echo json_encode($loadingContent)?>;
             const tabId = <?php echo json_encode($tabId)?>;
             // Expose logged-in user's profile photo URL to JS (empty string if none)
-            userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
+            userProfilePhoto = '<?php $u = getLoggedInUser(); echo !empty($u["profile_photo"]) ? URL_ROOT . "/public/uploads/" . $u["profile_photo"] : "" ?>';
 
             updateUI();
             setActiveTab(tabId);
@@ -935,6 +935,17 @@
             try {
 
                 const data = encodedData;
+
+                // Skip if no data to load (default dashboard view)
+                if (!data || !data.html) {
+                    tabElement.innerHTML = `
+                        <div class="welcome-section" style="text-align: center; padding-top: 60px;">
+                            <h1 style="color: var(--primary); margin-bottom: 10px;">Welcome Back!</h1>
+                            <p style="color: #666;">Select an option from the sidebar to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
                 cleanupPreviousAssets(tabId);
             
@@ -1147,7 +1158,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = '<?php $u = getLoggedInUser(); echo isset($u["fullname"]) ? $u["fullname"] : "Guest"; ?>';
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
@@ -1245,7 +1256,45 @@
                 opacity: 0;
             }
         }
+
+        /* Floating Help Button */
+        .floating-help-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #008891 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 106, 113, 0.4);
+            transition: all 0.3s ease;
+            z-index: 9999;
+            padding: 12px;
+            text-decoration: none;
+        }
+        .floating-help-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+        .floating-help-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 106, 113, 0.5);
+        }
+        .floating-help-btn:active {
+            transform: scale(0.95);
+        }
     </style>
+    <!-- Floating Help Button -->
+    <a href="<?php echo URL_ROOT.'/driver/help'?>" class="floating-help-btn" title="Need Help?">
+        <img src="<?php echo IMG_ROOT.'/help/support.png'?>" alt="Help">
+    </a>
 </body>
 </html>
 

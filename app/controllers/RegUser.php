@@ -10,6 +10,14 @@ require_once '../app/helpers/travel_spot_helper.php';
             $this->regUserModel = $this->model('RegUserModel');
         }
 
+        public function index() {
+            $unEncodedResponse = [
+                'tabId'=>'dashboard',
+                'loadingContent'=>null
+            ];
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
         public function destinations() {
 
             requireLogin();
@@ -738,6 +746,29 @@ require_once '../app/helpers/travel_spot_helper.php';
             } else {
                 echo json_encode(['success' => false, 'message' => 'Failed to delete trip']);
             }
+        }
+
+        // Help page within the dashboard
+        public function help() {
+            ob_start();
+            $this->view('Help/helpContent');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/helper/help.css';
+            $js = URL_ROOT.'/public/js/helper/help.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'help',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
         
     }

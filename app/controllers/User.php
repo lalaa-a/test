@@ -610,7 +610,7 @@
                 case 'admin':
                     return URL_ROOT . '/dashboard/admin';
                 case 'driver':
-                    return URL_ROOT . '/dashboard/driver';
+                    return URL_ROOT . '/driver/dashboard';
                 case 'guide':
                     return URL_ROOT . '/dashboard/guide';
                 case 'tourist':
