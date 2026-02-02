@@ -136,57 +136,6 @@
                     <i class="fas fa-paper-plane"></i> Send Message
                 </button>
             </form>
-        </div>
-    </div>
-    <!-- Chat Trigger Button -->
-    <div class="floating-chat-btn" onclick="toggleChat()">
-        <i class="fas fa-comment-dots"></i>
-        <span class="notification-dot"></span>
-    </div>
-
-    <!-- Help Trigger Button -->
-    <div class="floating-help-btn" onclick="scrollToSection('faq-section')">
-        <i class="fas fa-question"></i>
-    </div>
-
-    <!-- Premium Chat Widget -->
-    <div class="chat-widget" id="chatWidget">
-        <div class="chat-header">
-            <div class="chat-header-info">
-                <div class="agent-avatar">
-                    <i class="fas fa-headset"></i>
-                    <span class="status-dot online"></span>
-                </div>
-                <div class="agent-details">
-                    <h3>Travel Support</h3>
-                    <p>Online | Typically replies in minutes</p>
-                </div>
-            </div>
-            <div class="chat-header-actions">
-                <i class="fas fa-times" onclick="toggleChat()"></i>
-            </div>
-        </div>
-        
-        <div class="chat-body" id="chatBody">
-            <div class="chat-messages" id="chatMessages">
-                <div class="date-divider"><span>Today</span></div>
-                <div class="message support-message">
-                    <div class="message-content">
-                        <p>Hello there! 👋 Welcome to Tripingoo Travel Support. How can we help you plan your next adventure?</p>
-                    </div>
-                    <span class="message-time">Just now</span>
-                </div>
-            </div>
-            
-            <div class="chat-input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="handleChatInput(event)">
-                    <button class="send-btn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 <script src="<?php echo URL_ROOT.'/public/js/helper/help.js'?>"></script>

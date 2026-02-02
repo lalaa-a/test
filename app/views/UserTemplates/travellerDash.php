@@ -1173,46 +1173,82 @@
 
     </script>
 
-    <style>
-        /* Floating Help Button */
-        .floating-help-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, #008891 100%);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 20px rgba(0, 106, 113, 0.4);
-            transition: all 0.3s ease;
-            z-index: 9999;
-            padding: 12px;
-            text-decoration: none;
-        }
-        .floating-help-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
-        }
-        .floating-help-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(0, 106, 113, 0.5);
-        }
-        .floating-help-btn:active {
-            transform: scale(0.95);
-        }
-    </style>
+    <!-- Help Widget CSS -->
+    <link rel="stylesheet" href="<?php echo URL_ROOT.'/public/css/helper/helpWidget.css'?>">
 
-    <!-- Floating Help Button -->
-    <a href="<?php echo URL_ROOT.'/reguser/help'?>" class="floating-help-btn" title="Need Help?">
-        <img src="<?php echo IMG_ROOT.'/help/support.png'?>" alt="Help">
-    </a>
+    <!-- Help Widget Container -->
+    <div class="help-widget-container">
+        <!-- Help Options Popup -->
+        <div class="help-options-popup" id="helpOptionsPopup">
+            <div class="help-popup-header">
+                <h4><i class="fas fa-hands-helping"></i> How can we help?</h4>
+            </div>
+            <div class="help-option-item" id="openChatBtn">
+                <div class="help-option-icon chat-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Chat with Us</h5>
+                    <p>Chat with our support team</p>
+                </div>
+            </div>
+            <a href="<?php echo URL_ROOT.'/reguser/help'?>" class="help-option-item">
+                <div class="help-option-icon center-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Help Center</h5>
+                    <p>Browse FAQs & guides</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Help Button -->
+        <button class="floating-help-btn" id="helpBtn" title="Need Help?">
+            <img src="<?php echo IMG_ROOT.'/help/support.png'?>" alt="Help">
+        </button>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="agent-avatar">
+                    <i class="fas fa-headset"></i>
+                    <span class="status-dot"></span>
+                </div>
+                <div class="agent-details">
+                    <h3>Travel Support</h3>
+                    <p>Online | Typically replies in minutes</p>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <i class="fas fa-times" id="closeChatBtn"></i>
+            </div>
+        </div>
+        <div class="chat-body">
+            <div class="chat-messages" id="chatMessages">
+                <div class="date-divider"><span>Today</span></div>
+                <div class="message support-message">
+                    <div class="message-content">
+                        <p>Hello there! 👋 Welcome to Tripingoo Travel Support. How can we help you today?</p>
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button class="send-btn" id="chatSendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Widget JS -->
+    <script src="<?php echo URL_ROOT.'/public/js/helper/helpWidget.js'?>"></script>
 </body>
 </html>
 
