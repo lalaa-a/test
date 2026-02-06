@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Moderator Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     
@@ -808,7 +808,7 @@
             <li><a href="<?php echo URL_ROOT.'/moderator/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fas fa-user-check"></i></i> <span>Verification</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>    
-            <li><a href="#" data-tab="support"><i class="fa-solid fa-headset"></i> <span>Support</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/support'?>" data-tab="support"><i class="fa-solid fa-headset"></i> <span>Support</span></a></li>
         </ul>
 
         <!-- User Info Section -->
@@ -847,7 +847,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
+            <h1>Hello <?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'].' Welcome Back!' : 'Welcome!'; ?></h1>
             
             <!-- Header Actions -->
             <div class="header-actions">
@@ -1134,7 +1134,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = '<?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'] : ''; ?>';
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
@@ -1154,47 +1154,7 @@
 
     </script>
 
-    <!-- Support & Chat Section -->
-    <div class="dashboard-content" id="support">
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-headset"></i> Support Tickets</h2>
-            </div>
-            
-            <div class="chat-admin-container" style="display: flex; height: 600px; gap: 20px;">
-                <!-- Chat List -->
-                <div class="chat-list-panel" style="width: 300px; border-right: 1px solid #eee; overflow-y: auto;">
-                    <h3 style="padding: 10px; font-size: 1rem; color: #666;">Open Chats</h3>
-                    <div id="openChatsList">
-                        <!-- Populated via JS -->
-                        <div class="p-3 text-center text-muted">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Active Chat Area -->
-                <div class="chat-main-panel" style="flex: 1; display: flex; flex-direction: column;">
-                    <div id="activeChatHeader" style="padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; color: var(--primary);">
-                        Select a chat to view
-                    </div>
-                    <div id="adminChatMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa;">
-                        <!-- Messages go here -->
-                    </div>
-                    <div class="chat-input-area" style="padding: 15px; border-top: 1px solid #eee; display: none;" id="adminChatInputArea">
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="adminChatInput" placeholder="Type a reply..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                            <button onclick="sendAdminMessage()" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-                        </div>
-                    </div>
-                    <div id="claimChatOverlay" style="display: none; height: 100%; align-items: center; justify-content: center; flex-direction: column; gap: 15px;">
-                        <p>This chat is open. Claim it to start replying.</p>
-                        <button onclick="claimChat()" class="btn btn-primary">Claim Chat</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="<?php echo URL_ROOT.'/public/js/moderator/chat.js'?>"></script>
+    <!-- Support section is now loaded dynamically via moderator/support -->
 </body>
 </html>
 

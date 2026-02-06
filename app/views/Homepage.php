@@ -33,6 +33,8 @@
     <?php renderComponent('homepage','body',[]); ?>
     
     <?php renderComponent('inc','footer',[]); ?>
+    
+    
 
 
 

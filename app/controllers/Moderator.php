@@ -1,10 +1,24 @@
 <?php
 
-    class moderator extends controller{
+    class moderator extends Controller{
 
         private $moderatorModel;
+        private $userModel;
         public function __construct(){
             $this->moderatorModel = $this->model("ModeratorModel");
+            $this->userModel = $this->model("UserModel");
+        }
+
+        public function index(){
+            $unEncodedResponse = [
+                'tabId'=>'dashboard',
+                'loadingContent'=>null
+            ];
+            $this->view('UserTemplates/moderatorDash',$unEncodedResponse);
+        }
+
+        public function support(){
+            $this->view('UserTemplates/moderatorDash');
         }
 
         public function dashboard(){

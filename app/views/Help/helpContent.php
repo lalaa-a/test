@@ -19,6 +19,11 @@
             <h3>Contact Us</h3>
             <p>Get in touch with our team</p>
         </div>
+        <div class="action-card" onclick="openHelpChat()">
+            <i class="fas fa-comments"></i>
+            <h3>Chat with Us</h3>
+            <p>Chat with our support team</p>
+        </div>
         <div class="action-card" onclick="scrollToSection('guide-section')">
             <i class="fas fa-book"></i>
             <h3>User Guide</h3>
@@ -158,3 +163,5 @@
         </div>
     </div>
 </div>
+
+<script src="<?php echo URL_ROOT.'/public/js/helper/help.js'?>"></script>

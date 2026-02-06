@@ -1,4 +1,20 @@
 // Premium Chat Widget Logic
+
+// Open chat widget from Help Center page (uses the dashboard's existing chat widget)
+function openHelpChat() {
+    const chatWidget = document.getElementById('chatWidget');
+    const helpPopup = document.getElementById('helpOptionsPopup');
+    if (chatWidget) {
+        // Close help popup if open
+        if (helpPopup) helpPopup.classList.remove('active');
+        chatWidget.classList.add('active');
+        setTimeout(() => {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) chatInput.focus();
+        }, 300);
+    }
+}
+
 function toggleChat() {
     const chatWidget = document.getElementById('chatWidget');
     chatWidget.classList.toggle('active');

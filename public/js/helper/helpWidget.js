@@ -14,36 +14,43 @@
 
     let popupOpen = false;
 
-    // Toggle help popup
-    helpBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        // Close chat widget if open
-        chatWidget.classList.remove('active');
-        popupOpen = !popupOpen;
-        helpPopup.classList.toggle('active', popupOpen);
-    });
+    // Toggle help popup (only when floating help button exists)
+    if (helpBtn && helpPopup) {
+        helpBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            // Close chat widget if open
+            if (chatWidget) chatWidget.classList.remove('active');
+            popupOpen = !popupOpen;
+            helpPopup.classList.toggle('active', popupOpen);
+        });
 
-    // Open chat widget
-    openChatBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        helpPopup.classList.remove('active');
-        popupOpen = false;
-        chatWidget.classList.add('active');
-        chatInput.focus();
-    });
+        // Close popup when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!helpBtn.contains(e.target) && !helpPopup.contains(e.target)) {
+                helpPopup.classList.remove('active');
+                popupOpen = false;
+            }
+        });
+    }
+
+    // Open chat widget from popup button
+    if (openChatBtn && chatWidget) {
+        openChatBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (helpPopup) helpPopup.classList.remove('active');
+            popupOpen = false;
+            chatWidget.classList.add('active');
+            if (chatInput) chatInput.focus();
+        });
+    }
 
     // Close chat widget
-    closeChatBtn.addEventListener('click', function () {
-        chatWidget.classList.remove('active');
-    });
-
-    // Close popup when clicking outside
-    document.addEventListener('click', function (e) {
-        if (!helpBtn.contains(e.target) && !helpPopup.contains(e.target)) {
-            helpPopup.classList.remove('active');
-            popupOpen = false;
-        }
-    });
+    if (closeChatBtn && chatWidget) {
+        closeChatBtn.addEventListener('click', function () {
+            chatWidget.classList.remove('active');
+        });
+    }
+    
 
     // Send chat message
     function sendChatMessage() {
@@ -74,8 +81,8 @@
         }
     }
 
-    chatSendBtn.addEventListener('click', sendChatMessage);
-    chatInput.addEventListener('keypress', function (e) {
+    chatSendBtn && chatSendBtn.addEventListener('click', sendChatMessage);
+    chatInput && chatInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendChatMessage();
     });
 })();

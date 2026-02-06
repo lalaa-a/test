@@ -60,4 +60,72 @@ class HelpChat {
         $this->db->bind(':id', $chatId);
         return $this->db->execute();
     }
+
+    // Get chats visible to a specific moderator (open chats + their assigned chats)
+    public function getChatsForModerator($moderatorId) {
+        $this->db->query('SELECT * FROM help_chats 
+            WHERE (status = "Open") 
+            OR (status = "Assigned" AND assigned_moderator_id = :mod_id) 
+            ORDER BY 
+                CASE WHEN status = "Assigned" AND assigned_moderator_id = :mod_id2 THEN 0 ELSE 1 END,
+                created_at DESC');
+        $this->db->bind(':mod_id', $moderatorId);
+        $this->db->bind(':mod_id2', $moderatorId);
+        return $this->db->resultSet();
+    }
+
+    // Get all chats for admin (view-only)
+    public function getAllChats() {
+        $this->db->query('SELECT * FROM help_chats WHERE status IN ("Open", "Assigned") ORDER BY created_at DESC');
+        return $this->db->resultSet();
+    }
+
+    // Get chat with user info for display
+    public function getChatWithUserInfo($chatId) {
+        $chat = $this->getChatById($chatId);
+        if (!$chat) return null;
+
+        // Get user name based on user_type
+        $userType = $chat->user_type;
+        $userId = $chat->user_id;
+
+        $tableName = '';
+        $idColumn = '';
+        $nameColumn = 'fullname';
+
+        switch ($userType) {
+            case 'Driver':
+                $tableName = 'drivers';
+                $idColumn = 'driver_id';
+                break;
+            case 'Guide':
+                $tableName = 'guides';
+                $idColumn = 'guide_id';
+                break;
+            case 'Traveller':
+            default:
+                $tableName = 'users';
+                $idColumn = 'user_id';
+                break;
+        }
+
+        $this->db->query("SELECT {$nameColumn} FROM {$tableName} WHERE {$idColumn} = :user_id");
+        $this->db->bind(':user_id', $userId);
+        $user = $this->db->single();
+
+        $chat->user_name = $user ? $user->fullname : 'Unknown User';
+        return $chat;
+    }
+
+    // Check if moderator can access this chat
+    public function canModeratorAccessChat($chatId, $moderatorId) {
+        $chat = $this->getChatById($chatId);
+        if (!$chat) return false;
+        
+        // Open chats are accessible to all moderators
+        if ($chat->status === 'Open') return true;
+        
+        // Assigned chats only to the assigned moderator
+        return $chat->assigned_moderator_id == $moderatorId;
+    }
 }

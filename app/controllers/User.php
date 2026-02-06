@@ -612,11 +612,11 @@
                 case 'driver':
                     return URL_ROOT . '/driver/dashboard';
                 case 'guide':
-                    return URL_ROOT . '/dashboard/guide';
+                    return URL_ROOT . '/guide/dashboard';
                 case 'tourist':
                     return URL_ROOT . '/RegUser/home';
                 case 'site_moderator':
-                    return URL_ROOT . '/dashboard/siteModerator';
+                    return URL_ROOT . '/moderator/dashboard';
                 case 'business_manager':
                     return URL_ROOT . '/dashboard/businessManager';
                 default:
