@@ -384,3 +384,56 @@
         border-radius: 0;
     }
 }
+
+/* System Message */
+.system-message {
+    align-self: center;
+    max-width: 90%;
+}
+
+.system-message .message-content {
+    background: rgba(0, 0, 0, 0.05);
+    color: #888;
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.system-message .message-content.system {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* Sender Name */
+.sender-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+/* Connecting State */
+.connecting-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: #888;
+}
+
+.connecting-state i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

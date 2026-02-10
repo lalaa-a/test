@@ -13,13 +13,11 @@
             $this->userModel = $this->model('UserModel');
         }
             
-        
         public function trips() {
             requireLogin();
             $this->view('Trips');
         }
         
-
         public function plannedTrip() {
             requireLogin();
             $this->view('PlannedTrip/PlannedTrip');

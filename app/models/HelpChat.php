@@ -85,31 +85,10 @@ class HelpChat {
         $chat = $this->getChatById($chatId);
         if (!$chat) return null;
 
-        // Get user name based on user_type
-        $userType = $chat->user_type;
         $userId = $chat->user_id;
 
-        $tableName = '';
-        $idColumn = '';
-        $nameColumn = 'fullname';
-
-        switch ($userType) {
-            case 'Driver':
-                $tableName = 'drivers';
-                $idColumn = 'driver_id';
-                break;
-            case 'Guide':
-                $tableName = 'guides';
-                $idColumn = 'guide_id';
-                break;
-            case 'Traveller':
-            default:
-                $tableName = 'users';
-                $idColumn = 'user_id';
-                break;
-        }
-
-        $this->db->query("SELECT {$nameColumn} FROM {$tableName} WHERE {$idColumn} = :user_id");
+        // All users are in the 'users' table with 'id' as the primary key
+        $this->db->query("SELECT fullname FROM users WHERE id = :user_id");
         $this->db->bind(':user_id', $userId);
         $user = $this->db->single();
 

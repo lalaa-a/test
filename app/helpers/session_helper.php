@@ -132,7 +132,7 @@ function redirectIfLoggedIn($redirect_url = '/dashboard') {
             case 'admin':
                 $redirect_url = '/dashboard/admin';
                 break;
-            case 'site_modertor':
+            case 'site_moderator':
                 $redirect_url = '/dashboard/siteModerator';
                 break;
             case 'business_manager':

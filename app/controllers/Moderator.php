@@ -18,7 +18,22 @@
         }
 
         public function support(){
-            $this->view('UserTemplates/moderatorDash');
+            ob_start();
+            $this->view('Moderator/support/support');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/support/support.css',
+                'js'   => URL_ROOT.'/public/js/moderator/support/support.js'
+            ];
+
+            $unEncodedResponse = [
+                'tabId' => 'support',
+                'loadingContent' => $loadingContent
+            ];
+
+            $this->view('UserTemplates/moderatorDash', $unEncodedResponse);
         }
 
         public function dashboard(){
