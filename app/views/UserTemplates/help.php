@@ -138,6 +138,6 @@
             </form>
     </div>
 </div>
-<script src="<?php echo URL_ROOT.'/public/js/helper/help.js'?>"></script>
+<script src="<?php echo URL_ROOT.'/public/js/helper/help.js?v='.time();?>"></script>
 </body>
 

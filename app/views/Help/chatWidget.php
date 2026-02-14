@@ -39,4 +39,7 @@
 </div>
 
 <!-- Help & Chat Widget JS -->
-<script src="<?php echo URL_ROOT . '/public/js/helper/helpWidget.js' ?>"></script>
+<script>
+    window.CURRENT_USER_ID = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
+</script>
+<script src="<?php echo URL_ROOT . '/public/js/helper/helpWidget.js?v=' . time(); ?>"></script>

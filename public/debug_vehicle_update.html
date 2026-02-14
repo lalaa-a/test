@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Debug Vehicle Update</title>
 </head>
+
 <body>
     <h1>Debug Vehicle Update</h1>
-    
+
     <div id="result"></div>
-    
+
     <script>
         // Test the vehicle update functionality
         async function testVehicleUpdate() {
             const resultDiv = document.getElementById('result');
-            
+
             try {
                 // First test the controller
                 const testResponse = await fetch('http://localhost/test/VehicleController/test', {
@@ -22,7 +24,7 @@
                 });
                 const testData = await testResponse.json();
                 resultDiv.innerHTML += '<h3>Controller Test:</h3><pre>' + JSON.stringify(testData, null, 2) + '</pre>';
-                
+
                 // Test update method with mock data (this should fail with unauthorized)
                 const formData = new FormData();
                 formData.append('id', '1');
@@ -32,29 +34,30 @@
                 formData.append('license_plate', 'ABC-1234');
                 formData.append('color', 'White');
                 formData.append('vehicle_type', 'sedan');
-                
+
                 const updateResponse = await fetch('http://localhost/test/VehicleController/update', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const updateData = await updateResponse.json();
                 resultDiv.innerHTML += '<h3>Update Test (should show unauthorized):</h3><pre>' + JSON.stringify(updateData, null, 2) + '</pre>';
-                
+
                 // Test getting admin notifications
                 const notifResponse = await fetch('http://localhost/test/VehicleController/getAdminNotifications', {
                     method: 'GET'
                 });
                 const notifData = await notifResponse.json();
                 resultDiv.innerHTML += '<h3>Admin Notifications Test:</h3><pre>' + JSON.stringify(notifData, null, 2) + '</pre>';
-                
+
             } catch (error) {
                 resultDiv.innerHTML += '<h3>Error:</h3><pre>' + error.message + '</pre>';
             }
         }
-        
+
         // Run test when page loads
         window.onload = testVehicleUpdate;
     </script>
 </body>
+
 </html>

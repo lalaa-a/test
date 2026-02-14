@@ -117,6 +117,8 @@
         const text = chatInput.value.trim();
         if (!text || !currentChatId) return;
 
+        console.log(`[SEND] Sending message to chat #${currentChatId}: "${text}"`);
+
         // Optimistically show the message
         addUserMessage(text);
         chatInput.value = '';
@@ -132,11 +134,16 @@
             });
             const data = await response.json();
 
+            console.log('[SEND] Server response:', data);
+
             if (data.status !== 'success') {
+                console.warn('[SEND] Failed to send message:', data.message);
                 showSystemMessage('Failed to send message. Please try again.');
+            } else {
+                console.log('[SEND] Message sent successfully');
             }
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('[SEND] Error sending message:', error);
             showSystemMessage('Failed to send message. Please try again.');
         }
     }
@@ -159,18 +166,28 @@
 
     // Update messages with new ones
     function updateMessages(messages) {
-        if (!messages.length) return;
+        if (!messages.length) {
+            console.log('[UPDATE] No messages to update');
+            return;
+        }
+
+        console.log(`[UPDATE] Processing ${messages.length} messages, lastMessageId=${lastMessageId}`);
 
         // Find new messages
         const newMessages = messages.filter(m => parseInt(m.id) > lastMessageId);
+        console.log(`[UPDATE] Found ${newMessages.length} new messages`);
 
         newMessages.forEach(msg => {
+            console.log(`[UPDATE] MSG #${msg.id}: sender_id=${msg.sender_id}, sender_type="${msg.sender_type}", message="${msg.message}"`);
+
             // Skip if it's our own message (already shown optimistically)
             if (msg.sender_type !== 'Moderator') {
+                console.log(`[UPDATE] Skipping own message #${msg.id} (sender_type=${msg.sender_type})`);
                 lastMessageId = Math.max(lastMessageId, parseInt(msg.id));
                 return;
             }
 
+            console.log(`[UPDATE] Adding moderator message #${msg.id}`);
             addModeratorMessage(msg.message, msg.sender_name, msg.created_at);
             lastMessageId = Math.max(lastMessageId, parseInt(msg.id));
         });
@@ -178,17 +195,23 @@
 
     // Render messages from server
     function renderMessages(messages) {
+        console.log(`[RENDER] Rendering ${messages.length} historical messages`);
         clearMessages();
         addWelcomeMessage();
 
         messages.forEach(msg => {
+            console.log(`[RENDER] MSG #${msg.id}: sender_id=${msg.sender_id}, sender_type="${msg.sender_type}", message="${msg.message}"`);
+
             if (msg.sender_type === 'Moderator') {
+                console.log(`[RENDER] Adding as moderator message`);
                 addModeratorMessage(msg.message, msg.sender_name, msg.created_at);
             } else {
+                console.log(`[RENDER] Adding as user message`);
                 addUserMessage(msg.message, msg.created_at);
             }
             lastMessageId = Math.max(lastMessageId, parseInt(msg.id));
         });
+        console.log(`[RENDER] Completed. Final lastMessageId=${lastMessageId}`);
     }
 
     // Clear messages

@@ -19,7 +19,7 @@
 
     //Upload root
     define('UP_ROOT', 'http://localhost/test/public/uploads');
-
+    
     // Website Name
     define('SITE_NAME', 'test');
 
@@ -34,4 +34,18 @@
     define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
     define('FROM_EMAIL', 'noreply@travelapp.com');
     define('FROM_NAME', 'Travel App');
+
+    // ============================================
+    // SESSION CONFIGURATION
+    // ============================================
+    // Session timeout duration (in seconds)
+    // Default: 7200 seconds = 2 hours
+    // For Moderator Support Center, you may want a longer session
+    define('SESSION_TIMEOUT', 7200); // 2 hours
+    
+    // Alternative options:
+    // 3600  = 1 hour
+    // 7200  = 2 hours (recommended for moderators)
+    // 14400 = 4 hours
+    // 28800 = 8 hours (for long moderator shifts)
 ?>

@@ -1,4 +1,4 @@
-
+               
 -- Table: help_chats
 -- store  chat session between users and. moderators
 

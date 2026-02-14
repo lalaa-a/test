@@ -110,19 +110,33 @@ function renderChatMessages(messages) {
     const container = document.getElementById('adminChatMessages');
     container.innerHTML = '';
 
+    // DEBUG: Log all messages to console for debugging
+    console.log('=== Rendering Messages ===');
+    console.log('Total messages:', messages.length);
+
     messages.forEach(msg => {
+        // DEBUG: Log each message details
+        console.log(`MSG #${msg.id}: sender_id=${msg.sender_id}, sender_type="${msg.sender_type}", sender_name="${msg.sender_name}", message="${msg.message}"`);
+
         const isMe = msg.sender_type === 'Moderator';
         const align = isMe ? 'flex-end' : 'flex-start';
         const bg = isMe ? '#006A71' : 'white';
         const color = isMe ? 'white' : 'black';
+        const borderColor = isMe ? '#006A71' : '#ddd';
 
         const msgDiv = document.createElement('div');
         msgDiv.style.display = 'flex';
         msgDiv.style.justifyContent = align;
         msgDiv.style.marginBottom = '10px';
 
+        // Add sender type badge for clarity (especially helpful when names are the same)
+        const senderBadge = isMe ?
+            '<span style="font-size: 0.65rem; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px; margin-bottom: 4px; display: inline-block;">💬 You (Moderator)</span>' :
+            `<span style="font-size: 0.65rem; background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 3px; margin-bottom: 4px; display: inline-block;">👤 ${msg.sender_name} (${msg.sender_type})</span>`;
+
         msgDiv.innerHTML = `
-            <div style="background: ${bg}; color: ${color}; padding: 8px 12px; border-radius: 8px; max-width: 70%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div style="background: ${bg}; color: ${color}; padding: 8px 12px; border-radius: 8px; max-width: 70%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid ${borderColor};">
+                ${senderBadge}
                 <div style="font-size: 0.95rem;">${msg.message}</div>
                 <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px; text-align: right;">
                     ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -132,6 +146,7 @@ function renderChatMessages(messages) {
         container.appendChild(msgDiv);
     });
 
+    console.log('=== End Messages ===');
     container.scrollTop = container.scrollHeight;
 }
 
