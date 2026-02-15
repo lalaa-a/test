@@ -809,7 +809,7 @@
             <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fas fa-user-check"></i></i> <span>Verification</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>    
             <li><a href="<?php echo URL_ROOT.'/moderator/support'?>" data-tab="support"><i class="fa-solid fa-headset"></i> <span>Support</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/moderator/problems'?>" data-tab="qproblem"><i class="fa-solid fa-headset"></i> <span>Quick Problems</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/problems'?>" data-tab="qproblem"><i class="fa-solid fa-triangle-exclamation"></i> <span>Quick Problems</span></a></li>
         </ul>
 
         <!-- User Info Section -->

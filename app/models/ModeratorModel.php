@@ -360,5 +360,80 @@
             return $this->db->execute();
         }
 
+        // ==================== USER PROBLEMS CENTER ====================
+
+        public function submitUserProblem($data){
+            $query = 'INSERT INTO user_problems (userId, subject, message) VALUES (:userId, :subject, :message)';
+            $this->db->query($query);
+            $this->db->bind(':userId', $data['userId']);
+            $this->db->bind(':subject', $data['subject']);
+            $this->db->bind(':message', $data['message']);
+            return $this->db->execute();
+        }
+
+        public function getAllProblems($filter = 'all'){
+            $query = "SELECT 
+                        up.problemId,
+                        up.userId,
+                        up.subject,
+                        up.message,
+                        up.status,
+                        up.completedBy,
+                        up.completedAt,
+                        up.createdAt,
+                        u.fullname,
+                        u.email,
+                        u.phone,
+                        u.account_type,
+                        u.profile_photo,
+                        mod_user.fullname AS completedByName
+                    FROM user_problems up
+                    INNER JOIN users u ON up.userId = u.id
+                    LEFT JOIN users mod_user ON up.completedBy = mod_user.id";
+            
+            if($filter === 'pending'){
+                $query .= " WHERE up.status = 'pending'";
+            } elseif($filter === 'in_progress'){
+                $query .= " WHERE up.status = 'in_progress'";
+            } elseif($filter === 'completed'){
+                $query .= " WHERE up.status = 'completed'";
+            }
+
+            $query .= " ORDER BY 
+                        CASE up.status 
+                            WHEN 'pending' THEN 1 
+                            WHEN 'in_progress' THEN 2 
+                            WHEN 'completed' THEN 3 
+                        END, 
+                        up.createdAt DESC";
+
+            $this->db->query($query);
+            return $this->db->resultSet();
+        }
+
+        public function completeProblem($problemId, $moderatorId){
+            $query = "UPDATE user_problems SET 
+                    status = 'completed',
+                    completedBy = :moderatorId,
+                    completedAt = CURRENT_TIMESTAMP
+                    WHERE problemId = :problemId";
+            
+            $this->db->query($query);
+            $this->db->bind(':problemId', $problemId);
+            $this->db->bind(':moderatorId', $moderatorId);
+            return $this->db->execute();
+        }
+
+        public function getProblemCounts(){
+            $query = "SELECT 
+                        COUNT(*) as total,
+                        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+                        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+                    FROM user_problems";
+            $this->db->query($query);
+            return $this->db->single();
+        }
+
     }
 ?>

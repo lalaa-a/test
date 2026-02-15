@@ -807,6 +807,118 @@
                 return;
             }
         }
+
+        // ==================== USER PROBLEMS CENTER ====================
+
+        public function problems(){
+
+            ob_start();
+            $this->view('Moderator/quickProblems/quickProblems');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/quickProblems/quickProblems.css',
+                'js'   => URL_ROOT.'/public/js/moderator/quickProblems/quickProblems.js'
+            ];
+
+            $unEncodedResponse = [
+                'tabId' => 'qproblem',
+                'loadingContent' => $loadingContent
+            ];
+
+            $this->view('UserTemplates/moderatorDash', $unEncodedResponse);
+        }
+
+        public function getProblems(){
+
+            header('Content-Type: application/json');
+
+            $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+
+            try{
+                $problems = $this->moderatorModel->getAllProblems($filter);
+                $counts = $this->moderatorModel->getProblemCounts();
+                
+                echo json_encode([
+                    'success' => true,
+                    'problems' => $problems,
+                    'counts' => $counts
+                ]);
+            } catch(PDOException $e){
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        public function completeProblem(){
+            
+            header('Content-Type: application/json');
+
+            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $moderatorId = getSession('user_id');
+
+            if(!$moderatorId || empty($input['problemId'])){
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                return;
+            }
+
+            try{
+                if($this->moderatorModel->completeProblem($input['problemId'], $moderatorId)){
+                    echo json_encode(['success' => true, 'message' => 'Problem marked as completed']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update problem']);
+                }
+            } catch(PDOException $e){
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        public function submitProblem(){
+
+            header('Content-Type: application/json');
+
+            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+
+            if(!$userId){
+                echo json_encode(['success' => false, 'message' => 'You must be logged in to submit a problem']);
+                return;
+            }
+
+            if(empty($input['subject']) || empty($input['message'])){
+                echo json_encode(['success' => false, 'message' => 'Subject and message are required']);
+                return;
+            }
+
+            $data = [
+                'userId' => $userId,
+                'subject' => htmlspecialchars($input['subject']),
+                'message' => htmlspecialchars($input['message'])
+            ];
+
+            try{
+                if($this->moderatorModel->submitUserProblem($data)){
+                    echo json_encode(['success' => true, 'message' => 'Your problem has been submitted successfully! Our team will look into it.']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit problem']);
+                }
+            } catch(PDOException $e){
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
     }
 
 ?>

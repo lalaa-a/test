@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('helpContactForm');
 
     if (form) {
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const subject = document.getElementById('helpSubject').value;
             const message = document.getElementById('helpMessage').value;
 
             if (!subject || !message) {
-                showNotification('Please fill in all fields', 'warning');
+                showHelpNotification('Please fill in all fields', 'warning');
                 return;
             }
 
@@ -68,13 +68,30 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             submitBtn.disabled = true;
 
-            // Simulate form submission (replace with actual API call)
-            setTimeout(() => {
-                showNotification('Your message has been sent! We\'ll get back to you soon.', 'success');
-                form.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 1500);
+            const URL_ROOT = window.location.origin + '/test';
+
+            try {
+                const response = await fetch(`${URL_ROOT}/moderator/submitProblem`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, message })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showHelpNotification(data.message || 'Your message has been sent! We\'ll get back to you soon.', 'success');
+                    form.reset();
+                } else {
+                    showHelpNotification(data.message || 'Failed to send your message. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting problem:', error);
+                showHelpNotification('Network error. Please try again later.', 'error');
+            }
+
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         });
     }
 });
