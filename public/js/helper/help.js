@@ -47,7 +47,10 @@ function toggleFaq(element) {
 }
 
 // Handle contact form submission
-document.addEventListener('DOMContentLoaded', function () {
+// NOTE: Using IIFE instead of DOMContentLoaded because this script is loaded
+// dynamically after the dashboard page is already rendered, so DOMContentLoaded
+// has already fired and the callback would never execute.
+(function () {
     const form = document.getElementById('helpContactForm');
 
     if (form) {
@@ -94,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.disabled = false;
         });
     }
-});
+})();
 
 // Show notification (uses global notification function if available)
 function showHelpNotification(message, type) {

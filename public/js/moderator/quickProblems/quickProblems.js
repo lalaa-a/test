@@ -117,6 +117,9 @@
 
     // ---- Create Problem Card ----
     function createProblemCard(problem) {
+        problem.status = problem.status || 'pending';
+        problem.createdAt = problem.createdAt || new Date().toISOString();
+
         const card = document.createElement('div');
         card.className = `problem-card status-${problem.status}`;
         card.setAttribute('data-problem-id', problem.problemId);
@@ -163,6 +166,9 @@
                         <i class="fas fa-user-check"></i> ${problem.completedByName ? escapeHtml(problem.completedByName) : 'Moderator'}
                        </span>`
             }
+                <button class="delete-btn" data-id="${problem.problemId}" style="margin-left: 8px; background: none; border: none; color: #ff6b6b; cursor: pointer;" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         `;
 
@@ -180,11 +186,22 @@
             });
         }
 
+        const deleteBtn = card.querySelector('.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                deleteProblem(problem.problemId);
+            });
+        }
+
         return card;
     }
 
     // ---- Open Modal ----
     function openModal(problem) {
+        problem.status = problem.status || 'pending';
+        problem.createdAt = problem.createdAt || new Date().toISOString();
+
         const modal = document.getElementById('problemModal');
         const body = document.getElementById('modalBody');
         const footer = document.getElementById('modalFooter');
@@ -253,6 +270,9 @@
 
         if (problem.status !== 'completed') {
             footer.innerHTML = `
+                <button class="modal-btn modal-btn-delete" id="modalDeleteBtn" data-id="${problem.problemId}" style="background-color: #ff6b6b; color: white;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
                 <button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
                     <i class="fas fa-times"></i> Close
                 </button>
@@ -269,10 +289,20 @@
             }
         } else {
             footer.innerHTML = `
+                <button class="modal-btn modal-btn-delete" id="modalDeleteBtn" data-id="${problem.problemId}" style="background-color: #ff6b6b; color: white;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
                 <button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
                     <i class="fas fa-times"></i> Close
                 </button>
             `;
+        }
+
+        const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+        if (modalDeleteBtn) {
+            modalDeleteBtn.addEventListener('click', function () {
+                deleteProblem(this.dataset.id);
+            });
         }
 
         modal.style.display = 'flex';
@@ -306,6 +336,32 @@
             }
         } catch (error) {
             console.error('Error completing problem:', error);
+            showToast('Network error occurred', 'error');
+        }
+    }
+
+    // ---- Delete Problem ----
+    async function deleteProblem(problemId) {
+        if (!confirm('🗑️ Are you sure you want to delete this problem? This action cannot be undone.')) return;
+
+        try {
+            const response = await fetch(`${URL_ROOT}/moderator/deleteProblem`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ problemId: problemId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Problem deleted successfully!', 'success');
+                closeModal();
+                loadProblems();
+            } else {
+                showToast(data.message || 'Failed to delete problem', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting problem:', error);
             showToast('Network error occurred', 'error');
         }
     }

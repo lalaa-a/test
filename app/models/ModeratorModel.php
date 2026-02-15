@@ -363,13 +363,14 @@
         // ==================== USER PROBLEMS CENTER ====================
 
         public function submitUserProblem($data){
-            $query = 'INSERT INTO user_problems (userId, subject, message) VALUES (:userId, :subject, :message)';
+            $query = "INSERT INTO user_problems (userId, subject, message, status) VALUES (:userId, :subject, :message, 'pending')";
             $this->db->query($query);
             $this->db->bind(':userId', $data['userId']);
             $this->db->bind(':subject', $data['subject']);
             $this->db->bind(':message', $data['message']);
             return $this->db->execute();
         }
+
 
         public function getAllProblems($filter = 'all'){
             $query = "SELECT 
@@ -434,6 +435,13 @@
             $this->db->query($query);
             return $this->db->single();
         }
+
+        public function deleteProblem($problemId){
+            $this->db->query('DELETE FROM user_problems WHERE problemId = :problemId');
+            $this->db->bind(':problemId', $problemId);
+            return $this->db->execute();
+        }
+
 
     }
 ?>

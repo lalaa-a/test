@@ -880,6 +880,35 @@
             }
         }
 
+        public function deleteProblem(){
+
+            header('Content-Type: application/json');
+
+            if($_SERVER['REQUEST_METHOD'] !== 'DELETE'){
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $moderatorId = getSession('user_id');
+
+            if(!$moderatorId || empty($input['problemId'])){
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                return;
+            }
+
+            try{
+                if($this->moderatorModel->deleteProblem($input['problemId'])){
+                    echo json_encode(['success' => true, 'message' => 'Problem deleted successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to delete problem']);
+                }
+            } catch(PDOException $e){
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
         public function submitProblem(){
 
             header('Content-Type: application/json');
