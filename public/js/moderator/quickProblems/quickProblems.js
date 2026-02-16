@@ -273,9 +273,9 @@
                 <button class="modal-btn modal-btn-delete" id="modalDeleteBtn" data-id="${problem.problemId}" style="background-color: #ff6b6b; color: white;">
                     <i class="fas fa-trash"></i> Delete
                 </button>
-                <button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
+                <!--<button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
                     <i class="fas fa-times"></i> Close
-                </button>
+                </button>-->
                 <button class="modal-btn modal-btn-complete" id="modalCompleteBtn" data-id="${problem.problemId}">
                     <i class="fas fa-check-circle"></i> Mark as Completed
                 </button>
@@ -292,9 +292,9 @@
                 <button class="modal-btn modal-btn-delete" id="modalDeleteBtn" data-id="${problem.problemId}" style="background-color: #ff6b6b; color: white;">
                     <i class="fas fa-trash"></i> Delete
                 </button>
-                <button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
+                <!--<button class="modal-btn modal-btn-close" onclick="document.getElementById('problemModal').style.display='none';">
                     <i class="fas fa-times"></i> Close
-                </button>
+                </button>-->
             `;
         }
 

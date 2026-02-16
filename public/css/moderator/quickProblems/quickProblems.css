@@ -499,7 +499,7 @@
 .modal-close-btn:hover {
     background: #dc3545;
     color: white;
-    transform: rotate(90deg);
+    /*transform: rotate(90deg);*/
 }
 
 .modal-body {

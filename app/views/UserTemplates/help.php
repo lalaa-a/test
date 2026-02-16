@@ -124,7 +124,9 @@
                         <option value="booking">Booking Issues</option>
                         <option value="payment">Payment Problems</option>
                         <option value="account">Account Help</option>
-                        <option value="complaint">File a Complaint</option>
+                        <option value="complaint">Cant Find My Booking</option>
+                        <option value="technical">Cant Find Driver</option>
+                        <option value="search">Not Showing my Guide</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
