@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Moderator Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     
@@ -808,6 +808,8 @@
             <li><a href="<?php echo URL_ROOT.'/moderator/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fas fa-user-check"></i></i> <span>Verification</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>    
+            <li><a href="<?php echo URL_ROOT.'/moderator/support'?>" data-tab="support"><i class="fa-solid fa-headset"></i> <span>Support</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/problems'?>" data-tab="qproblem"><i class="fa-solid fa-triangle-exclamation"></i> <span>Complaints</span></a></li>
         </ul>
 
         <!-- User Info Section -->
@@ -846,7 +848,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
+            <h1>Hello <?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'].' Welcome Back!' : 'Welcome!'; ?></h1>
             
             <!-- Header Actions -->
             <div class="header-actions">
@@ -1133,7 +1135,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = '<?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'] : ''; ?>';
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
@@ -1152,6 +1154,8 @@
 
 
     </script>
+
+    <!-- Support section is now loaded dynamically via moderator/support -->
 </body>
 </html>
 

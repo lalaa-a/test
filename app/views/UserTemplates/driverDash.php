@@ -849,7 +849,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
+            <h1>Hello <?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'].' Welcome Back!' : 'Welcome!'; ?></h1>
             
             <!-- Header Actions -->
             <div class="header-actions">
@@ -890,7 +890,7 @@
             encodedData = <?php echo json_encode($loadingContent)?>;
             const tabId = <?php echo json_encode($tabId)?>;
             // Expose logged-in user's profile photo URL to JS (empty string if none)
-            userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
+            userProfilePhoto = '<?php $u = getLoggedInUser(); echo !empty($u["profile_photo"]) ? URL_ROOT . "/public/uploads/" . $u["profile_photo"] : "" ?>';
 
             updateUI();
             setActiveTab(tabId);
@@ -935,6 +935,17 @@
             try {
 
                 const data = encodedData;
+
+                // Skip if no data to load (default dashboard view)
+                if (!data || !data.html) {
+                    tabElement.innerHTML = `
+                        <div class="welcome-section" style="text-align: center; padding-top: 60px;">
+                            <h1 style="color: var(--primary); margin-bottom: 10px;">Welcome Back!</h1>
+                            <p style="color: #666;">Select an option from the sidebar to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
                 cleanupPreviousAssets(tabId);
             
@@ -1147,7 +1158,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = '<?php $u = getLoggedInUser(); echo isset($u["fullname"]) ? $u["fullname"] : "Guest"; ?>';
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
@@ -1246,6 +1257,79 @@
             }
         }
     </style>
+
+    <!-- Help Widget CSS -->
+    <link rel="stylesheet" href="<?php echo URL_ROOT.'/public/css/helper/helpWidget.css'?>">
+
+    <!-- Help Widget Container -->
+    <div class="help-widget-container">
+        <div class="help-options-popup" id="helpOptionsPopup">
+            <div class="help-popup-header">
+                <h4><i class="fas fa-hands-helping"></i> How can we help?</h4>
+            </div>
+            <div class="help-option-item" id="openChatBtn">
+                <div class="help-option-icon chat-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Chat with Us</h5>
+                    <p>Chat with our support team</p>
+                </div>
+            </div>
+            <a href="<?php echo URL_ROOT.'/driver/help'?>" class="help-option-item">
+                <div class="help-option-icon center-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Help Center</h5>
+                    <p>Browse FAQs & guides</p>
+                </div>
+            </a>
+        </div>
+        <button class="floating-help-btn" id="helpBtn" title="Need Help?">
+            <img src="<?php echo IMG_ROOT.'/help/support.png'?>" alt="Help">
+        </button>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="agent-avatar">
+                    <i class="fas fa-headset"></i>
+                    <span class="status-dot"></span>
+                </div>
+                <div class="agent-details">
+                    <h3>Travel Support</h3>
+                    <p>Online | Typically replies in minutes</p>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <i class="fas fa-times" id="closeChatBtn"></i>
+            </div>
+        </div>
+        <div class="chat-body">
+            <div class="chat-messages" id="chatMessages">
+                <div class="date-divider"><span>Today</span></div>
+                <div class="message support-message">
+                    <div class="message-content">
+                        <p>Hello there! 👋 Welcome to Tripingoo Travel Support. How can we help you today?</p>
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button class="send-btn" id="chatSendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Widget JS -->
+    <script src="<?php echo URL_ROOT.'/public/js/helper/helpWidget.js'?>"></script>
 </body>
 </html>
-

@@ -8,6 +8,10 @@
         */
 
         public function index() {
+            $unEncodedResponse = [
+                'tabId'=>'dashboard',
+                'loadingContent'=>null
+            ];
             $this->view('BuisManager/buisDash');
         }
     }

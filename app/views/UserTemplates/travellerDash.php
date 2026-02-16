@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Traveller Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -850,7 +850,7 @@
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <h1>Hello <?php echo getLoggedInUser()['fullname'].' Welcome Back!' ?></h1>
+            <h1>Hello <?php $user = getLoggedInUser(); echo isset($user['fullname']) ? $user['fullname'].' Welcome Back!' : 'Welcome!'; ?></h1>
             
             <!-- Header Actions -->
             <div class="header-actions">
@@ -930,6 +930,17 @@
             try {
 
                 const data = encodedData;
+
+                // Skip if no data to load (default dashboard view)
+                if (!data || !data.html) {
+                    tabElement.innerHTML = `
+                        <div class="welcome-section" style="text-align: center; padding-top: 60px;">
+                            <h1 style="color: var(--primary); margin-bottom: 10px;">Welcome Back!</h1>
+                            <p style="color: #666;">Select an option from the sidebar to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
                 cleanupPreviousAssets(tabId);
                 
@@ -1142,7 +1153,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = '<?php $u = getLoggedInUser(); echo isset($u["fullname"]) ? $u["fullname"] : "Guest"; ?>';
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {
@@ -1161,6 +1172,10 @@
 
 
     </script>
+
+    <!-- Help Widget & Chat -->
+    <?php $helpRoute = 'reguser/help'; include APP_ROOT . '/views/Help/helpWidget.php'; ?>
+    <?php include APP_ROOT . '/views/Help/chatWidget.php'; ?>
 </body>
 </html>
 

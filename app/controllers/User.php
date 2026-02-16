@@ -13,13 +13,11 @@
             $this->userModel = $this->model('UserModel');
         }
             
-        
         public function trips() {
             requireLogin();
             $this->view('Trips');
         }
         
-
         public function plannedTrip() {
             requireLogin();
             $this->view('PlannedTrip/PlannedTrip');
@@ -610,13 +608,13 @@
                 case 'admin':
                     return URL_ROOT . '/dashboard/admin';
                 case 'driver':
-                    return URL_ROOT . '/dashboard/driver';
+                    return URL_ROOT . '/driver/dashboard';
                 case 'guide':
-                    return URL_ROOT . '/dashboard/guide';
+                    return URL_ROOT . '/guide/dashboard';
                 case 'tourist':
                     return URL_ROOT . '/RegUser/home';
                 case 'site_moderator':
-                    return URL_ROOT . '/dashboard/siteModerator';
+                    return URL_ROOT . '/moderator/dashboard';
                 case 'business_manager':
                     return URL_ROOT . '/dashboard/businessManager';
                 default:

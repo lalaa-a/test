@@ -34,7 +34,5 @@
     
     <?php renderComponent('inc','footer',[]); ?>
 
-
-
 </body>
 </html>

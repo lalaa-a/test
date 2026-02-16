@@ -19,7 +19,7 @@
 
     //Upload root
     define('UP_ROOT', 'http://localhost/test/public/uploads');
-
+    
     // Website Name
     define('SITE_NAME', 'test');
 
@@ -34,4 +34,9 @@
     define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
     define('FROM_EMAIL', 'noreply@travelapp.com');
     define('FROM_NAME', 'Travel App');
+
+    
+    // Default: 7200 seconds = 2 hours
+    // For Moderator Support Center, you may want a longer session
+    
 ?>
