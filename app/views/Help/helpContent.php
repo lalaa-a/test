@@ -149,6 +149,8 @@
                         <option value="payment">Payment Problems</option>
                         <option value="account">Account Help</option>
                         <option value="complaint">File a Complaint</option>
+                        <option value="technical">Cant Find My Driver</option>
+                        <option value="technical">Cant Find My Guide</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
