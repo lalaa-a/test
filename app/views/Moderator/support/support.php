@@ -34,10 +34,11 @@
                         <i class="fas fa-user"></i> Mine
                     </button>
                 </div>
+                <!--
                 <button class="refresh-btn" id="refreshChatsBtn" title="Refresh">
                     <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
+                </button>. -->
+             </div>
             
             <div class="chat-list-container">
                 <div class="chat-list" id="supportChatList">
