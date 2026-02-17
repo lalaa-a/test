@@ -1,0 +1,100 @@
+
+    /* Location Item (scoped to [data-locitem]) */
+    [data-locitem]{
+      /* Size controls */
+      --loc-box-h: 110px;                   /* card height via image */
+      --loc-card-w: 530px;                   /* card width (px, %, etc.) */
+      --loc-img-w: var(--it-img-w, 160px);  /* thumbnail width */
+      --loc-time-w: var(--it-time-w, 88px); /* time column width */
+
+      /* Layout + theme */
+      --rail: var(--it-rail, 46px);
+      --marker: 36px;
+      --primary: #0a7772;
+      --text: #121212;
+      --muted: #6b7280;
+      --border: #e7e7e9;
+      --shadow: 0 1px 2px rgba(0,0,0,.03), 0 0 0 1px rgba(0,0,0,.05);
+      --time-bg: #e8f6f5;
+
+      display: grid;
+      grid-template-columns: var(--rail) 1fr;
+      column-gap: 16px;
+      align-items: start;
+      color: var(--text);
+      list-style: none;
+
+    }
+
+    /* Marker: camera icon inside white circle with teal border */
+    [data-locitem] .li-marker{
+      justify-self: center;
+      margin-top: 6px;
+      inline-size: var(--marker); block-size: var(--marker);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      background: #fff; color: var(--primary); border: 2px solid var(--primary);
+      z-index: 1;
+    }
+    [data-locitem] .li-marker svg{ width: 60%; height: 60%; }
+
+    /* Card */
+    [data-locitem] .li-card{
+      position: relative;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--it-card-r, 12px);
+      box-shadow: var(--shadow);
+      padding: 14px 14px 16px;
+
+      inline-size: min(100%, var(--loc-card-w));
+      justify-self: start;
+    }
+    [data-locitem] .li-tag{
+      position: absolute; top: -12px; right: 14px;
+      padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
+      background: #cbe8e5; /* default destination */
+    }
+    [data-locitem] .li-card[data-status="checking"] .li-tag  { background: #e7cfd3; }
+    [data-locitem] .li-card[data-status="destination"] .li-tag{ background: #cbe8e5; }
+    [data-locitem] .li-card[data-status="map"] .li-tag       { background: #d9d2f2; }
+    [data-locitem] .li-card[data-status="checkout"] .li-tag  { background: #e7cfd3; }
+
+    [data-locitem] .li-menu{
+      position: absolute; top: 10px; right: 8px; border: 0; background: transparent; color:#444; padding: 6px; cursor: pointer;
+    }
+    [data-locitem] .li-menu svg{ width: 18px; height: 18px; }
+
+    [data-locitem] .li-row{
+      display: grid; grid-template-columns: var(--loc-time-w) var(--loc-img-w) 1fr;
+      column-gap: 16px; align-items: center;
+    }
+
+    [data-locitem] .li-time{
+      align-self: stretch; display: grid; align-content: center; justify-items: center;
+      background: var(--time-bg); color: var(--primary);
+      border-radius: 10px; padding: 10px 6px; border-left: 4px solid var(--primary); font-weight: 700;
+    }
+    [data-locitem] .li-time span{ font-size: 11px; color: #0b706c; font-weight: 600; line-height: 1.1; }
+    [data-locitem] .li-time b{ font-size: 12px; }
+
+    [data-locitem] .li-thumb{
+      inline-size: 100%;
+      block-size: var(--loc-box-h); /* height driven by variable */
+      object-fit: cover; border-radius: 10px;
+    }
+
+    [data-locitem] .li-info h3{ margin: 4px 0 4px; font-size: 18px; font-weight: 800; }
+    [data-locitem] .li-meta{ display:flex; gap:12px; align-items:center; color: var(--muted); margin-bottom: 4px; }
+    [data-locitem] .li-rating{ display:inline-flex; align-items:center; gap:8px; }
+    [data-locitem] .li-dots{ display:inline-flex; gap:6px; }
+    [data-locitem] .li-dots i{ inline-size:8px; block-size:8px; border-radius:50%; background:#cbd5e1; display:inline-block; }
+    [data-locitem] .li-dots i.on{ background: var(--primary); }
+    [data-locitem] .li-info p{ margin:0; color: var(--muted); }
+    [data-locitem] .li-action{ display:inline-flex; align-items:center; gap:8px; color: var(--primary); font-weight:700; margin-top: 8px; text-decoration:none; cursor:pointer; }
+    [data-locitem] .li-action svg{ width:18px; height:18px; }
+
+    @media (max-width: 560px){
+      [data-locitem] .li-row{ grid-template-columns: 1fr; }
+      [data-locitem] .li-time{ justify-items: start; padding: 10px 12px; margin-bottom: 10px; }
+      [data-locitem] .li-thumb{ block-size: calc(var(--loc-box-h) + 50px); }
+    }

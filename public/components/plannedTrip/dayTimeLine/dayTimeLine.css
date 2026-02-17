@@ -1,0 +1,79 @@
+/* Timeline rail (scoped) */
+    [data-tlinerail]{
+      --tr-rail: 46px;          /* marker column width – match items */
+      --tr-gap: 24px;           /* space between items */
+      --tr-color: #e5e7eb;      /* line color */
+      --tr-marker: 36px;        /* marker diameter */
+      --tr-marker-offset: 6px;  /* space above first marker */
+      --ab-h: 44px;             /* Add button height */
+
+      /* Computed offsets: start at first icon center, end at Add button center */
+      --tr-start: calc(var(--tr-marker-offset) + (var(--tr-marker) / 2));
+      --tr-end: calc(var(--ab-h) / 2);
+
+      font: 500 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin-bottom: 10px;
+
+    }
+
+    /* Header row: date pill + chevron button */
+    [data-tlinerail] .tr-header{
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      margin: 6px 0 12px;
+      width: 640px;
+    }
+    /* Your date pill */
+    [data-tlinerail] .it-head{
+      display:flex; 
+      align-items:center; 
+      justify-content: center;
+      z-index: 1; 
+      width: 130px;
+      padding: 3px 12px; 
+      border-radius: 5px; 
+      font-size: 20px;
+      background: #F2EFE7; color: #0b0b0b;
+    }
+    [data-tlinerail] .it-head h2{ margin:0; font: inherit; font-weight: 700; }
+
+    /* Toggle checkbox (controls collapse) */
+    [data-tlinerail] .tr-toggle{ position: absolute; opacity: 0; pointer-events: none; }
+
+    /* Chevron label acting as the toggle button */
+    [data-tlinerail] .tr-btn{
+      display: inline-grid; place-items: center;
+      inline-size: 28px; block-size: 28px; border-radius: 50%;
+      cursor: pointer; color: #111; border: 1px solid #e5e7eb; background: #fff;
+    }
+    [data-tlinerail] .tr-btn svg{ width: 18px; height: 18px; transition: transform .2s ease; }
+
+    /* Rotate chevron when collapsed */
+    [data-tlinerail] .tr-toggle:checked ~ .tr-header .chev { transform: rotate(180deg); }
+    /* Default (open): point chevron up (so you "collapse" down) */
+    [data-tlinerail] .tr-header .chev { transform: rotate(0deg); }
+
+    /* Body holds items + Add bar; draws the vertical line */
+    [data-tlinerail] .tr-body{
+      position: relative;
+      display: grid;
+      row-gap: var(--tr-gap);
+    }
+    /* The rail line */
+    [data-tlinerail] .tr-body::before{
+      content: "";
+      position: absolute;
+      left: calc(var(--tr-rail) / 2 - 1px); /* center of marker column */
+      top: var(--tr-start);
+      bottom: var(--tr-end);
+      width: 2px;
+      background: var(--tr-color);
+      pointer-events: none;
+    }
+    /* Align children to the rail column */
+    [data-tlinerail] .tr-body > *{ --it-rail: var(--tr-rail); }
+
+    /* Collapse behavior (CSS-only) */
+    [data-tlinerail] .tr-toggle:checked ~ .tr-body{ display: none; }

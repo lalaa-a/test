@@ -1,0 +1,97 @@
+/* Scoped to [data-chipsbox] only */
+    [data-chipsbox]{
+      --cb-width: 100%;       /* overall width: 100%, 720px, etc. */
+      --cb-size: 44px;        /* chip row height & arrow diameter */
+      --cb-gap: 24px;         /* gap between chips */
+      --cb-padding: 8px;      /* left padding inside scroller */
+      --cb-bg: #fff;          /* background behind chips */
+      --cb-arrow-bg: #0a7772; /* arrow circle color */
+      --cb-arrow-fg: #fff;    /* arrow icon color */
+      --cb-edge-fade: 48px;   /* right fade width */
+      --cb-step: 0;           /* px per click (0 => auto page) */
+
+      position: relative;
+      inline-size: min(100%, var(--cb-width));
+      background: var(--cb-bg);
+      margin-bottom: 20px;
+    }
+
+    [data-chipsbox] .cb-viewport{
+      overflow: hidden;              /* hide native scrollbars */
+      padding-inline-start: var(--cb-padding);
+      padding-inline-end: calc(var(--cb-padding) + var(--cb-edge-fade) + var(--cb-size));
+      touch-action: none;            /* block swipe (arrow-only) */
+    }
+
+    [data-chipsbox] .cb-track{
+      display: flex;
+      align-items: center;
+      gap: var(--cb-gap);
+      min-block-size: var(--cb-size);
+      white-space: nowrap;
+    }
+    [data-chipsbox] .cb-track>*{ flex: 0 0 auto; }
+
+    /* Right-side fade */
+    [data-chipsbox]::after{
+      content:"";
+      position:absolute;
+      inset-block:0;
+      inset-inline-end: calc(var(--cb-size) + 4px);
+      inline-size: var(--cb-edge-fade);
+      background: linear-gradient(to right, rgba(255,255,255,0), var(--cb-bg));
+      pointer-events:none;
+      z-index:1;
+    }
+    /* Left fade only when scrolled */
+    [data-chipsbox][data-show-left]::before{
+      content:"";
+      position:absolute;
+      inset-block:0;
+      inset-inline-start: calc(var(--cb-size) + 4px);
+      inline-size: var(--cb-edge-fade);
+      background: linear-gradient(to left, rgba(255,255,255,0), var(--cb-bg));
+      pointer-events:none;
+      z-index:1;
+    }
+
+    /* Arrows */
+    [data-chipsbox] .cb-arrow{
+      position:absolute;
+      inset-block-start:50%;
+      transform:translateY(-50%);
+      inline-size: var(--cb-size);
+      block-size: var(--cb-size);
+      border-radius:50%;
+      background: var(--cb-arrow-bg);
+      color: var(--cb-arrow-fg);
+      display:grid;
+      place-items:center;
+      z-index:2;
+      border:0;
+      padding:0;
+      cursor:pointer;
+      transition: opacity .15s ease;
+    }
+    [data-chipsbox] .cb-arrow:disabled{ opacity:.45; cursor:default; }
+    [data-chipsbox] .cb-arrow-right{ inset-inline-end:0; }
+    [data-chipsbox] .cb-arrow-left{ inset-inline-start:0; display:none; }
+    [data-chipsbox][data-show-left] .cb-arrow-left{ display:grid; }
+
+    [data-chipsbox] .cb-arrow svg{
+      width: calc(var(--cb-size)*0.45);
+      height: calc(var(--cb-size)*0.45);
+      fill: currentColor;
+    }
+
+    /* Demo chip look (only affects this component) */
+    [data-chipsbox] .cb-demo-chip{
+      display:inline-flex; align-items:center; justify-content:center;
+      height: calc(var(--cb-size) - 10px);
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 2px solid #0a7772;
+      color: #0a7772;
+      font: 700 14px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      white-space: nowrap;
+    }

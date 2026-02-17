@@ -1,0 +1,190 @@
+/* place-card.css */
+/* Scoped: styles apply only inside [data-place-card] */
+[data-place-card] {
+  /* Design tokens (override per instance via inline style) */
+  --pc-font: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --pc-card-w: 544px;              /* overall card width */
+  --pc-card-h: 188px;              /* overall card height */
+  --pc-radius: 12px;
+
+  /* Photo = perfect square of card height */
+  --pc-img-side: var(--pc-card-h);
+
+  --pc-ink: #0e1213;
+  --pc-muted: #2a3a3d;
+  --pc-bg: #ffffff;
+  --pc-border: #e3ecf0;
+  --pc-shadow: 0 4px 14px rgba(2, 24, 28, 0.06);
+
+  --pc-teal: #0b6f73;              /* rating dot fill */
+
+  --pc-pad: 14px;
+
+  /* Kebab (three dots) positioning:
+     gaps measured from the CENTER of the dots to card edges */
+  --pc-kebab-gap-top: 20px;        /* distance from center -> top edge */
+  --pc-kebab-gap-right: 25px;      /* distance from center -> right edge */
+  --pc-kebab-size: 28px;           /* clickable square size */
+  --pc-kebab-dot: 3.2px;           /* dot diameter */
+  --pc-kebab-dot-gap: 7px;         /* spacing between dots */
+
+  font-family: var(--pc-font);
+  color: var(--pc-ink);
+  background: var(--pc-bg);
+
+  position: relative;              /* for kebab absolute anchoring */
+  display: flex;
+  width: var(--pc-card-w);
+  max-width: 100%;
+  height: var(--pc-card-h);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  box-shadow: var(--pc-shadow);
+  overflow: hidden;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+[data-place-card] * { box-sizing: border-box; }
+
+/* Left photo — square of card height */
+[data-place-card] .pc-media {
+  flex: 0 0 var(--pc-img-side);
+  width: var(--pc-img-side);
+  height: 100%;
+  overflow: hidden;
+}
+[data-place-card] .pc-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Right content — left aligned, vertically centered */
+[data-place-card] .pc-body {
+  position: static; /* kebab anchors to card, not body */
+  flex: 1 1 auto;
+  min-width: 0; /* avoid overflow on long titles */
+
+  /* Reserve space on the right so text doesn't sit under the kebab:
+     pad-right = base pad + (center gap + half kebab size) */
+  padding: calc(var(--pc-pad) + 2px)
+           calc(var(--pc-pad) + var(--pc-kebab-gap-right) + (var(--pc-kebab-size) / 2))
+           var(--pc-pad)
+           var(--pc-pad);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* vertical center */
+  align-items: flex-start;   /* left align */
+  text-align: left;
+  gap: 8px;
+}
+
+/* Kebab (three thin dots)
+   Center is exactly gap-top/right from card edges */
+[data-place-card] .pc-kebab {
+  position: absolute;
+  top:  calc(var(--pc-kebab-gap-top)  - var(--pc-kebab-size) / 2);
+  right: calc(var(--pc-kebab-gap-right) - var(--pc-kebab-size) / 2);
+
+  width: var(--pc-kebab-size);
+  height: var(--pc-kebab-size);
+  display: grid;
+  place-items: center;
+
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0;
+  font-size: 0; /* draw dots via pseudo */
+}
+[data-place-card] .pc-kebab::before {
+  content: "";
+  display: inline-block;
+  width: var(--pc-kebab-dot);
+  height: var(--pc-kebab-dot);
+  border-radius: 50%;
+  background: #1a2c2f;
+  /* draw left/right dots from the centered middle dot */
+  box-shadow:
+    calc(-1 * var(--pc-kebab-dot-gap)) 0 0 #1a2c2f,
+    var(--pc-kebab-dot-gap) 0 0 #1a2c2f;
+}
+[data-place-card] .pc-kebab:hover { background: rgba(0,0,0,0.05); }
+[data-place-card] .pc-kebab:focus-visible {
+  outline: 3px solid rgba(154, 203, 208, 0.8);
+  outline-offset: 2px;
+}
+
+/* Title */
+[data-place-card] .pc-title {
+  margin: 0; /* right padding already accounts for kebab */
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--pc-ink);
+}
+
+/* Rating row */
+[data-place-card] .pc-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-place-card] .pc-score {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--pc-ink);
+}
+
+/* Rating dots (5 circles; partial fill via --pc-fill on each dot) */
+[data-place-card] .pc-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+[data-place-card] .pc-dot {
+  position: relative;
+  width: var(--pc-dot-size, 10px);
+  height: var(--pc-dot-size, 10px);
+  border-radius: 50%;
+  background: #cfd8db;                          /* empty color */
+  overflow: hidden;
+  outline: 1px solid rgba(11, 111, 115, 0.25);  /* subtle rim */
+}
+[data-place-card] .pc-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: var(--pc-fill, 0%);                    /* set 0–100% inline per dot */
+  background: var(--pc-teal);
+}
+
+/* Description */
+[data-place-card] .pc-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--pc-muted);
+}
+
+/* Mobile: stack image on top */
+@media (max-width: 560px) {
+  [data-place-card] {
+    flex-direction: column;
+    height: auto;
+  }
+  [data-place-card] .pc-media {
+    width: 100%;
+    height: 180px;
+    flex: 0 0 auto;
+  }
+  [data-place-card] .pc-body {
+    padding: 12px 12px 16px;
+    justify-content: flex-start; /* top-align on mobile */
+  }
+}

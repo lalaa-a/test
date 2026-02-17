@@ -1,0 +1,6 @@
+{
+
+  "dependencies": {
+                    "plannedTrip":["itineAddBar","itineLocationItem","itinePlaceItem"]
+                  }
+}

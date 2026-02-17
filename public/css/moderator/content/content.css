@@ -1,0 +1,105 @@
+:root {
+            --primary: #006A71;
+            --primary-hover: #9ACBD0;
+            --secondary: #f5f7fb;
+            --text-color: #212529;
+            --text-muted: #64748b;
+            --text-accent: #94a3b8;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+            --shadow: 0 2px 8px rgba(0, 106, 113, 0.08);
+            --border-radius: 6px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Plain Navigation Bar */
+        .content-nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            margin: -20px -20px 20px -20px;
+            padding: 0 20px;
+            position: sticky;
+            top: 70px;
+            z-index: 999;
+        }
+
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-tab {
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .nav-tab-link {
+            display: inline-block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: normal;
+            font-size: 14px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: none;
+        }
+
+        .nav-tab-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-tab-link.active {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .nav-tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .nav-tab-icon {
+            margin-right: 5px;
+        }
+
+        .nav-tab-link:hover .nav-tab-icon,
+        .nav-tab-link.active .nav-tab-icon {
+            transform: none;
+        }
+
+        .nav-tab-text {
+            font-weight: normal;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 12px;
+            }
+
+            .nav-tab-link {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-tab-link {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .nav-tab-icon {
+                font-size: 0.8rem;
+            }
+        }

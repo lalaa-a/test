@@ -1,0 +1,42 @@
+[
+    {
+        "type": "vehicle_update",
+        "vehicle_id": 15,
+        "driver_id": 2,
+        "driver_name": "akila",
+        "vehicle_info": "rgrg ergerg (DFGDFDD)",
+        "message": "Vehicle updated and requires re-approval",
+        "timestamp": "2025-10-22 03:16:21",
+        "status": "pending"
+    },
+    {
+        "type": "vehicle_update",
+        "vehicle_id": 15,
+        "driver_id": 2,
+        "driver_name": "akila",
+        "vehicle_info": "rgrg ergerg (LALINDA)",
+        "message": "Vehicle updated and requires re-approval",
+        "timestamp": "2025-10-22 03:16:37",
+        "status": "pending"
+    },
+    {
+        "type": "vehicle_update",
+        "vehicle_id": 16,
+        "driver_id": 2,
+        "driver_name": "akila",
+        "vehicle_info": "ravi camry (RAVIK)",
+        "message": "Vehicle updated and requires re-approval",
+        "timestamp": "2025-10-22 03:21:21",
+        "status": "pending"
+    },
+    {
+        "type": "vehicle_update",
+        "vehicle_id": 17,
+        "driver_id": 2,
+        "driver_name": "akila",
+        "vehicle_info": "kbmbn v gvmhvj (NKJDN-12336)",
+        "message": "Vehicle updated and requires re-approval",
+        "timestamp": "2025-10-22 05:52:33",
+        "status": "pending"
+    }
+]

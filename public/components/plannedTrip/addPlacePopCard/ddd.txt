@@ -1,0 +1,460 @@
+
+/* Scope everything to this component only */
+
+    [data-adddest] {
+      --ad-width: 520px;          /* component max width */
+      --ad-accent: #006A71;       /* brand/primary color */
+      --ad-radius: 24px;          /* top roundness */
+      --ad-pad: 20px;             /* side padding */
+      --ad-gap: 18px;             /* vertical spacing between sections */
+      --ad-field-bg: #cfe2e3;     /* inputs background (soft teal) */
+      --ad-field-radius: 10px;    /* inputs radius */
+      --ad-search-radius: 22px;   /* search pill radius */
+      --ad-text: #0f172a;         /* text color */
+      --ad-muted: #475569;        /* muted text */
+      --ad-border: #e5e7eb;       /* light borders */
+      --ad-shadow: 0 1px 2px rgba(0,0,0,.05);
+      --ad-field-min: 160px;      /* min width for Start/End columns */
+      --ad-col-gap: 18px;         /* horizontal gap used by 2-col rows */
+
+      color: var(--ad-text);
+      inline-size: min(100%, var(--ad-width));
+      font: 500 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #fff;
+      border-top-left-radius: var(--ad-radius);
+      border-top-right-radius: var(--ad-radius);
+      overflow: hidden;
+      box-shadow: var(--ad-shadow);
+    }
+
+    /* Thin accent line at the very top */
+    [data-adddest]::before {
+      content: "";
+      display: block;
+      inline-size: 100%;
+      block-size: 2px;
+      background: var(--ad-accent);
+    }
+
+    /* Layout: header + scrollable content + sticky footer */
+    [data-adddest] .ad-wrap {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-block-size: 100dvh;
+      background: #fff;
+    }
+
+    [data-adddest] .ad-header { padding: 18px var(--ad-pad) 8px; }
+    [data-adddest] .ad-title { margin: 0; font-weight: 800; font-size: 28px; letter-spacing: .2px; }
+
+    [data-adddest] .ad-scroll {
+      overflow: auto;
+      padding: 8px var(--ad-pad) 16px;
+    }
+
+    /* Field groups */
+    [data-adddest] .ad-group { margin-block: var(--ad-gap); }
+    [data-adddest] .ad-label { display: block; font-weight: 700; margin-block-end: 8px; }
+
+    /* Responsive two-column row for Start/End time */
+    [data-adddest] .ad-row-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(var(--ad-field-min), 1fr));
+      column-gap: var(--ad-col-gap);
+      row-gap: 18px;
+      align-items: start;
+    }
+    [data-adddest] .ad-row-2 > * { min-width: 0; }
+
+    /* Align a single control to the same width as a 2-col field */
+    [data-adddest] .ad-align {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(var(--ad-field-min), 1fr));
+      column-gap: var(--ad-col-gap);
+    }
+
+    /* Inputs */
+    [data-adddest] .ad-input,
+    [data-adddest] .ad-textarea {
+      width: 100%;
+      border: 0;
+      background: var(--ad-field-bg);
+      border-radius: var(--ad-field-radius);
+      padding: 12px 14px;
+      color: var(--ad-text);
+      font: inherit;
+      outline: none;
+      box-sizing: border-box;
+    }
+    [data-adddest] .ad-input[type="time"] { height: 44px; }
+    [data-adddest] .ad-input:focus,
+    [data-adddest] .ad-textarea:focus {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ad-accent) 28%, transparent);
+    }
+    [data-adddest] .ad-textarea { min-height: 96px; resize: vertical; }
+
+    /* Search field with icon (now constrained by .ad-align grid column) */
+    [data-adddest] .ad-search { position: relative; width: 100%; }
+    [data-adddest] .ad-search input {
+      width: 87.5%;
+      padding: 12px 16px 12px 44px;
+      border-radius: var(--ad-search-radius);
+      background: var(--ad-field-bg);
+      border: 0;
+      outline: none;
+      font: inherit;
+    }
+    [data-adddest] .ad-search input:focus {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ad-accent) 28%, transparent);
+    }
+    [data-adddest] .ad-search .ad-icon {
+      position: absolute; inset-inline-start: 14px; inset-block-start: 50%;
+      transform: translateY(-50%);
+      width: 20px; height: 20px; color: var(--ad-muted);
+    }
+
+    /* Section titles */
+    [data-adddest] .ad-subtitle { margin: 24px 0 10px; font-weight: 700; }
+
+    /* Cards list holder — your PHP cards go here */
+    [data-adddest] .ad-cards { display: grid; gap: 14px; }
+
+    /* Sticky footer actions */
+    [data-adddest] .ad-actions {
+      position: sticky; bottom: 0;
+      padding: 16px var(--ad-pad);
+      border-top: 2px solid var(--ad-accent);
+      background: #fff;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    [data-adddest] .ad-cancel {
+      appearance: none; background: transparent; border: 0; color: var(--ad-text);
+      font: 700 18px/1.2 inherit; text-decoration: underline; padding: 8px 4px; border-radius: 6px;
+      cursor: pointer;
+    }
+    [data-adddest] .ad-primary {
+      appearance: none; border: 0; cursor: pointer;
+      padding: 12px 28px; border-radius: 999px; background: var(--ad-accent); color: #fff;
+      font: 800 16px/1 inherit; letter-spacing: .3px;
+    }
+
+    @media (max-width: 420px) {
+      [data-adddest] .ad-title { font-size: 24px; }
+    }
+
+
+
+
+<button id="openAddDestination">bb</button>
+
+<!-- Add Destination Panel (self-contained component) -->
+<div id="adp" class="adp-root" data-open-btn-id="openAddDestination">
+  <!-- Dim background -->
+  <div class="adp-overlay" data-adp-close aria-hidden="true"></div>
+
+  <!-- Sliding panel -->
+  <aside class="adp-panel" role="dialog" aria-modal="true" aria-labelledby="adp-title">
+    <header class="adp-header">
+      <h2 id="adp-title" class="adp-title">Add Destination</h2>
+      <button type="button" class="adp-icon-btn" data-adp-close aria-label="Close panel">×</button>
+    </header>
+
+    <!-- Body (form + scrollable cards) -->
+    <div class="adp-body">
+      <form id="adp-form" class="adp-form" method="post" action="" novalidate>
+        <div class="adp-row-2">
+          <div class="adp-field">
+            <label for="adp-start">Start time</label>
+            <input type="time" id="adp-start" name="start_time" class="adp-input adp-required">
+            <div class="adp-error" aria-live="polite"></div>
+          </div>
+
+          <div class="adp-field">
+            <label for="adp-end">End time</label>
+            <input type="time" id="adp-end" name="end_time" class="adp-input adp-required">
+            <div class="adp-error" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="adp-field">
+          <label for="adp-notes">Notes</label>
+          <textarea id="adp-notes" name="notes" class="adp-input adp-required" rows="3" placeholder="Some details about the place"></textarea>
+          <div class="adp-error" aria-live="polite"></div>
+        </div>
+
+        <div class="adp-field">
+          <label for="adp-search">Search Destination</label>
+          <div class="adp-search-wrap">
+            <span class="adp-search-icon" aria-hidden="true">🔎</span>
+            <input id="adp-search" name="search" class="adp-input adp-input--pill adp-required" placeholder="Search destinations from the site and add">
+          </div>
+          <div class="adp-error" aria-live="polite"></div>
+        </div>
+      </form>
+
+      <div class="adp-section-title">Saved Places</div>
+
+      <!-- Only this area scrolls. Replace inner HTML with your PHP cards -->
+      <div id="adp-card-list" class="adp-card-list" tabindex="0" aria-label="Saved places list">
+        <!-- Replace with PHP: BEGIN -->
+        <article class="adp-card">
+          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-body">
+            <h4 class="adp-card-title">Sigiriya Ancient Rock Fortress</h4>
+            <div class="adp-card-sub">4.6 • Some details about the place</div>
+          </div>
+          <button class="adp-card-menu" aria-label="More options">⋯</button>
+        </article>
+
+        <article class="adp-card">
+          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1563897539633-7374c276c212?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-body">
+            <h4 class="adp-card-title">Another Place</h4>
+            <div class="adp-card-sub">4.5 • Some details about the place</div>
+          </div>
+          <button class="adp-card-menu" aria-label="More options">⋯</button>
+        </article>
+
+        <article class="adp-card">
+          <div class="adp-card-img" style="background-image:url('https://images.unsplash.com/photo-1494475673543-6a6a27143b22?q=80&w=800&auto=format&fit=crop');"></div>
+          <div class="adp-card-body">
+            <h4 class="adp-card-title">Sample Place</h4>
+            <div class="adp-card-sub">4.3 • Some details about the place</div>
+          </div>
+          <button class="adp-card-menu" aria-label="More options">⋯</button>
+        </article>
+        <!-- Replace with PHP: END -->
+      </div>
+    </div>
+
+    <footer class="adp-footer">
+      <button type="button" class="adp-btn adp-btn--ghost" data-adp-close>Cancel</button>
+      <button type="button" id="adp-add-btn" class="adp-btn adp-btn--primary">Add</button>
+    </footer>
+  </aside>
+</div>
+
+<style>
+/* Scoped styles: everything under #adp only */
+#adp { all: initial; font-family: 'Geologica', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+#adp * { box-sizing: border-box; font: inherit; color: inherit; }
+#adp {
+  --adp-bg: #ffffff;
+  --adp-surface: #f6f9f9;
+  --adp-accent: #0f766e;
+  --adp-muted: #a7b8b8;
+  --adp-input-bg: #cde3e5;
+  --adp-border: #dfe7e7;
+  --adp-danger: #d92d20;
+  --adp-radius: 12px;
+  --adp-shadow: 0 10px 30px rgba(2, 24, 27, .15);
+  color: #0a0f0f;
+}
+
+/* Overlay + panel shell */
+#adp .adp-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility .25s ease;
+  z-index: 1000;
+}
+#adp .adp-panel {
+  position: fixed; top: 0; right: 0;
+  height: 100vh;
+  width: min(520px, 100vw);
+  background: var(--adp-bg);
+  box-shadow: var(--adp-shadow);
+  transform: translateX(100%);
+  transition: transform .35s cubic-bezier(.22,.61,.36,1);
+  display: flex; flex-direction: column;
+  z-index: 1001;
+  border-left: 1px solid var(--adp-border);
+}
+
+/* Open state */
+#adp.adp-open .adp-overlay { opacity: 1; visibility: visible; }
+#adp.adp-open .adp-panel { transform: translateX(0); }
+
+/* Header */
+#adp .adp-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--adp-border); }
+#adp .adp-title { font-weight: 800; font-size: 22px; margin: 0; }
+#adp .adp-icon-btn { border: 0; background: transparent; font-size: 28px; line-height: 1; cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+#adp .adp-icon-btn:hover { background: var(--adp-surface); }
+
+/* Body layout */
+#adp .adp-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#adp .adp-form { padding: 18px 22px 0; }
+#adp .adp-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#adp .adp-field { margin-bottom: 14px; }
+#adp .adp-field label { display: block; margin: 0 0 6px; font-weight: 600; font-size: 14px; }
+#adp .adp-input {
+  width: 100%; border: 0; outline: none;
+  background: var(--adp-input-bg); padding: 12px 12px; border-radius: 10px;
+}
+#adp .adp-input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+#adp textarea.adp-input { resize: vertical; min-height: 72px; }
+#adp .adp-input:focus { outline: 2px solid var(--adp-accent); background: #def1f2; }
+
+#adp .adp-input--pill { border-radius: 999px; padding-left: 38px; }
+#adp .adp-search-wrap { position: relative; }
+#adp .adp-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .7; }
+
+#adp .adp-error { color: var(--adp-danger); font-size: 12px; min-height: 16px; padding-top: 4px; }
+#adp .adp-invalid .adp-input { outline: 2px solid var(--adp-danger); background: #ffecec; }
+
+/* Section title */
+#adp .adp-section-title { padding: 12px 22px 8px; font-weight: 700; }
+
+/* Scrollable card area */
+#adp .adp-card-list {
+  flex: 1; overflow: auto;
+  padding: 6px 22px 18px; background: var(--adp-bg);
+  min-height: 0;
+}
+
+/* Card */
+#adp .adp-card {
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 14px;
+  padding: 10px; border: 1px solid var(--adp-border); border-radius: var(--adp-radius);
+  margin-bottom: 12px; align-items: center;
+}
+#adp .adp-card-img {
+  width: 96px; height: 72px; border-radius: 10px; background-size: cover; background-position: center;
+}
+#adp .adp-card-body { min-width: 0; }
+#adp .adp-card-title { font-size: 15px; font-weight: 700; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#adp .adp-card-sub { font-size: 13px; color: #334; opacity: .85; }
+#adp .adp-card-menu { border: 0; background: transparent; font-size: 22px; cursor: pointer; padding: 4px 6px; border-radius: 8px; color: #444; }
+#adp .adp-card-menu:hover { background: var(--adp-surface); }
+
+/* Footer */
+#adp .adp-footer {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 16px 22px; border-top: 1px solid var(--adp-border); background: var(--adp-bg);
+}
+#adp .adp-btn {
+  border: 0; cursor: pointer; padding: 12px 22px; border-radius: 999px; font-weight: 800; letter-spacing: .3px;
+}
+#adp .adp-btn--primary { background: var(--adp-accent); color: white; }
+#adp .adp-btn--primary:hover { filter: brightness(0.95); }
+#adp .adp-btn--ghost { background: transparent; color: #0b2120; text-decoration: underline; }
+
+/* Small screens */
+@media (max-width: 480px) {
+  #adp .adp-row-2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+</style>
+
+<script>
+(() => {
+  const root = document.getElementById('adp');
+  if (!root) return;
+
+  const panel = root.querySelector('.adp-panel');
+  const overlay = root.querySelector('.adp-overlay');
+  const addBtn = root.querySelector('#adp-add-btn');
+  const form = root.querySelector('#adp-form');
+  const startInput = root.querySelector('#adp-start');
+  const endInput = root.querySelector('#adp-end');
+
+  // Attach open button
+  const openBtnId = root.getAttribute('data-open-btn-id') || '';
+  const externalOpenBtn = openBtnId ? document.getElementById(openBtnId) : null;
+  if (externalOpenBtn) {
+    externalOpenBtn.addEventListener('click', openPanel);
+  }
+
+  root.querySelectorAll('[data-adp-close]').forEach(btn => btn.addEventListener('click', closePanel));
+  document.addEventListener('keydown', (e) => {
+    if (!root.classList.contains('adp-open')) return;
+    if (e.key === 'Escape') closePanel();
+  });
+
+  function openPanel() {
+    root.classList.add('adp-open');
+    panel.setAttribute('aria-hidden', 'false');
+    setTimeout(() => startInput?.focus(), 50);
+  }
+  function closePanel() {
+    root.classList.remove('adp-open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+
+  // Validation
+  const requiredFields = [
+    { el: startInput, name: 'Start time' },
+    { el: endInput, name: 'End time' },
+    { el: root.querySelector('#adp-notes'), name: 'Notes' },
+    { el: root.querySelector('#adp-search'), name: 'Search Destination' },
+  ];
+
+  function setError(fieldEl, message) {
+    const fieldWrap = fieldEl.closest('.adp-field');
+    if (!fieldWrap) return;
+    fieldWrap.classList.add('adp-invalid');
+    const err = fieldWrap.querySelector('.adp-error');
+    if (err) err.textContent = message || 'Required';
+  }
+  function clearError(fieldEl) {
+    const fieldWrap = fieldEl.closest('.adp-field');
+    if (!fieldWrap) return;
+    fieldWrap.classList.remove('adp-invalid');
+    const err = fieldWrap.querySelector('.adp-error');
+    if (err) err.textContent = '';
+  }
+
+  requiredFields.forEach(({el}) => {
+    ['input','change','blur'].forEach(evt => el?.addEventListener(evt, () => clearError(el)));
+  });
+
+  function timeToMinutes(value) {
+    if (!value) return null;
+    const [h, m] = value.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  function validateForm() {
+    let ok = true;
+    requiredFields.forEach(({el, name}) => {
+      if (!el) return;
+      const val = (el.value || '').toString().trim();
+      if (val === '') { setError(el, `${name} is required`); ok = false; }
+      else { clearError(el); }
+    });
+
+    const s = timeToMinutes(startInput.value);
+    const e = timeToMinutes(endInput.value);
+    if (s !== null && e !== null && e <= s) {
+      setError(endInput, 'End time must be after start time');
+      ok = false;
+    }
+    return ok;
+  }
+
+  addBtn.addEventListener('click', () => {
+    if (!validateForm()) return;
+    const payload = {
+      start_time: startInput.value,
+      end_time: endInput.value,
+      notes: root.querySelector('#adp-notes').value.trim(),
+      search: root.querySelector('#adp-search').value.trim()
+    };
+    root.dispatchEvent(new CustomEvent('adp:submit', { detail: payload }));
+
+    if (form.getAttribute('action')) {
+      form.requestSubmit();
+    } else {
+      console.log('ADP submit payload:', payload);
+      closePanel();
+    }
+  });
+
+  overlay.addEventListener('click', closePanel);
+})();
+</script>

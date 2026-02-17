@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <title>Document</title>
 
     <style>
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Geologica';
             background: #fff;
             color: #111;
         }

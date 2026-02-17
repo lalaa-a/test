@@ -10,12 +10,18 @@
         body {
             padding: 0 150px; /* adds 40px left and right margin */
             border: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Geologica', Arial, sans-serif;
             background: #fff;
             color: #111;
         }
 
     </style>
+
+    <script>
+        // Make URL_ROOT and IMG_ROOT available to JavaScript
+        window.URL_ROOT = '<?php echo URL_ROOT; ?>';
+        window.IMG_ROOT = '<?php echo IMG_ROOT; ?>';
+    </script>
 
     <?php
         include APP_ROOT.'/libraries/Functions.php';
