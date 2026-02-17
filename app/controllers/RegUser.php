@@ -747,8 +747,6 @@ require_once '../app/helpers/travel_spot_helper.php';
                 echo json_encode(['success' => false, 'message' => 'Failed to delete trip']);
             }
         }
-<<<<<<< HEAD
-=======
 
         // Help page within the dashboard
         public function help() {
@@ -772,7 +770,6 @@ require_once '../app/helpers/travel_spot_helper.php';
             ];
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
->>>>>>> chirans_branch
         
     }
 
