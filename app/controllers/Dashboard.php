@@ -105,12 +105,24 @@
             $kpiStats       = $buisManagerModel->getKpiStats();
             $transactionsToday   = $buisManagerModel->getTransactionsToday();
             $transactionsLast7   = $buisManagerModel->getTransactionsLast7Days();
-            $tripsToday     = $buisManagerModel->getTripsToday();
+            $tripsToday     = $buisManagerModel->getCompletedTrips();
             $tripsLast7     = $buisManagerModel->getTripsLast7Days();
             $ongoingTrips   = $buisManagerModel->getOngoingTrips();
             $upcomingTrips  = $buisManagerModel->getUpcomingTrips();
             $drivers        = $buisManagerModel->getAllDrivers();
             $guides         = $buisManagerModel->getAllGuides();
+
+            // Commission Management data from commission_rates and commission_rate_history
+            $commissionOverview = [];
+            $commissionRates = [];
+            $commissionHistory = [];
+            try {
+                $commissionOverview = $buisManagerModel->getCommissionOverview();
+                $commissionRates = $buisManagerModel->getCommissionRates();
+                $commissionHistory = $buisManagerModel->getCommissionHistory();
+            } catch (\Throwable $e) {
+                // Tables may not exist; run commission_rates migration in tripingoo.sql
+            }
 
             $driverGuideTransactions = [];
 
@@ -203,6 +215,9 @@
                 'upcomingTrips'       => $upcomingTrips,
                 'drivers'             => $drivers,
                 'guides'              => $guides,
+                'commissionOverview'  => $commissionOverview,
+                'commissionRates'     => $commissionRates,
+                'commissionHistory'   => $commissionHistory,
             ];
             
             $this->view('BuisManager/buisDash', $data);
@@ -242,6 +257,44 @@
             $buisManagerModel = $this->model('buisManagerModel');
             $result = $buisManagerModel->processTransaction($transactionId);
 
+            header('Location: ' . URL_ROOT . '/dashboard/businessManager');
+            exit();
+        }
+
+        /**
+         * Approve a refund request. Updates refund_requests: status=approved, reviewed_by=manager id, reviewed_date=now.
+         */
+        public function approveRefund($refundId = null) {
+            $user = getLoggedInUser();
+            if ($user['account_type'] !== 'business_manager') {
+                header('Location: ' . URL_ROOT . '/dashboard');
+                exit();
+            }
+            if (empty($refundId)) {
+                header('Location: ' . URL_ROOT . '/dashboard/businessManager');
+                exit();
+            }
+            $buisManagerModel = $this->model('buisManagerModel');
+            $buisManagerModel->updateRefundRequestStatus($refundId, 'approved', $user['id'] ?? null);
+            header('Location: ' . URL_ROOT . '/dashboard/businessManager');
+            exit();
+        }
+
+        /**
+         * Reject a refund request. Updates refund_requests: status=rejected, reviewed_by=manager id, reviewed_date=now.
+         */
+        public function rejectRefund($refundId = null) {
+            $user = getLoggedInUser();
+            if ($user['account_type'] !== 'business_manager') {
+                header('Location: ' . URL_ROOT . '/dashboard');
+                exit();
+            }
+            if (empty($refundId)) {
+                header('Location: ' . URL_ROOT . '/dashboard/businessManager');
+                exit();
+            }
+            $buisManagerModel = $this->model('buisManagerModel');
+            $buisManagerModel->updateRefundRequestStatus($refundId, 'rejected', $user['id'] ?? null);
             header('Location: ' . URL_ROOT . '/dashboard/businessManager');
             exit();
         }

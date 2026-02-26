@@ -848,6 +848,7 @@
         .data-table th[data-sort]:hover { background: #e9ecef; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .placeholder-msg { color: #666; margin-bottom: 16px; }
+        .text-muted { color: var(--text-muted); font-style: italic; }
         /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal-overlay.active { display: flex; }
@@ -917,6 +918,7 @@
             <li><a href="#" data-tab="transaction-management"><i class="fas fa-file-invoice-dollar"></i> <span>Transaction Management</span></a></li>
             <li><a href="#" data-tab="trip-management"><i class="fas fa-route"></i> <span>Trip Management</span></a></li>
             <li><a href="#" data-tab="driver-guide-management"><i class="fas fa-users-cog"></i> <span>Driver &amp; Guide Management</span></a></li>
+            <li><a href="#" data-tab="commission-management"><i class="fas fa-percent"></i> <span>Commission Management</span></a></li>
             <li><a href="#" data-tab="reports-analytics"><i class="fas fa-chart-line"></i> <span>Reports &amp; Analytics</span></a></li>
             <li><a href="#" data-tab="internal-chat"><i class="fas fa-comments"></i> <span>Internal Chat</span></a></li>
         </ul>
@@ -1031,7 +1033,7 @@
                 </div>
                 <div class="table-wrap">
                 <table class="data-table sortable">
-                    <thead><tr><th data-sort="request_id">Request ID</th><th>User</th><th>Itinerary</th><th data-sort="amount">Amount</th><th>Reason</th><th data-sort="request_date">Date</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Traveller</th><th>Booking Amount</th><th>Refund Amount</th><th>Requested Date</th><th>Status</th><th>Reviewed By</th><th>Reviewed Date</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php $refundRequests = $refundRequests ?? []; if (empty($refundRequests)): ?>
                         <tr><td colspan="8" style="text-align:center;padding:30px;">No refund requests found.</td></tr>
@@ -1039,20 +1041,21 @@
                             $reqStatus = strtolower($refund->status ?? 'pending');
                             $statusClass = in_array($reqStatus, ['approved','processed']) ? 'status-completed' : ($reqStatus === 'rejected' ? 'status-banned' : 'status-pending');
                             $requestDate = !empty($refund->request_date) ? date('Y-m-d', strtotime($refund->request_date)) : '';
+                            $reviewedDate = !empty($refund->reviewed_date) ? date('Y-m-d', strtotime($refund->reviewed_date)) : '';
                         ?>
                         <tr data-filter-status="<?= htmlspecialchars($reqStatus); ?>" data-row-date="<?= htmlspecialchars($requestDate); ?>">
-                            <td><?= htmlspecialchars($refund->request_id ?? 'N/A'); ?></td>
-                            <td><?= htmlspecialchars($refund->user_name ?? 'Unknown'); ?></td>
-                            <td><?= htmlspecialchars($refund->trip_id ?? '—'); ?></td>
-                            <td>Rs. <?= number_format((float)($refund->amount ?? 0), 2); ?></td>
-                            <td><?= htmlspecialchars(mb_substr($refund->reason ?? '—', 0, 40)); ?><?= mb_strlen($refund->reason ?? '') > 40 ? '…' : ''; ?></td>
-                            <td><?= $requestDate; ?></td>
+                            <td><?= htmlspecialchars($refund->user_name ?? $refund->traveller ?? 'Unknown'); ?></td>
+                            <td>Rs. <?= number_format((float)($refund->booking_amount ?? $refund->amount ?? 0), 2); ?></td>
+                            <td>Rs. <?= number_format((float)($refund->refund_amount ?? $refund->amount ?? 0), 2); ?></td>
+                            <td><?= $requestDate ?: '—'; ?></td>
                             <td><span class="status-badge <?= $statusClass; ?>"><?= htmlspecialchars($refund->status ?? 'Pending'); ?></span></td>
+                            <td><?= htmlspecialchars($refund->reviewed_by_name ?? $refund->reviewed_by ?? '—'); ?></td>
+                            <td><?= $reviewedDate ?: '—'; ?></td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm btn-view">View</button>
                                 <?php if ($reqStatus === 'pending'): ?>
-                                <button type="button" class="btn btn-success btn-sm btn-approve" data-id="<?= (int)($refund->request_id ?? 0); ?>">Approve</button>
-                                <button type="button" class="btn btn-danger btn-sm btn-reject" data-id="<?= (int)($refund->request_id ?? 0); ?>">Reject</button>
+                                <button type="button" class="btn btn-success btn-sm btn-approve" data-id="<?= (int)($refund->request_id ?? $refund->id ?? 0); ?>">Approve</button>
+                                <button type="button" class="btn btn-danger btn-sm btn-reject" data-id="<?= (int)($refund->request_id ?? $refund->id ?? 0); ?>">Reject</button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -1161,10 +1164,10 @@
                     <tbody>
                         <?php $tripsToday = $tripsToday ?? []; if (empty($tripsToday)): ?>
                         <tr><td colspan="6" style="text-align:center;padding:30px;">No completed trips.</td></tr>
-                        <?php else: foreach ($tripsToday as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $title = $tr->tripTitle ?? $tr->trip_title ?? 'Trip #'.($tr->tripId ?? $tr->id ?? ''); $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
+                        <?php else: foreach ($tripsToday as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $tripId = $tr->tripId ?? $tr->id ?? '—'; $travellerName = $tr->travellerName ?? $tr->traveller_name ?? '—'; $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
                         <tr data-row-date="<?= htmlspecialchars($tripRowDate); ?>">
-                            <td><?= htmlspecialchars($title); ?></td>
-                            <td><?= htmlspecialchars($tr->userId ?? $tr->user_id ?? '—'); ?></td>
+                            <td><?= htmlspecialchars($tripId); ?></td>
+                            <td><?= htmlspecialchars($travellerName); ?></td>
                             <td><?= htmlspecialchars($start); ?></td>
                             <td><?= htmlspecialchars($end); ?></td>
                             <td><span class="status-badge status-pending"><?= htmlspecialchars($tr->status ?? '—'); ?></span></td>
@@ -1186,10 +1189,10 @@
                     <tbody>
                         <?php $ongoingTrips = $ongoingTrips ?? []; if (empty($ongoingTrips)): ?>
                         <tr><td colspan="6" style="text-align:center;padding:30px;">No ongoing trips.</td></tr>
-                        <?php else: foreach ($ongoingTrips as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $title = $tr->tripTitle ?? $tr->trip_title ?? 'Trip #'.($tr->tripId ?? $tr->id ?? ''); $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
+                        <?php else: foreach ($ongoingTrips as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $tripId = $tr->tripId ?? $tr->id ?? '—'; $travellerName = $tr->travellerName ?? $tr->traveller_name ?? '—'; $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
                         <tr data-row-date="<?= htmlspecialchars($tripRowDate); ?>">
-                            <td><?= htmlspecialchars($title); ?></td>
-                            <td><?= htmlspecialchars($tr->userId ?? $tr->user_id ?? '—'); ?></td>
+                            <td><?= htmlspecialchars($tripId); ?></td>
+                            <td><?= htmlspecialchars($travellerName); ?></td>
                             <td><?= htmlspecialchars($start); ?></td>
                             <td><?= htmlspecialchars($end); ?></td>
                             <td><span class="status-badge status-active"><?= htmlspecialchars($tr->status ?? 'Ongoing'); ?></span></td>
@@ -1211,10 +1214,10 @@
                     <tbody>
                         <?php $upcomingTrips = $upcomingTrips ?? []; if (empty($upcomingTrips)): ?>
                         <tr><td colspan="6" style="text-align:center;padding:30px;">No scheduled trips.</td></tr>
-                        <?php else: foreach ($upcomingTrips as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $title = $tr->tripTitle ?? $tr->trip_title ?? 'Trip #'.($tr->tripId ?? $tr->id ?? ''); $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
+                        <?php else: foreach ($upcomingTrips as $tr): $start = $tr->startDate ?? $tr->start_date ?? '—'; $end = $tr->endDate ?? $tr->end_date ?? '—'; $tripId = $tr->tripId ?? $tr->id ?? '—'; $travellerName = $tr->travellerName ?? $tr->traveller_name ?? '—'; $tripRowDate = (!empty($tr->startDate) || !empty($tr->start_date)) ? date('Y-m-d', strtotime($tr->startDate ?? $tr->start_date)) : ''; ?>
                         <tr data-row-date="<?= htmlspecialchars($tripRowDate); ?>">
-                            <td><?= htmlspecialchars($title); ?></td>
-                            <td><?= htmlspecialchars($tr->userId ?? $tr->user_id ?? '—'); ?></td>
+                            <td><?= htmlspecialchars($tripId); ?></td>
+                            <td><?= htmlspecialchars($travellerName); ?></td>
                             <td><?= htmlspecialchars($start); ?></td>
                             <td><?= htmlspecialchars($end); ?></td>
                             <td><span class="status-badge status-pending"><?= htmlspecialchars($tr->status ?? '—'); ?></span></td>
@@ -1233,28 +1236,25 @@
             <div class="content-tabs" data-section="driver-guide-management">
                 <button type="button" class="tab active" data-subtab="drivers">Drivers</button>
                 <button type="button" class="tab" data-subtab="guides">Guides</button>
-                <button type="button" class="tab" data-subtab="commission">Commission Table</button>
             </div>
             <div class="section-panel active" id="dg-sub-drivers">
             <div class="card">
                 <div class="card-header"><h2>Drivers</h2></div>
                 <div class="table-toolbar">
                     <input type="text" class="search-input" placeholder="Search drivers..." id="search-drivers">
-                    <select id="filter-drivers-status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                    <select id="filter-drivers-bookings"><option value="">By bookings</option><option value="high">High to low</option><option value="low">Low to high</option></select>
                     <select id="filter-drivers-revenue"><option value="">By revenue</option><option value="high">High to low</option><option value="low">Low to high</option></select>
                 </div>
                 <div class="table-wrap">
                 <table class="data-table" id="table-drivers">
-                    <thead><tr><th>ID</th><th>Name</th><th>Daily rate</th><th>Hourly rate</th><th>Total revenue (last month)</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Total Bookings (Last Month)</th><th>Revenue (Last Month)</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php $drivers = $drivers ?? []; if (empty($drivers)): ?>
-                        <tr><td colspan="7" style="text-align:center;padding:30px;">No drivers found.</td></tr>
-                        <?php else: foreach ($drivers as $d): $dStatus = strtolower($d->status ?? $d->is_active ?? 'active'); $dRevenue = (float)($d->total_revenue ?? 0); ?>
-                        <tr data-dg-status="<?= htmlspecialchars($dStatus); ?>" data-revenue="<?= $dRevenue; ?>">
-                            <td><?= htmlspecialchars($d->userID ?? $d->id ?? 'N/A'); ?></td>
+                        <tr><td colspan="5" style="text-align:center;padding:30px;">No drivers found.</td></tr>
+                        <?php else: foreach ($drivers as $d): $dStatus = strtolower($d->status ?? $d->is_active ?? 'active'); $dRevenue = (float)($d->total_revenue ?? 0); $dBookings = (int)($d->total_bookings_last_month ?? 0); ?>
+                        <tr data-dg-status="<?= htmlspecialchars($dStatus); ?>" data-revenue="<?= $dRevenue; ?>" data-bookings="<?= $dBookings; ?>">
                             <td><?= htmlspecialchars($d->fullname ?? $d->name ?? '—'); ?></td>
-                            <td>Rs. <?= number_format((float)($d->day_payment ?? 0), 2); ?></td>
-                            <td>Rs. <?= number_format((float)($d->hourly_rate ?? 0), 2); ?></td>
+                            <td><?= $dBookings; ?></td>
                             <td>Rs. <?= number_format($dRevenue, 2); ?></td>
                             <td><span class="status-badge status-<?= $dStatus === 'active' ? 'active' : 'banned'; ?>"><?= $dStatus === 'active' ? 'Active' : 'Inactive'; ?></span></td>
                             <td><button type="button" class="btn btn-info btn-sm">View profile</button></td>
@@ -1270,21 +1270,19 @@
                 <div class="card-header"><h2>Guides</h2></div>
                 <div class="table-toolbar">
                     <input type="text" class="search-input" placeholder="Search guides..." id="search-guides">
-                    <select id="filter-guides-status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                    <select id="filter-guides-bookings"><option value="">By bookings</option><option value="high">High to low</option><option value="low">Low to high</option></select>
                     <select id="filter-guides-revenue"><option value="">By revenue</option><option value="high">High to low</option><option value="low">Low to high</option></select>
                 </div>
                 <div class="table-wrap">
                 <table class="data-table" id="table-guides">
-                    <thead><tr><th>ID</th><th>Name</th><th>TravelSpot</th><th>Base charge</th><th>Total revenue (last month)</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Total Bookings (Last Month)</th><th>Revenue (Last Month)</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php $guides = $guides ?? []; if (empty($guides)): ?>
-                        <tr><td colspan="7" style="text-align:center;padding:30px;">No guides found.</td></tr>
-                        <?php else: foreach ($guides as $g): $gStatus = strtolower($g->status ?? $g->is_active ?? 'active'); $gRevenue = (float)($g->total_revenue ?? 0); ?>
-                        <tr data-dg-status="<?= htmlspecialchars($gStatus); ?>" data-revenue="<?= $gRevenue; ?>">
-                            <td><?= htmlspecialchars($g->id ?? 'N/A'); ?></td>
+                        <tr><td colspan="5" style="text-align:center;padding:30px;">No guides found.</td></tr>
+                        <?php else: foreach ($guides as $g): $gStatus = strtolower($g->status ?? $g->is_active ?? 'active'); $gRevenue = (float)($g->total_revenue ?? 0); $gBookings = (int)($g->total_bookings_last_month ?? 0); ?>
+                        <tr data-dg-status="<?= htmlspecialchars($gStatus); ?>" data-revenue="<?= $gRevenue; ?>" data-bookings="<?= $gBookings; ?>">
                             <td><?= htmlspecialchars($g->fullname ?? $g->name ?? '—'); ?></td>
-                            <td><?= htmlspecialchars($g->travel_spot ?? '—'); ?></td>
-                            <td>Rs. <?= number_format((float)($g->base_charge ?? 0), 2); ?></td>
+                            <td><?= $gBookings; ?></td>
                             <td>Rs. <?= number_format($gRevenue, 2); ?></td>
                             <td><span class="status-badge status-<?= $gStatus === 'active' ? 'active' : 'banned'; ?>"><?= $gStatus === 'active' ? 'Active' : 'Inactive'; ?></span></td>
                             <td><button type="button" class="btn btn-info btn-sm">View profile</button></td>
@@ -1295,18 +1293,131 @@
                 </div>
             </div>
             </div>
-            <div class="section-panel" id="dg-sub-commission">
+        </div>
+        <!-- Commission Management -->
+        <?php
+            $commOverview = $commissionOverview ?? [];
+            $commRates = $commissionRates ?? [];
+            $commHistory = $commissionHistory ?? [];
+        ?>
+        <div class="dashboard-content" id="commission-management">
+            <h1 class="section-heading">Commission Management</h1>
+
+            <!-- 1) Commission Overview Cards -->
+            <div class="stats-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon revenue"><i class="fas fa-coins"></i></div>
+                    <div class="stat-number">Rs. <?= number_format($commOverview['total_commission_this_month'] ?? 0, 2); ?></div>
+                    <div class="stat-label">💰 Total Commission Earned (This Month)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon commissions"><i class="fas fa-percent"></i></div>
+                    <div class="stat-number"><?= number_format($commOverview['guide_rate'] ?? 15, 1); ?>%</div>
+                    <div class="stat-label">📊 Current Guide Commission Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon payouts"><i class="fas fa-car"></i></div>
+                    <div class="stat-number"><?= number_format($commOverview['driver_rate'] ?? 12, 1); ?>%</div>
+                    <div class="stat-label">🚗 Current Driver Commission Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon refunds"><i class="fas fa-sync-alt"></i></div>
+                    <div class="stat-number" style="font-size:1.1rem;"><?= !empty($commOverview['last_updated']) ? date('d M Y', strtotime($commOverview['last_updated'])) : '—'; ?></div>
+                    <div class="stat-label">🔁 Last Updated Date</div>
+                </div>
+            </div>
+
+            <!-- 2) Commission Rate Settings Table -->
             <div class="card">
-                <div class="card-header"><h2>Commission Table</h2></div>
-                <p class="placeholder-msg">Set commission rate per role. Save to apply changes.</p>
-                <table class="data-table" id="commission-table">
-                    <thead><tr><th>Role</th><th>Commission %</th><th>Action</th></tr></thead>
+                <div class="card-header"><h2>Commission Rate Settings</h2></div>
+                <table class="data-table" id="commission-rates-table">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Current Rate</th>
+                            <th>Last Updated</th>
+                            <th>Updated By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <tr data-commission-role="driver"><td>Driver</td><td><input type="number" min="0" max="100" step="0.5" value="15" id="commission-driver" class="commission-input">%</td><td><button type="button" class="btn btn-primary btn-sm btn-save-commission">Save</button></td></tr>
-                        <tr data-commission-role="guide"><td>Guide</td><td><input type="number" min="0" max="100" step="0.5" value="15" id="commission-guide" class="commission-input">%</td><td><button type="button" class="btn btn-primary btn-sm btn-save-commission">Save</button></td></tr>
+                        <?php
+                        if (empty($commRates)) {
+                            $commRates = [(object)['role'=>'guide','rate'=>15,'updated_at'=>null,'updated_by_name'=>null], (object)['role'=>'driver','rate'=>12,'updated_at'=>null,'updated_by_name'=>null]];
+                        }
+                        foreach ($commRates as $r): $roleLabel = $r->role === 'guide' ? 'Guides' : 'Drivers'; ?>
+                        <tr data-commission-role="<?= htmlspecialchars($r->role); ?>">
+                            <td><?= htmlspecialchars($roleLabel); ?></td>
+                            <td><strong><?= number_format((float)$r->rate, 1); ?>%</strong></td>
+                            <td><?= !empty($r->updated_at) ? date('d M Y', strtotime($r->updated_at)) : '—'; ?></td>
+                            <td><?= htmlspecialchars($r->updated_by_name ?? '—'); ?></td>
+                            <td><button type="button" class="btn btn-primary btn-sm btn-edit-commission" data-role="<?= htmlspecialchars($r->role); ?>" data-current-rate="<?= htmlspecialchars($r->rate); ?>">Edit</button></td>
+                        </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
+
+            <!-- 3) Commission Change History -->
+            <div class="card">
+                <div class="card-header"><h2>Commission Change History</h2></div>
+                <p class="placeholder-msg">Full audit trail for transparency and financial tracking.</p>
+                <div class="table-wrap">
+                    <table class="data-table" id="commission-history-table">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Old Rate</th>
+                                <th>New Rate</th>
+                                <th>Changed By</th>
+                                <th>Change Date</th>
+                                <th>Effective From</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($commHistory)): ?>
+                            <tr><td colspan="7" class="text-muted">No commission changes recorded yet.</td></tr>
+                            <?php else: foreach ($commHistory as $h): $roleLabel = $h->role === 'guide' ? 'Guides' : 'Drivers'; ?>
+                            <tr>
+                                <td><?= htmlspecialchars($roleLabel); ?></td>
+                                <td><?= number_format((float)$h->old_rate, 1); ?>%</td>
+                                <td><?= number_format((float)$h->new_rate, 1); ?>%</td>
+                                <td><?= htmlspecialchars($h->changed_by_name ?? '—'); ?></td>
+                                <td><?= date('d M Y', strtotime($h->change_date)); ?></td>
+                                <td><?= date('d M Y', strtotime($h->effective_from)); ?></td>
+                                <td><?= htmlspecialchars($h->reason ?? '—'); ?></td>
+                            </tr>
+                            <?php endforeach; endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Commission Rate Modal -->
+        <div class="modal-overlay" id="commissionEditModal" aria-hidden="true">
+            <div class="modal-box" style="max-width: 440px;">
+                <h3 id="commissionModalTitle">Edit Commission Rate</h3>
+                <form id="commissionEditForm">
+                    <input type="hidden" name="role" id="commissionEditRole">
+                    <div class="form-group">
+                        <label for="commissionEditRate">New commission rate (%)</label>
+                        <input type="number" name="new_rate" id="commissionEditRate" min="0" max="100" step="0.5" required class="form-control" style="width:100%;padding:8px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="commissionEditEffective">Effective From Date</label>
+                        <input type="date" name="effective_from" id="commissionEditEffective" required class="form-control" style="width:100%;padding:8px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="commissionEditReason">Reason for change</label>
+                        <textarea name="reason" id="commissionEditReason" rows="3" class="form-control" style="width:100%;padding:8px;" placeholder="e.g. Seasonal update"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="commissionModalCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
         <!-- Reports & Analytics (heading + tabs + content) -->
@@ -1588,18 +1699,26 @@
             var sectionId = bar.getAttribute('data-section');
             applyDateFilter(sectionId);
         });
-        // Driver & Guide Management: status filter (no date filters)
-        function applyDriverGuideFilters() {
-            var driversStatus = (document.getElementById('filter-drivers-status') || {}).value || '';
-            var guidesStatus = (document.getElementById('filter-guides-status') || {}).value || '';
-            document.querySelectorAll('#dg-sub-drivers tbody tr[data-dg-status]').forEach(function(row) {
-                var statusMatch = !driversStatus || (row.getAttribute('data-dg-status') || '').trim().toLowerCase() === driversStatus.trim().toLowerCase();
-                row.style.display = statusMatch ? '' : 'none';
+        // Driver & Guide Management: sort by bookings (same as revenue)
+        function sortDriversByBookings(order) {
+            var tbody = document.querySelector('#table-drivers tbody');
+            if (!tbody || !order) return;
+            var rows = [].slice.call(tbody.querySelectorAll('tr[data-bookings]'));
+            rows.sort(function(a, b) {
+                var ba = parseInt(a.getAttribute('data-bookings'), 10) || 0, bb = parseInt(b.getAttribute('data-bookings'), 10) || 0;
+                return order === 'high' ? bb - ba : ba - bb;
             });
-            document.querySelectorAll('#dg-sub-guides tbody tr[data-dg-status]').forEach(function(row) {
-                var statusMatch = !guidesStatus || (row.getAttribute('data-dg-status') || '').trim().toLowerCase() === guidesStatus.trim().toLowerCase();
-                row.style.display = statusMatch ? '' : 'none';
+            rows.forEach(function(r) { tbody.appendChild(r); });
+        }
+        function sortGuidesByBookings(order) {
+            var tbody = document.querySelector('#table-guides tbody');
+            if (!tbody || !order) return;
+            var rows = [].slice.call(tbody.querySelectorAll('tr[data-bookings]'));
+            rows.sort(function(a, b) {
+                var ba = parseInt(a.getAttribute('data-bookings'), 10) || 0, bb = parseInt(b.getAttribute('data-bookings'), 10) || 0;
+                return order === 'high' ? bb - ba : ba - bb;
             });
+            rows.forEach(function(r) { tbody.appendChild(r); });
         }
         function sortDriversByRevenue(order) {
             var tbody = document.querySelector('#table-drivers tbody');
@@ -1621,10 +1740,10 @@
             });
             rows.forEach(function(r) { tbody.appendChild(r); });
         }
-        var filterDriversStatusEl = document.getElementById('filter-drivers-status');
-        if (filterDriversStatusEl) filterDriversStatusEl.addEventListener('change', applyDriverGuideFilters);
-        var filterGuidesStatusEl = document.getElementById('filter-guides-status');
-        if (filterGuidesStatusEl) filterGuidesStatusEl.addEventListener('change', applyDriverGuideFilters);
+        var filterDriversBookingsEl = document.getElementById('filter-drivers-bookings');
+        if (filterDriversBookingsEl) filterDriversBookingsEl.addEventListener('change', function() { sortDriversByBookings(this.value || ''); });
+        var filterGuidesBookingsEl = document.getElementById('filter-guides-bookings');
+        if (filterGuidesBookingsEl) filterGuidesBookingsEl.addEventListener('change', function() { sortGuidesByBookings(this.value || ''); });
         var filterDriversRevenueEl = document.getElementById('filter-drivers-revenue');
         if (filterDriversRevenueEl) filterDriversRevenueEl.addEventListener('change', function() { sortDriversByRevenue(this.value || ''); });
         var filterGuidesRevenueEl = document.getElementById('filter-guides-revenue');
@@ -1783,7 +1902,10 @@
             btn.addEventListener('click', function() {
                 var id = this.getAttribute('data-id');
                 var isApprove = this.classList.contains('btn-approve');
-                window.showConfirmModal(isApprove ? 'Approve Refund' : 'Reject Refund', 'Are you sure you want to ' + (isApprove ? 'approve' : 'reject') + ' this refund request?', function() { alert('Action completed. (Connect to backend to persist.)'); });
+                var action = isApprove ? 'approve' : 'reject';
+                if (confirm('Are you sure you want to ' + action + ' this refund request?')) {
+                    window.location.href = '<?= URL_ROOT; ?>/dashboard/' + action + 'Refund/' + id;
+                }
             });
         });
         // Charts (dashboard + reports)
@@ -1866,7 +1988,7 @@
             var rows = document.querySelectorAll('#tx-sub-refunds tbody tr[data-filter-status]');
             rows.forEach(function(row) {
                 var rowStatus = (row.getAttribute('data-filter-status') || '').toLowerCase();
-                var match = value === '' || value === rowStatus || (value === 'approved' && (rowStatus === 'approved' || rowStatus === 'processed'));
+                var match = value === '' || value === rowStatus || (value === 'approved' && (rowStatus === 'approved' || rowStatus === 'processed')) || (value === 'completed' && (rowStatus === 'approved' || rowStatus === 'processed'));
                 row.style.display = match ? '' : 'none';
             });
         }
@@ -1894,19 +2016,67 @@
                 row.style.display = (typeMatch && statusMatch) ? '' : 'none';
             });
         }
-        // Commission Table: save commission rates (connect backend to persist)
-        document.querySelectorAll('.btn-save-commission').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var row = this.closest('tr');
-                var role = row ? row.getAttribute('data-commission-role') : '';
-                var input = document.getElementById('commission-' + role);
-                var value = input ? input.value : '';
-                if (role && value !== '') {
-                    // TODO: POST to backend e.g. /BuisManager/updateCommission { role: role, rate: value }
-                    alert('Commission for ' + role + ' set to ' + value + '%. Connect backend to save.');
-                }
+        // Commission: Edit button opens modal; form submit POSTs to updateCommission
+        (function() {
+            var modal = document.getElementById('commissionEditModal');
+            var form = document.getElementById('commissionEditForm');
+            var roleInput = document.getElementById('commissionEditRole');
+            var rateInput = document.getElementById('commissionEditRate');
+            var effectiveInput = document.getElementById('commissionEditEffective');
+            var cancelBtn = document.getElementById('commissionModalCancel');
+            if (!modal || !form) return;
+            document.querySelectorAll('.btn-edit-commission').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var role = this.getAttribute('data-role') || '';
+                    var currentRate = this.getAttribute('data-current-rate') || '0';
+                    if (!role) return;
+                    roleInput.value = role;
+                    rateInput.value = currentRate;
+                    effectiveInput.value = new Date().toISOString().slice(0, 10);
+                    document.getElementById('commissionEditReason').value = '';
+                    document.getElementById('commissionModalTitle').textContent = 'Edit Commission Rate — ' + (role === 'guide' ? 'Guides' : 'Drivers');
+                    modal.classList.add('active');
+                    modal.setAttribute('aria-hidden', 'false');
+                });
             });
-        });
+            function closeCommissionModal() {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+            if (cancelBtn) cancelBtn.addEventListener('click', closeCommissionModal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeCommissionModal();
+            });
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var fd = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '<?= URL_ROOT; ?>/BuisManager/updateCommission');
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.onload = function() {
+                    closeCommissionModal();
+                    try {
+                        var res = JSON.parse(xhr.responseText);
+                        if (res.success) {
+                            window.location.reload();
+                        } else {
+                            alert(res.message || 'Update failed.');
+                        }
+                    } catch (err) {
+                        window.location.reload();
+                    }
+                };
+                xhr.onerror = function() { alert('Request failed.'); };
+                xhr.send(fd);
+            });
+        })();
+        // After filter form submit, open Commission tab when URL has show=commission-management
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('show') === 'commission-management') {
+                switchTab('commission-management');
+            }
+        })();
         // Table search: generic filter by text
         document.querySelectorAll('.table-toolbar .search-input').forEach(function(input) {
             input.addEventListener('input', function() {
