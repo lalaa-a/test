@@ -17,10 +17,10 @@ class UserModel {
     public function create($data) {
         $query = "INSERT INTO users (
             account_type, fullname, language, dob, gender, phone, secondary_phone,
-            address, email, password, profile_photo, driver_data, guide_tourist_data
+            address, email, password, profile_photo, driver_data, guide_tourist_data, currency_code
         ) VALUES (
             :account_type, :fullname, :language, :dob, :gender, :phone, :secondary_phone,
-            :address, :email, :password, :profile_photo, :driver_data, :guide_tourist_data
+            :address, :email, :password, :profile_photo, :driver_data, :guide_tourist_data, :currency_code
         )";
 
         $this->db->query($query);
@@ -37,6 +37,7 @@ class UserModel {
         $this->db->bind(':profile_photo', $data['profile_photo']);
         $this->db->bind(':driver_data', $data['driver_data'] ?? null);
         $this->db->bind(':guide_tourist_data', $data['guide_tourist_data'] ?? null);
+        $this->db->bind(':currency_code', $data['currency_code'] ?? null);
 
         return $this->db->execute();
     }

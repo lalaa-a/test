@@ -806,11 +806,11 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="<?php echo URL_ROOT.'/Driver/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/tours'?>" data-tab="tours"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/requests'?>" data-tab="requests"><i class="fa-solid fa-code-pull-request"></i> <span>Requests</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-car"></i></i> <span>Vehicles</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Guide/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Guide/schedule'?>" data-tab="schedule"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Guide/requests'?>" data-tab="requests"><i class="fa-solid fa-code-pull-request"></i> <span>Requests</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Guide/guideSpots'?>" data-tab="guideSpots"><i class="fa-solid fa-car"></i></i> <span>Guide Spots</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Guide/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
         </ul>
 
         <!-- User Info Section -->
@@ -826,7 +826,7 @@
                 <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
                 <div class="sidebar-user-details">
                     <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
-                    <span class="sidebar-user-role">Driver</span>
+                    <span class="sidebar-user-role">Guide</span>
                 </div>
                 <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
                 <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">

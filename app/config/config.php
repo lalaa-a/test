@@ -29,9 +29,10 @@
     // Email Configuration
     define('SMTP_HOST', 'smtp.gmail.com');
     define('SMTP_USERNAME', 'lwravishan@gmail.com'); // Replace with your email
-    define('SMTP_PASSWORD', 'yueg hpwi wjhf edhx'); // Replace with your app password
+    define('SMTP_PASSWORD', 'qfmq spro uelu gerd'); // Replace with your app password
     define('SMTP_PORT', 587);
     define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
-    define('FROM_EMAIL', 'noreply@travelapp.com');
-    define('FROM_NAME', 'Travel App');
+    define('FROM_EMAIL', 'lwravishan@gmail.com'); // Must match SMTP_USERNAME for Gmail
+    define('FROM_NAME', 'Tripingoo');
+    define('SMTP_DEBUG', 0); // Set to 2 for detailed debugging
 ?>

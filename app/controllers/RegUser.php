@@ -2,6 +2,7 @@
 
 require_once '../app/helpers/session_helper.php';
 require_once '../app/helpers/travel_spot_helper.php';
+require_once '../app/helpers/currency_helper.php';
 
     class RegUser extends Controller {
 
@@ -82,19 +83,38 @@ require_once '../app/helpers/travel_spot_helper.php';
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
 
+        public function driverVisibleProfile($driverId) {
+            
+            ob_start();
+            $this->view('Driver/profile/driverVisibleProfile');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/profile/driverVisibleProfile.css';
+            $js = URL_ROOT.'/public/js/driver/profile/driverVisibleProfile.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js,
+                'data' => ['driverId' => $driverId]
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'profile',
+                'loadingContent'=>$loadingContent
+            ];
+
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
         public function drivers() {
             
-            $driverModel = $this->model('ExploreDrivers');
-            $trendingDrivers = $driverModel->getTrendingDrivers(4);
-            $licensedDrivers = $driverModel->getLicensedDrivers(4);
-            $reviewedDrivers = $driverModel->getReviewedDrivers(4);
-            $touristDrivers = $driverModel->getTouristDrivers(4);
+            $profileControllerModel = $this->model('ProfileControllerModel');
+            $driversWithMainFilters = $profileControllerModel->getAccountsByMainFilters('driver');
             
             $data = [
-                'trendingDrivers' => $trendingDrivers,
-                'licensedDrivers' => $licensedDrivers,
-                'reviewedDrivers' => $reviewedDrivers,
-                'touristDrivers' => $touristDrivers
+                'mainFilters' => $driversWithMainFilters
             ];
             
             ob_start();
@@ -120,17 +140,12 @@ require_once '../app/helpers/travel_spot_helper.php';
         }
 
         public function guides() {
-            $guideModel = $this->model('ExploreGuides');
-            $trendingGuides = $guideModel->getTrendingGuides(5);
-            $licensedGuides = $guideModel->getLicensedGuides(4);
-            $reviewedGuides = $guideModel->getReviewedGuides(4);
-            $touristGuides = $guideModel->getTouristGuides(4);
+
+            $profileControllerModel = $this->model('ProfileControllerModel');
+            $driversWithMainFilters = $profileControllerModel->getAccountsByMainFilters('guide');
             
             $data = [
-                'trendingGuides' => $trendingGuides,
-                'licensedGuides' => $licensedGuides,
-                'reviewedGuides' => $reviewedGuides,
-                'touristGuides' => $touristGuides
+                'mainFilters' => $driversWithMainFilters
             ];
             
             ob_start();
@@ -234,7 +249,7 @@ require_once '../app/helpers/travel_spot_helper.php';
                     return;
                 }
 
-                $primary_required_fields = ['eventDate','startTime','endTime','eventType','eventStatus'];
+                $primary_required_fields = ['eventDate','eventType','eventStatus'];
                 
                 foreach($primary_required_fields as $field) {
                     if(empty($input[$field])){
@@ -265,8 +280,9 @@ require_once '../app/helpers/travel_spot_helper.php';
                 $insertingData = $input;
 
                 try{
-                    if($this->regUserModel->addEventData($insertingData)){
-                        echo json_encode(['success' => true, 'message' => 'Added event data to the database successfully']);
+                    $eventId = $this->regUserModel->addEventData($insertingData);
+                    if($eventId){
+                        echo json_encode(['success' => true, 'message' => 'Added event data to the database successfully', 'eventId' => $eventId]);
                     }
                     else{
                         echo json_encode(['success' => false, 'message' => 'Failed to add the event data to the database.']);
@@ -276,6 +292,61 @@ require_once '../app/helpers/travel_spot_helper.php';
                     http_response_code(500);
                     echo json_encode(['success' => false, 'message' => 'Database error occurred when inserting event data'.$e->getMessage()]);
                 }
+            }
+        }
+
+        public function saveGuideRequest() {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            error_log("saveGuideRequest received data: " . print_r($input, true));
+            
+            $userId = getSession('user_id');
+            
+            if (!$userId || !$input) {
+                error_log("saveGuideRequest validation failed - userId: $userId, input: " . ($input ? 'yes' : 'no'));
+                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+                return;
+            }
+
+            // Add userId to the data
+            $input['userId'] = $userId;
+
+            try {
+                if ($this->regUserModel->saveGuideRequest($input)) {
+                    error_log("saveGuideRequest success");
+                    echo json_encode(['success' => true, 'message' => 'Guide request saved successfully']);
+                } else {
+                    error_log("saveGuideRequest failed - model returned false");
+                    echo json_encode(['success' => false, 'message' => 'Failed to save guide request']);
+                }
+            } catch (PDOException $e) {
+                error_log("saveGuideRequest error: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getGuideRequestByEventId($eventId) {
+            header('Content-Type: application/json');
+            
+            try {
+                $guideRequest = $this->regUserModel->getGuideRequestByEventId($eventId);
+                
+                if ($guideRequest) {
+                    echo json_encode(['success' => true, 'guideRequest' => $guideRequest]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'No guide request found']);
+                }
+            } catch (PDOException $e) {
+                error_log("getGuideRequestByEventId error: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
             }
         }
 
@@ -331,7 +402,7 @@ require_once '../app/helpers/travel_spot_helper.php';
 
             try{
                 if ($this->regUserModel->updateEvent($updatingData)) {
-                    echo json_encode(['success' => true, 'message' => 'Event card updated successfully']);
+                    echo json_encode(['success' => true, 'message' => 'Event card updated successfully', 'eventId' => $eventId]);
                 } else {
                     echo json_encode(['success' => false, 'message' => 'Failed to update event card']);
                 }
@@ -401,8 +472,173 @@ require_once '../app/helpers/travel_spot_helper.php';
                     'eventCard' => null
                 ]);
             }
-
         }   
+
+        public function getEventCoordinates($tripId, $eventDate){
+
+            header('Content-Type: application/json');
+
+            $date = new DateTime($eventDate);
+            $eventDate = $date->format('Y-m-d');
+
+            $userId = getSession('user_id');
+
+            try{
+                $coordinates = $this->regUserModel->getEventCoordinates($userId, $tripId, $eventDate);
+                
+                error_log("Event coordinates for date " . $eventDate . ": " . print_r($coordinates, true));
+
+                echo json_encode([
+                    'success' => true,
+                    'coordinates' => $coordinates
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving event coordinates: '.$e->getMessage()]);
+                return;
+            }
+        }
+
+        public function getAllTripCoordinates($tripId){
+
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            try{
+                $coordinates = $this->regUserModel->getAllTripCoordinates($userId, $tripId);
+                
+                error_log("All trip coordinates: " . print_r($coordinates, true));
+
+                echo json_encode([
+                    'success' => true,
+                    'coordinates' => $coordinates
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving all trip coordinates: '.$e->getMessage()]);
+                return;
+            }
+        }
+
+        public function getAllTripEvents($tripId){
+
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            try{
+                $events = $this->regUserModel->getAllTripEvents($userId, $tripId);
+                
+                echo json_encode([
+                    'success' => true,
+                    'events' => $events
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving all trip events: '.$e->getMessage()]);
+                return;
+            }
+        }
+
+        public function getDriverRequests($tripId) {
+            header('Content-Type: application/json');
+            
+            $tripId = (int) $tripId;
+            $drivers = $this->regUserModel->getDriverRequestsForTrip($tripId);
+            
+            // Transform the driver data to match frontend format with segment index
+            $driversWithSegments = [];
+            foreach ($drivers as $index => $driver) {
+                $driversWithSegments[(string)$index] = [
+                    'userId' => (int) $driver->driverId,
+                    'fullName' => $driver->driverName,
+                    'profilePhoto' => $driver->driverProfilePhoto,
+                    'averageRating' => (float) $driver->driverRating,
+                    'verified' => (bool) $driver->verifyStatus,
+                    'vehicleId' => (int) $driver->vehicleId,
+                    'make' => $driver->vehicleType,
+                    'model' => $driver->vehicleModel,
+                    'year' => (int) $driver->vehicleYear,
+                    'vehicleType' => $driver->vehicleType,
+                    'vehiclePhoto' => $driver->vehiclePhoto,
+                    'seatingCapacity' => (int) $driver->vehicleCapacity,
+                    'childSeats' => (int) $driver->childSeats,
+                    'totalChargePerDay' => (float) $driver->totalAmount,
+                    'currencySymbol' => '$',
+                    'currency' => 'USD',
+                    'requestStatus' => $driver->requestStatus
+                ];
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'drivers' => $driversWithSegments
+            ]);
+        }
+
+        public function confirmTrip($tripId){
+
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            try{
+                $input = json_decode(file_get_contents('php://input'), true);
+                $selectedDrivers = $input['selectedDrivers'] ?? [];
+
+                $result = $this->regUserModel->confirmTrip($userId, $tripId);
+                
+                if($result){
+                    // Save driver requests if any drivers selected
+                    if (!empty($selectedDrivers)) {
+                        $requestsResult = $this->regUserModel->saveDriverRequests($userId, $tripId, $selectedDrivers);
+                        if (!$requestsResult) {
+                            echo json_encode([
+                                'success' => false,
+                                'message' => 'Trip confirmed but failed to save driver requests'
+                            ]);
+                            return;
+                        }
+                    }
+
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Trip confirmed successfully'
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Failed to confirm trip'
+                    ]);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when confirming trip: '.$e->getMessage()]);
+                return;
+            }
+        }
+
+        public function getTripStartEndEvents($tripId){
+            header('Content-Type: application/json');
+            
+            try {
+                $userId = getSession('user_id');
+                $events = $this->regUserModel->getTripStartEndEvents($userId, $tripId);
+                
+                echo json_encode([
+                    'success' => true,
+                    'events' => $events
+                ]);
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: '.$e->getMessage()]);
+            }
+        }
 
         public function selectTravelSpot(){
 
@@ -472,6 +708,265 @@ require_once '../app/helpers/travel_spot_helper.php';
             ];
 
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function guidesSelect($spotId){
+            error_log("guidesSelect called with spotId: $spotId");
+            
+            $regUserSelectionModel = $this->model('RegUserSelectionModel');
+            $guidesWithFilters = $regUserSelectionModel->getGuideToASpotId($spotId);
+            
+            // Get user currency from session
+            $userCurrency = getUserCurrency();
+            $currencySymbol = getCurrencySymbol($userCurrency);
+            
+            $data = [
+                'mainFilters' => $guidesWithFilters,
+                'spotId' => $spotId,
+                'userCurrency' => $userCurrency,
+                'currencySymbol' => $currencySymbol
+            ];
+
+            ob_start();
+            $this->view('Trips/addOns/guides/guidesSelect', $data);
+            $html = ob_get_clean();
+
+            $css = URL_ROOT.'/public/css/regUser/trips/addOns/guides/guidesSelect.css';
+            $js = URL_ROOT.'/public/js/regUser/trips/addOns/guides/guidesSelect.js';
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'guidesSelect',
+                'loadingContent'=>$loadingContent
+            ];
+
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function getGuidesData($spotId) {
+            header('Content-Type: application/json');
+            
+            try {
+                error_log("getGuidesData called with spotId: $spotId");
+                
+                $regUserSelectionModel = $this->model('RegUserSelectionModel');
+                $guidesWithFilters = $regUserSelectionModel->getGuideToASpotId($spotId);
+                
+                // Return just the guides data as JSON
+                $guidesData = $guidesWithFilters['all']['accounts'] ?? [];
+                
+                // Get user currency
+                $userCurrency = getUserCurrency();
+                $currencySymbol = getCurrencySymbol($userCurrency);
+                
+                // Convert prices for each guide
+                foreach ($guidesData as $guide) {
+                    $converted = convertCharge($guide->baseCharge, $userCurrency);
+                    $guide->convertedCharge = $converted['amount'];
+                    $guide->currency = $userCurrency;
+                    $guide->currencySymbol = $currencySymbol;
+                    $guide->formattedCharge = $converted['formatted'];
+                }
+                
+                error_log("Found " . count($guidesData) . " guides for API response");
+                
+                echo json_encode([
+                    'success' => true,
+                    'guides' => array_values($guidesData),
+                    'count' => count($guidesData),
+                    'currency' => $userCurrency,
+                    'currencySymbol' => $currencySymbol
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("getGuidesData error: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to fetch guides data: ' . $e->getMessage()
+                ]);
+            }
+        }
+
+        public function filterGuides($spotId) {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            
+            if (!$input || !is_array($input)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid request data']);
+                return;
+            }
+
+            try {
+                $regUserSelectionModel = $this->model('RegUserSelectionModel');
+                $filteredGuides = $regUserSelectionModel->filterGuidesBySpot($spotId, $input);
+                
+                echo json_encode([
+                    'success' => true, 
+                    'guides' => $filteredGuides,
+                    'count' => count($filteredGuides),
+                    'message' => 'Guides filtered successfully'
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("Error filtering guides: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            }
+        }
+
+        // ============================
+        // DRIVER SELECTION METHODS
+        // ============================
+
+        public function driversSelect($tripId){
+            error_log("driversSelect called with tripId: $tripId");
+            
+            $regUserSelectionModel = $this->model('RegUserSelectionModel');
+            $driversWithFilters = $regUserSelectionModel->getDriversForTrip($tripId);
+            
+            // Get user currency from session
+            $userCurrency = getUserCurrency();
+            $currencySymbol = getCurrencySymbol($userCurrency);
+            
+            $data = [
+                'mainFilters' => $driversWithFilters,
+                'tripId' => $tripId,
+                'userCurrency' => $userCurrency,
+                'currencySymbol' => $currencySymbol
+            ];
+
+            ob_start();
+            $this->view('Trips/addOns/drivers/driversSelect', $data);
+            $html = ob_get_clean();
+
+            $css = URL_ROOT.'/public/css/regUser/trips/addOns/drivers/driverSelect.css';
+            $js = URL_ROOT.'/public/js/regUser/trips/addOns/drivers/driverSelect.js';
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'driversSelect',
+                'loadingContent'=>$loadingContent
+            ];
+
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function getDriversData($tripId) {
+            header('Content-Type: application/json');
+            
+            try {
+                error_log("getDriversData called with tripId: $tripId");
+                
+                $regUserSelectionModel = $this->model('RegUserSelectionModel');
+                $driversWithFilters = $regUserSelectionModel->getDriversForTrip($tripId);
+                
+                // Return just the drivers data as JSON
+                $driversData = $driversWithFilters['all']['accounts'] ?? [];
+                
+                // Get user currency
+                $userCurrency = getUserCurrency();
+                $currencySymbol = getCurrencySymbol($userCurrency);
+                
+                // Convert prices for each driver
+                foreach ($driversData as $driver) {
+                    $converted = convertCharge($driver->totalChargePerDay, $userCurrency);
+                    $driver->convertedChargePerDay = $converted['amount'];
+                    $driver->currency = $userCurrency;
+                    $driver->currencySymbol = $currencySymbol;
+                    $driver->formattedChargePerDay = $converted['formatted'];
+                    
+                    $convertedKm = convertCharge($driver->totalChargePerKm, $userCurrency);
+                    $driver->convertedChargePerKm = $convertedKm['amount'];
+                    $driver->formattedChargePerKm = $convertedKm['formatted'];
+                }
+                
+                error_log("Found " . count($driversData) . " drivers for API response");
+                
+                echo json_encode([
+                    'success' => true,
+                    'drivers' => array_values($driversData),
+                    'count' => count($driversData),
+                    'currency' => $userCurrency,
+                    'currencySymbol' => $currencySymbol
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("getDriversData error: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to fetch drivers data: ' . $e->getMessage()
+                ]);
+            }
+        }
+
+        public function filterDrivers($tripId) {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            
+            if (!$input || !is_array($input)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid request data']);
+                return;
+            }
+
+            try {
+                $regUserSelectionModel = $this->model('RegUserSelectionModel');
+                $filteredDrivers = $regUserSelectionModel->filterDriversByTrip($tripId, $input);
+                
+                // Get user currency
+                $userCurrency = getUserCurrency();
+                $currencySymbol = getCurrencySymbol($userCurrency);
+                
+                // Convert prices for each driver
+                foreach ($filteredDrivers as $driver) {
+                    $converted = convertCharge($driver->totalChargePerDay, $userCurrency);
+                    $driver->convertedChargePerDay = $converted['amount'];
+                    $driver->currency = $userCurrency;
+                    $driver->currencySymbol = $currencySymbol;
+                    $driver->formattedChargePerDay = $converted['formatted'];
+                    
+                    $convertedKm = convertCharge($driver->totalChargePerKm, $userCurrency);
+                    $driver->convertedChargePerKm = $convertedKm['amount'];
+                    $driver->formattedChargePerKm = $convertedKm['formatted'];
+                }
+                
+                echo json_encode([
+                    'success' => true, 
+                    'drivers' => $filteredDrivers,
+                    'count' => count($filteredDrivers),
+                    'message' => 'Drivers filtered successfully'
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("Error filtering drivers: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            }
         }
 
         public function retrieveEventData($tripId, $eventId){
@@ -608,13 +1103,20 @@ require_once '../app/helpers/travel_spot_helper.php';
                     return;
                 }
 
-                $required_fields = ['tripTitle','description','startDate', 'endDate'];
+                $required_fields = ['tripTitle','description','numberOfPeople','startDate', 'endDate'];
                 foreach($required_fields as $field) {
                     if(empty($input[$field])){
                         http_response_code(400);
                         echo json_encode(['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' is required']);  
                         return; 
                     }    
+                }
+
+                // Validate numberOfPeople
+                if (!is_numeric($input['numberOfPeople']) || $input['numberOfPeople'] < 1) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Number of people must be at least 1']);
+                    return;
                 }
 
                 $startDate = new DateTime($input['startDate']);
@@ -639,6 +1141,7 @@ require_once '../app/helpers/travel_spot_helper.php';
                     'userId' => $userId,
                     'tripTitle' => $input['tripTitle'],
                     'description' => $input['description'],
+                    'numberOfPeople' => (int)$input['numberOfPeople'],
                     'startDate' => $startDate->format('Y-m-d'),  // <--to the insertion to the database
                     'endDate' => $endDate->format('Y-m-d'),
                     'status' => 'pending'
@@ -695,6 +1198,7 @@ require_once '../app/helpers/travel_spot_helper.php';
                 'tripId' => $input['tripId'],
                 'tripTitle' => $input['tripTitle'],
                 'description' => $input['description'],
+                'numberOfPeople' => (int)$input['numberOfPeople'],
                 'startDate' => $input['startDate'],
                 'endDate' => $input['endDate']
             ];
@@ -703,6 +1207,51 @@ require_once '../app/helpers/travel_spot_helper.php';
                 echo json_encode(['success' => true, 'message' => 'Trip updated successfully']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Failed to update trip']);
+            }
+        }
+
+        public function getTripDetails($tripId) {
+            header('Content-Type: application/json');
+            
+            try {
+                $userId = getSession('user_id');
+                
+                if (!$userId) {
+                    echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                    return;
+                }
+                
+                // Get trip details
+                $trip = $this->regUserModel->getTripById($tripId);
+                
+                if (!$trip) {
+                    echo json_encode(['success' => false, 'message' => 'Trip not found']);
+                    return;
+                }
+                
+                // Verify ownership
+                if ($trip->userId != $userId) {
+                    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                    return;
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'trip' => [
+                        'tripId' => $trip->tripId,
+                        'userId' => $trip->userId,
+                        'tripTitle' => $trip->tripTitle,
+                        'description' => $trip->description,
+                        'numberOfPeople' => (int)$trip->numberOfPeople,
+                        'startDate' => $trip->startDate,
+                        'endDate' => $trip->endDate,
+                        'status' => $trip->status
+                    ]
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("getTripDetails error: " . $e->getMessage());
+                echo json_encode(['success' => false, 'message' => 'Error fetching trip details']);
             }
         }
 
@@ -731,7 +1280,7 @@ require_once '../app/helpers/travel_spot_helper.php';
                 echo json_encode(['success' => false, 'message' => 'Trip not found']);
                 return;
             }
-                */
+            */
 
             if ($this->regUserModel->deleteCreatedTrip($input['tripId'])) {
                 echo json_encode(['success' => true, 'message' => 'Trip deleted successfully']);
@@ -739,7 +1288,153 @@ require_once '../app/helpers/travel_spot_helper.php';
                 echo json_encode(['success' => false, 'message' => 'Failed to delete trip']);
             }
         }
-        
+
+        public function getDriverCoverPhotos($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $driverModel = $this->model('DriverModel');
+                $photos = $driverModel->getDriverCoverPhotos($driverId);
+                echo json_encode(['success' => true, 'photos' => $photos]);
+            } catch (Exception $e) {
+                error_log('Error getting driver cover photos: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load cover photos']);
+            }
+        }
+
+        public function getDriverReviews($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $profileControllerModel = $this->model('ProfileControllerModel');
+                $reviews = $profileControllerModel->getDriverReviews($driverId);
+                echo json_encode(['success' => true, 'reviews' => $reviews]);
+            } catch (Exception $e) {
+                error_log('Error getting driver reviews: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load reviews']);
+            }
+        }
+
+        public function submitReview() {
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                return;
+            }
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $driverId = $input['driverId'] ?? null;
+            $reviewText = trim($input['comment'] ?? '');
+
+            if (!$driverId || empty($reviewText)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID and review text are required']);
+                return;
+            }
+
+            try {
+                $profileControllerModel = $this->model('ProfileControllerModel');
+                $result = $profileControllerModel->submitReview($userId, $driverId, $reviewText);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Review submitted successfully']);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit review']);
+                }
+            } catch (Exception $e) {
+                error_log('Error submitting review: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to submit review']);
+            }
+        }
+
+        public function getDriverRatings($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $profileControllerModel = $this->model('ProfileControllerModel');
+                $ratings = $profileControllerModel->getDriverRatings($driverId);
+                echo json_encode(['success' => true, 'ratings' => $ratings]);
+            } catch (Exception $e) {
+                error_log('Error getting driver ratings: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load ratings']);
+            }
+        }
+
+        public function submitRating() {
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                return;
+            }
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $driverId = $input['driverId'] ?? null;
+            $rating = $input['rating'] ?? null;
+
+            if (!$driverId || !$rating || !is_numeric($rating) || $rating < 1 || $rating > 5) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID and valid rating (1-5) are required']);
+                return;
+            }
+
+            try {
+                $profileControllerModel = $this->model('ProfileControllerModel');
+                $result = $profileControllerModel->submitRating($userId, $driverId, $rating);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Rating submitted successfully']);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit rating']);
+                }
+            } catch (Exception $e) {
+                error_log('Error submitting rating: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to submit rating']);
+            }
+        }
+
     }
 
 

@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Driver Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
-    
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&libraries=places"></script> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 
     <style>
         * {
@@ -69,7 +70,7 @@
             background: var(--primary);
             border-radius: 2px;
         }
-        
+
         .sidebar-header {
             display: flex;
             justify-content: center;
@@ -203,33 +204,6 @@
             font-weight: 300;
         }
 
-        /* Auth Buttons (pre-login) */
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .auth-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            font-size: 0.95rem;
-        }
-        .login-btn {
-            background: var(--primary);
-            color: white;
-        }
-        .signup-btn {
-            background: #6c757d;
-            color: white;
-        }
-        .auth-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
         /* Header Actions */
         .header-actions {
             display: flex;
@@ -284,6 +258,33 @@
 
         .message-badge {
             background: #28a745;
+        }
+
+        /* Auth Buttons (pre-login) */
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .auth-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.95rem;
+        }
+        .login-btn {
+            background: var(--primary);
+            color: white;
+        }
+        .signup-btn {
+            background: #6c757d;
+            color: white;
+        }
+        .auth-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         /* Sidebar User Section at Bottom */
@@ -823,14 +824,14 @@
                 <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
                 <div class="sidebar-user-details">
                     <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
-                    <span class="sidebar-user-role">Moderator</span>
+                    <span class="sidebar-user-role">Driver</span>
                 </div>
                 <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
                 <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">
                     <a href="#" class="sidebar-dropdown-item" id="sidebarProfileSettingsBtn">
                         <i class="fas fa-cog"></i> Profile Settings
                     </a>
-                    <a href="#" class="sidebar-dropdown-item">
+                    <a href="<?php echo URL_ROOT.'/Driver/driverProfile'?>" class="sidebar-dropdown-item">
                         <i class="fas fa-user-circle"></i> My Profile
                     </a>
                     <div class="sidebar-dropdown-divider"></div>
@@ -863,7 +864,7 @@
 
         <!-- Dashboard Content -->
         <div class="dashboard-content active" id="dashboard"></div>
-        
+
     <script>
 
         let isLoggedIn = false;
@@ -880,11 +881,14 @@
         const sidebarProfileSettingsBtn = document.getElementById('sidebarProfileSettingsBtn');
         
         let encodedData;
+        let userProfilePhoto = '';
 
         document.addEventListener('DOMContentLoaded', function() {
             
             encodedData = <?php echo json_encode($loadingContent)?>;
             const tabId = <?php echo json_encode($tabId)?>;
+            // Expose logged-in user's profile photo URL to JS (empty string if none)
+            userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
 
             updateUI();
             setActiveTab(tabId);
@@ -923,12 +927,15 @@
                 </div>
             `;
 
+             console.log('Loaded data for tab:', encodedData);
+
+
             try {
 
                 const data = encodedData;
 
                 cleanupPreviousAssets(tabId);
-                
+            
                 // Inject HTML
                 tabElement.innerHTML =  data.html;
                 
@@ -1087,6 +1094,9 @@
             alert('⚙️ Opening Profile Settings...');
         });
 
+
+
+// notification and messages logic with buttons 😅        
         // Notification button
         const notificationsBtn = document.getElementById('notificationsBtn');
         const notificationBadge = document.getElementById('notificationBadge');
@@ -1130,6 +1140,8 @@
         }
 
 
+        
+
         //To update the username and profile displaying
         function updateUI() {
 
@@ -1140,8 +1152,14 @@
                 sidebarAuthContainer.style.display = 'none';
                 sidebarUserContainer.style.display = 'flex';
 
-                const initial = userNameValue.charAt(0).toUpperCase();
-                sidebarUserAvatar.textContent = initial;
+                // If a profile photo URL is available, render the image inside the avatar container
+                if (userProfilePhoto && userProfilePhoto.trim() !== '') {
+                    sidebarUserAvatar.innerHTML = `<img src="${userProfilePhoto}" alt="Avatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">`;
+                } else {
+                    const initial = userNameValue.charAt(0).toUpperCase();
+                    sidebarUserAvatar.textContent = initial;
+                }
+
                 sidebarUserName.textContent = userNameValue;
             } else {
                 sidebarAuthContainer.style.display = 'flex';
@@ -1151,7 +1169,81 @@
         }
 
 
+        // Global Notification System
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10001;
+                animation: slideInRight 0.3s ease;
+                max-width: 400px;
+            `;
+
+            // Set colors based on type
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Make it globally available
+        window.showNotification = showNotification;
+
+
     </script>
+
+    <style>
+        /* Notification Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>
 

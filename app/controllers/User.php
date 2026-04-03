@@ -3,9 +3,6 @@
     require_once '../app/helpers/upload_helper.php';
     require_once '../app/helpers/mail_helper.php';
 
-    // Load Composer's autoloader
-    
-
     class User extends Controller{
         
         private $userModel;
@@ -85,6 +82,10 @@
             redirectIfLoggedIn();
             
             if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                error_log("Registration function called");
+                error_log("POST data: " . print_r($_POST, true));
+                error_log("FILES data: " . print_r($_FILES, true));
+                
                 header('Content-Type: application/json');
 
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -102,6 +103,7 @@
                 $secondaryPhone = trim($_POST['secondary_phone'] ?? '');
                 $address = trim($_POST['address'] ?? '');
                 $email = trim($_POST['email'] ?? '');
+                $nic_passport = trim($_POST['nic_passport'] ?? '');
                 $password = $_POST['password'] ?? '';
                 $confirmPassword = $_POST['confirm_password'] ?? '';
 
@@ -176,6 +178,7 @@
                         'license_expire_date' => $licenseExpireDate,
                         'license_front' => $licenseFront,
                         'license_back' => $licenseBack,
+                        'nic_passport' => $nic_passport,
                         'id_front' => $idFront,
                         'id_back' => $idBack
                     ]);
@@ -205,6 +208,16 @@
                 // Hash the password
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+                // Get currency for tourist accounts
+                $currency = 'USD'; // Default currency
+                if ($accountType === 'tourist') {
+                    $currency = trim($_POST['currency_code'] ?? '');
+                    if (empty($currency)) {
+                        echo json_encode(['success' => false, 'message' => 'Currency selection is required for tourists']);
+                        return;
+                    }
+                }
+
                 // Prepare data for model
                 $userData = [
                     'account_type' => $accountType,
@@ -219,7 +232,8 @@
                     'password' => $hashedPassword,
                     'profile_photo' => $profilePhoto,
                     'driver_data' => $driverData,
-                    'guide_tourist_data' => $guideTouristData
+                    'guide_tourist_data' => $guideTouristData,
+                    'currency_code' => $currency
                 ];
 
                 // Double-check email existence right before insert
@@ -289,7 +303,21 @@
             // Send OTP email using helper function
             $result = sendOTPEmail($email, $otp);
             
-            echo json_encode($result);
+            // Log the attempt
+            error_log("OTP send attempt for email: " . $email . " - Result: " . ($result['success'] ? 'Success' : 'Failed'));
+            
+            if ($result['success']) {
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Verification code sent successfully. Please check your email (including spam folder).'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Failed to send verification code. Please try again or contact support.',
+                    'debug_info' => $result['debug_error'] ?? 'No additional debug info'
+                ]);
+            }
         }
 
         public function verifyOTP() {
@@ -311,7 +339,7 @@
 
             // Check if OTP exists in session
             if (!isset($_SESSION['otp']) || 
-                $_SESSION['otp']['email'] !== $email || 
+
                 $_SESSION['otp']['code'] !== $otp) {
                 echo json_encode(['success' => false, 'message' => 'Invalid OTP']);
                 return;
@@ -386,6 +414,11 @@
                     ];
                     
                     setUserSession($userData);
+
+                    // Store currency in session for tourists
+                    if ($user->account_type === 'tourist' && !empty($user->currency_code)) {
+                        setSession('user_currency', $user->currency_code);
+                    }
 
                     // Handle remember me
                     if ($remember) {

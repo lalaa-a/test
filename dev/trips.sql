@@ -1,20 +1,21 @@
 
 CREATE TABLE created_trips (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    trip_title VARCHAR(255) NOT NULL,
+    tripId INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT NOT NULL,
+    tripTitle VARCHAR(255) NOT NULL,
     description TEXT,
-    start_date DATE,
-    end_date DATE,
+    startDate DATE,
+    endDate DATE,
     status ENUM('planning','pending','scheduled','completed','ongoing') DEFAULT 'planning',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    numberOfPeople INT DEFAULT 1,
+    createdt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 
 CREATE TABLE trip_events (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    eventId INT PRIMARY KEY AUTO_INCREMENT,
     tripId INT NOT NULL,
     userId INT NOT NULL,
     eventDate DATE NOT NULL,
@@ -45,41 +46,92 @@ CREATE INDEX idx_trip_events_date ON trip_events(eventDate);
 CREATE INDEX idx_trip_events_type ON trip_events(eventType);
 CREATE INDEX idx_trip_events_coords ON trip_events(latitude, longitude);
 
--- Create validation trigger
-DELIMITER $$
 
-CREATE TRIGGER trg_trip_events_validate_before_insert
-BEFORE INSERT ON trip_events
-FOR EACH ROW
-BEGIN
-    IF NEW.eventType = 'travelSpot' THEN
-        IF NEW.travelSpotId IS NULL OR NEW.locationName IS NOT NULL OR NEW.latitude IS NOT NULL OR NEW.longitude IS NOT NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'For eventType=travelSpot, travelSpotId must be set and location fields must be NULL';
-        END IF;
-    ELSEIF NEW.eventType = 'location' THEN
-        IF NEW.travelSpotId IS NOT NULL OR NEW.locationName IS NULL OR NEW.latitude IS NULL OR NEW.longitude IS NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'For eventType=location, location fields must be set and travelSpotId must be NULL';
-        END IF;
-    END IF;
-END$$
+CREATE TABLE traveller_side_g_requests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT NOT NULL COMMENT 'Tourist who created the request',
+    tripId INT NOT NULL COMMENT 'Reference to the trip',
+    eventId INT NOT NULL COMMENT 'Reference to the trip event',
+    travelSpotId INT NOT NULL COMMENT 'Reference to travel spot',
+    guideId INT NULL COMMENT 'Selected guide (null if not selected)',
+    
+    status ENUM('notSelected', 'pending', 'requested', 'accepted', 'rejected', 'cancelled', 'completed') DEFAULT 'notSelected',
+    
+    -- Guide info snapshot
+    guideFullName VARCHAR(255),
+    guideProfilePhoto VARCHAR(255),
+    guideAverageRating DECIMAL(3,2),
+    guideBio TEXT,
+    totalCharge DECIMAL(10,2) COMMENT 'Total charge for the guide service', 
+    
+    -- Timestamps for tracking
+    requestedAt TIMESTAMP NULL COMMENT 'When request sent to guide',
+    respondedAt TIMESTAMP NULL COMMENT 'When guide responded',
+    acceptedAt TIMESTAMP NULL COMMENT 'When guide accepted',
+    completedAt TIMESTAMP NULL COMMENT 'When guide service completed',
+    
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign keys (updated to match your trip_events table)
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (tripId) REFERENCES created_trips(tripId) ON DELETE CASCADE,
+    FOREIGN KEY (eventId) REFERENCES trip_events(eventId) ON DELETE CASCADE,
+    FOREIGN KEY (travelSpotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
+    FOREIGN KEY (guideId) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- Indexes
+    INDEX idx_userId (userId),
+    INDEX idx_tripId (tripId),
+    INDEX idx_eventId (eventId),
+    INDEX idx_travelSpotId (travelSpotId),
+    INDEX idx_guideId (guideId),
+    INDEX idx_status (status),
+    INDEX idx_createdAt (createdAt),
+    INDEX idx_status_trip (status, tripId),
+    INDEX idx_user_status (userId, status),
+    INDEX idx_event_guide (eventId, guideId)
+) ENGINE=InnoDB;
 
-CREATE TRIGGER trg_trip_events_validate_before_update
-BEFORE UPDATE ON trip_events
-FOR EACH ROW
-BEGIN
-    IF NEW.eventType = 'travelSpot' THEN
-        IF NEW.travelSpotId IS NULL OR NEW.locationName IS NOT NULL OR NEW.latitude IS NOT NULL OR NEW.longitude IS NOT NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'For eventType=travelSpot, travelSpotId must be set and location fields must be NULL';
-        END IF;
-    ELSEIF NEW.eventType = 'location' THEN
-        IF NEW.travelSpotId IS NOT NULL OR NEW.locationName IS NULL OR NEW.latitude IS NULL OR NEW.longitude IS NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'For eventType=location, location fields must be set and travelSpotId must be NULL';
-        END IF;
-    END IF;
-END$$
 
-DELIMITER ;
+CREATE TABLE traveller_side_d_requests (
+    requestId INT PRIMARY KEY AUTO_INCREMENT,
+    tripId INT NOT NULL,
+    rqUserId INT NOT NULL,
+    driverId INT NOT NULL,
+    driverName VARCHAR(255) NOT NULL,
+    driverProfilePhoto VARCHAR(500) NULL,
+    driverRating DECIMAL(3,2) DEFAULT 0.00,
+    verifyStatus TINYINT(1) DEFAULT 0,
+    vehicleId INT NOT NULL,
+    vehicleModel VARCHAR(255) NOT NULL,
+    vehicleYear INT NULL,
+    vehicleType VARCHAR(255) NOT NULL,
+    vehiclePhoto VARCHAR(500) NULL,
+    vehicleCapacity INT NOT NULL,
+    childSeats INT DEFAULT 0,
+    requestStatus ENUM('pending', 'requested', 'accepted', 'rejected', 'cancelled', 'completed') DEFAULT 'pending',
+    chargeType ENUM('perDay', 'perKm') NOT NULL,
+    totalKm DECIMAL(10,2) NULL,
+    totalAmount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    requestedAt TIMESTAMP NULL,
+    respondedAt TIMESTAMP NULL,
+    completedAt TIMESTAMP NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraints
+    FOREIGN KEY (tripId) REFERENCES created_trips(tripId) ON DELETE CASCADE,
+    FOREIGN KEY (rqUserId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (driverId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (vehicleId) REFERENCES vehicles(vehicleId) ON DELETE CASCADE,
+    
+    -- Indexes
+    INDEX idx_trip (tripId),
+    INDEX idx_rquser (rqUserId),
+    INDEX idx_driver (driverId),
+    INDEX idx_vehicle (vehicleId),
+    INDEX idx_request_status (requestStatus),
+    INDEX idx_requested_at (requestedAt)
+    
+) ENGINE=InnoDB;

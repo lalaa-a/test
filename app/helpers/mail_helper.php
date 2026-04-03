@@ -27,6 +27,20 @@ function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $
         $mail->Password   = SMTP_PASSWORD;
         $mail->SMTPSecure = SMTP_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = SMTP_PORT;
+        
+        // Enable debugging if configured
+        if (defined('SMTP_DEBUG')) {
+            $mail->SMTPDebug = SMTP_DEBUG;
+        }
+        
+        // Additional Gmail-specific settings
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
         // Recipients
         $mail->setFrom($fromEmail ?? FROM_EMAIL, $fromName ?? FROM_NAME);
@@ -43,15 +57,23 @@ function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $
 
         $mail->send();
         
+        // Log successful send
+        error_log("OTP Email sent successfully to: " . $to);
+        
         return [
             'success' => true,
             'message' => 'Email sent successfully'
         ];
 
     } catch (Exception $e) {
+        // Log detailed error
+        $errorMsg = 'PHPMailer Error: ' . $e->getMessage() . ' | SMTP Error: ' . $mail->ErrorInfo;
+        error_log("Failed to send OTP email to " . $to . ". Error: " . $errorMsg);
+        
         return [
             'success' => false,
-            'message' => 'Failed to send email. Error: ' . $mail->ErrorInfo
+            'message' => 'Failed to send email. Please try again later.',
+            'debug_error' => $errorMsg // Only for debugging, remove in production
         ];
     }
 }

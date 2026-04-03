@@ -1530,9 +1530,17 @@ class GuideProfileManager {
         if (field.type === 'date' && value) {
             const date = new Date(value);
             const today = new Date();
-            if (date > today) {
+
+            // Allow future dates for tourist license expiry
+            if (field.id !== 'touristLicenseExpiry' && date > today) {
                 isValid = false;
                 errorMessage = 'Date cannot be in the future.';
+            }
+
+            // For tourist license expiry, ensure it's in the future
+            if (field.id === 'touristLicenseExpiry' && date <= today) {
+                isValid = false;
+                errorMessage = 'License expiry date must be in the future.';
             }
         }
 

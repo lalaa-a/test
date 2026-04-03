@@ -183,11 +183,20 @@
 
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <p>Are you sure you want to select  <strong id="selecting-spot-name"></strong> ?</p>
-            <div class="modal-buttons">
-                <button id="confirmBtn" class="modal-btn confirm">Confirm</button>
-                <button id="cancelBtn" class="modal-btn cancel">Cancel</button>
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-map-marker-alt"></i> Confirm Travel Spot Selection</h3>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-message">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Are you sure you want to select this travel spot?</p>
+                    <p class="confirm-warning">This will add <strong id="selecting-spot-name"></strong> to your trip.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmBtn">Select Spot</button>
             </div>
         </div>
     </div>

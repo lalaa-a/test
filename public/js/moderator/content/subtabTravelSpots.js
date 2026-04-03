@@ -17,6 +17,7 @@
         constructor() {
 
             this.URL_ROOT = 'http://localhost/test';
+            this.UP_ROOT = 'http://localhost/test/public/uploads';
             this.allFilters = [];
             this.selectedSubfilters = [];
             this.selectedNearbySpots = [];
@@ -24,6 +25,7 @@
             this.travelSpotCardData = [];
             this.editingTravelSpot = null;
             this.existingPhotos = [];
+            this.pendingDeleteSpotId = null;
 
             this.initializeElements();
             this.attachEventListeners();
@@ -52,19 +54,15 @@
             this.subfilterResults = document.getElementById('subfilter-results');
             this.selectedSubfiltersContainer = document.getElementById('selected-subfilters');
 
-            // Photo elements
-            this.photoInputs = [
-                document.getElementById('photo1'),
-                document.getElementById('photo2'),
-                document.getElementById('photo3'),
-                document.getElementById('photo4')
-            ];
-            this.photoPreviews = [
-                document.getElementById('photo1-preview'),
-                document.getElementById('photo2-preview'),
-                document.getElementById('photo3-preview'),
-                document.getElementById('photo4-preview')
-            ];
+            // Photo elements - 10 photos
+            this.photoInputs = [];
+            this.photoPreviews = [];
+            this.uploadedPhotos = [];
+            
+            for (let i = 1; i <= 10; i++) {
+                this.photoInputs.push(document.getElementById(`photoUpload${i}`));
+                this.photoPreviews.push(document.getElementById(`uploadPreview${i}`));
+            }
 
             // Nearby spots elements
             this.nearbySearch = document.getElementById('nearby-search');
@@ -90,9 +88,28 @@
             // Form submission
             this.form.addEventListener('submit', (e) => this.handleSubmit(e));
 
+            // Photo upload buttons
+            document.querySelectorAll('.btn-upload-photo').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    if (input) input.click();
+                });
+            });
+
             // Photo uploads
             this.photoInputs.forEach((input, index) => {
-                input.addEventListener('change', (e) => this.handlePhotoUpload(e, index));
+                if (input) {
+                    input.addEventListener('change', (e) => this.handlePhotoUpload(e, index));
+                }
+            });
+
+            // Remove photo buttons
+            document.querySelectorAll('.btn-remove-photo').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const slot = btn.getAttribute('data-slot');
+                    this.removePhoto(slot);
+                });
             });
 
             // Subfilter search
@@ -112,6 +129,35 @@
                     this.searchNearbySpots();
                 }
             });
+
+            // Delete confirmation modal events
+            const cancelDeleteBtn = document.getElementById('cancelDeleteTravelSpotBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteTravelSpotBtn');
+
+            if (cancelDeleteBtn) {
+                cancelDeleteBtn.addEventListener('click', () => this.closeDeleteConfirmModal());
+            }
+
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteTravelSpot());
+            }
+
+            // ESC key handler for modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    this.closeDeleteConfirmModal();
+                }
+            });
+
+            // Close confirmation modal when clicking outside
+            const deleteConfirmModal = document.getElementById('deleteTravelSpotConfirmModal');
+            if (deleteConfirmModal) {
+                deleteConfirmModal.addEventListener('click', (e) => {
+                    if (e.target === deleteConfirmModal) {
+                        this.closeDeleteConfirmModal();
+                    }
+                });
+            }
         }
 
         openPopup() {
@@ -130,13 +176,27 @@
             this.selectedSubfilters = [];
             this.selectedNearbySpots = [];
             this.existingPhotos = [];
+            this.uploadedPhotos = [];
+            this.itinerary = [];
+            this.editingTravelSpot = null;
 
             // Reset photo previews
-            this.photoPreviews.forEach(preview => {
+            this.photoPreviews.forEach((preview, index) => {
+                const slot = index + 1;
+                const isMainPhoto = slot === 1;
                 preview.innerHTML = `
-                    <i class="fas fa-camera"></i>
-                    <span>Click to upload</span>
+                    <div class="upload-placeholder">
+                        <i class="fas fa-${isMainPhoto ? 'cloud-upload-alt' : 'image'}"></i>
+                        <p>${isMainPhoto ? 'Main Photo' : 'Photo ' + slot}</p>
+                        ${isMainPhoto ? '<span class="upload-hint">Recommended: 1200x800px</span>' : ''}
+                    </div>
                 `;
+                
+                // Hide remove buttons
+                const removeBtn = document.querySelector(`.btn-remove-photo[data-slot="${slot}"]`);
+                if (removeBtn) {
+                    removeBtn.style.display = 'none';
+                }
             });
 
             // Clear selected subfilters
@@ -146,6 +206,11 @@
             // Clear selected nearby spots
             this.selectedNearby.innerHTML = '';
             this.nearbyResults.innerHTML = '';
+            
+            // Clear itinerary container
+            if (this.itineraryContainer) {
+                this.itineraryContainer.innerHTML = '';
+            }
         }
 
         async loadAllFilters() {
@@ -168,7 +233,7 @@
         async searchSubfilters() {
             const query = this.subfilterSearch.value.trim();
             if (!query) {
-                alert('Please enter a search term');
+                window.showNotification('Please enter a search term', 'warning');
                 return;
             }
 
@@ -244,19 +309,78 @@
 
         handlePhotoUpload(event, index) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.photoPreviews[index].innerHTML = `<img src="${e.target.result}" alt="Photo ${index + 1}">`;
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                window.showNotification('Please select a valid image file (JPEG, JPG, or PNG).', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            // Validate file size (5MB max)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                window.showNotification('File size must be less than 5MB.', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            // Store the uploaded file
+            this.uploadedPhotos[index] = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = this.photoPreviews[index];
+                preview.innerHTML = `<img src="${e.target.result}" alt="Photo ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                
+                // Show remove button
+                const slot = index + 1;
+                const removeBtn = document.querySelector(`.btn-remove-photo[data-slot="${slot}"]`);
+                if (removeBtn) {
+                    removeBtn.style.display = 'flex';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        removePhoto(slot) {
+            const index = parseInt(slot) - 1;
+            
+            // Clear the file input
+            if (this.photoInputs[index]) {
+                this.photoInputs[index].value = '';
+            }
+            
+            // Clear the uploaded photo
+            this.uploadedPhotos[index] = null;
+            
+            // Reset preview
+            const preview = this.photoPreviews[index];
+            if (preview) {
+                const isMainPhoto = slot === '1';
+                preview.innerHTML = `
+                    <div class="upload-placeholder">
+                        <i class="fas fa-${isMainPhoto ? 'cloud-upload-alt' : 'image'}"></i>
+                        <p>${isMainPhoto ? 'Main Photo' : 'Photo ' + slot}</p>
+                        ${isMainPhoto ? '<span class="upload-hint">Recommended: 1200x800px</span>' : ''}
+                    </div>
+                `;
+            }
+            
+            // Hide remove button
+            const removeBtn = document.querySelector(`.btn-remove-photo[data-slot="${slot}"]`);
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
             }
         }
 
         async searchNearbySpots() {
             const query = this.nearbySearch.value.trim();
             if (!query) {
-                alert('Please enter a search term');
+                window.showNotification('Please enter a search term', 'warning');
                 return;
             }
 
@@ -450,10 +574,17 @@
                 spotElement.className = 'selected-spot';
                 spotElement.innerHTML = `
                     <span>${this.escapeHtml(spot.name)}</span>
-                    <span class="remove-spot" onclick="travelSpotManager.removeLocation(${spot.lat},${spot.lng})">
+                    <span class="remove-spot">
                         <i class="fas fa-times"></i>
                     </span>
                 `;
+                
+                // Attach click event listener properly instead of inline onclick
+                const removeBtn = spotElement.querySelector('.remove-spot');
+                removeBtn.addEventListener('click', () => {
+                    this.removeLocation(spot.lat, spot.lng);
+                });
+                
                 this.itineraryContainer.appendChild(spotElement);
             });
         }
@@ -517,15 +648,15 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(msg);
+                    window.showNotification(msg, 'success');
                     this.closePopup();
                     this.loadTravelSpotCards();
                 } else {
-                    alert('Error: ' + result.message);
+                    window.showNotification('Error: ' + result.message, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                window.showNotification('An error occurred. Please try again.', 'error');
             } finally {
                 this.submitBtn.disabled = false;
                 this.submitBtn.textContent = 'Add Travel Spot';
@@ -539,43 +670,41 @@
             const bestTimeFrom = document.getElementById('bestTimeFrom').value;
             const bestTimeTo = document.getElementById('bestTimeTo').value;
             const visitingDurationMax = document.getElementById('visitingDurationMax').value;
-            const photo1 = document.getElementById('photo1').files[0];
+            const photo1 = document.getElementById('photoUpload1').files[0];
 
             if (!spotName) {
-                alert('Please enter a spot name');
+                window.showNotification('Please enter a spot name', 'warning');
                 return false;
             }
 
             if (!province) {
-                alert('Please select a province');
+                window.showNotification('Please select a province', 'warning');
                 return false;
             }
 
             if (!district) {
-                alert('Please select a district');
+                window.showNotification('Please select a district', 'warning');
                 return false;
             }
 
             if (!bestTimeFrom || !bestTimeTo) {
-                alert('Please select best visiting times');
+                window.showNotification('Please select best visiting times', 'warning');
                 return false;
             }
 
             if (!visitingDurationMax) {
-                alert('Please enter visiting duration');
+                window.showNotification('Please enter visiting duration', 'warning');
                 return false;
             }
 
-            // Check all photo inputs have files
-            for (let i = 0; i < this.photoInputs.length; i++) {
-                if (!this.photoInputs[i].files[0]) {
-                    alert(`Please upload photo ${i + 1}`);
-                    return false;
-                }
+            // Check at least the first photo (main photo) is uploaded
+            if (!photo1 && !this.editingTravelSpot) {
+                window.showNotification('Please upload at least the main photo (Photo 1)', 'warning');
+                return false;
             }
 
             if (this.selectedSubfilters.length === 0) {
-                alert('Please select at least one subfilter');
+                window.showNotification('Please select at least one subfilter', 'warning');
                 return false;
             }
 
@@ -629,9 +758,9 @@
                                             photoPaths:[]
                                         };
                             let subFilterData = {subFilterId:item.subFilterId, subFilterName: item.subFilterName};
-                            let photoPath = {photo1:item.photoPath};
+                            //let photoPath = {photo1:item.photoPath};
                             spotData.subFilters.push(subFilterData);
-                            spotData.photoPaths.push(photoPath);
+                            spotData.photoPaths.push(item.photoPath);
                             existing.travelSpots.push(spotData);
                             this.travelSpotCardData.push(existing); //pushing to the main array
 
@@ -678,16 +807,18 @@
 
                 } else {
                     console.error('Failed to load travel spot cards :', data.message);
-                    alert('Failed to load travel spot cards: ' + data.message);
+                    window.showNotification('Failed to load travel spot cards: ' + data.message, 'error');
                 }
                     
             } catch (error) {
                 console.error('Error loading travel spot cards:', error);
-                alert('EError loading travel spot cards ' + error.message);
+                window.showNotification('Error loading travel spot cards: ' + error.message, 'error');
             }  
         }
 
         renderTravelSpotCards(){
+
+            console.log("rendering travel spot cards..", this.travelSpotCardData);
 
             this.travelSpotCardSection.innerHTML = this.travelSpotCardData.map( mainFilter => `
                 
@@ -700,7 +831,7 @@
                         ${mainFilter.travelSpots.map(spot =>
                                 `<div class="place-card">
                                     <div class="place-image">
-                                        <img src="<?php echo IMG_ROOT; ?>/explore/destinations/anuradhapura.png" alt="Anuradhapura">
+                                        <img src="${this.UP_ROOT + spot.photoPaths[0] || ''}" alt="${spot.spotName}">
                                     </div>
                                     <div class="place-info">
                                         <h3 class="place-title">${spot.spotName}</h3>
@@ -762,7 +893,7 @@
                     });
 
                     for (let index = 0; index < data.travelSpotData.photos.length; index++) {
-                        const photoUrl = this.URL_ROOT + '/public/uploads/travelSpots/' + data.travelSpotData.photos[index].photoPath;
+                        const photoUrl = this.UP_ROOT + data.travelSpotData.photos[index].photoPath;
                         this.photoPreviews[index].innerHTML = `<img src="${photoUrl}" alt="Photo ${index + 1}">`;
                         
                         // Load existing image as File object into input
@@ -776,12 +907,12 @@
                     this.openPopup();
                     this.editingTravelSpot = travelSpotId; //setting the current editing travel spot
                 }else{
-                    alert('Error loading travel spot cards');
-                    console.error('Error loading travel spot cards');
+                    window.showNotification('Error loading travel spot data', 'error');
+                    console.error('Error loading travel spot data');
                 }
             }catch(error){
-                console.error('Error loading travel spot cards:', error);
-                alert('Error loading travel spot cards ' + error.message);
+                console.error('Error loading travel spot data:', error);
+                window.showNotification('Error loading travel spot data: ' + error.message, 'error');
             }
         }
 
@@ -789,31 +920,57 @@
             console.log('Deleting travel spot:', spotId);
             event.preventDefault();
         
-            if (!confirm('Are you sure you want to delete this travel spot? This action cannot be undone.')) {
+            // Show confirmation modal instead of browser confirm
+            this.pendingDeleteSpotId = spotId;
+            this.showDeleteConfirmModal();
+        }
+
+        showDeleteConfirmModal() {
+            const modal = document.getElementById('deleteTravelSpotConfirmModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+
+        closeDeleteConfirmModal() {
+            const modal = document.getElementById('deleteTravelSpotConfirmModal');
+            if (modal) {
+                modal.classList.remove('show');
+                this.pendingDeleteSpotId = null;
+            }
+        }
+
+        async confirmDeleteTravelSpot() {
+            if (!this.pendingDeleteSpotId) {
+                window.showNotification('No travel spot selected for deletion', 'error');
                 return;
             }
 
-            // Make delete request
-            fetch(this.URL_ROOT + '/Moderator/deleteTravelSpot', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ spotId: spotId })
-            })
-            .then(response => response.json())
-            .then(result => {
+            const spotId = this.pendingDeleteSpotId;
+            this.closeDeleteConfirmModal();
+            this.pendingDeleteSpotId = null;
+
+            try {
+                const response = await fetch(this.URL_ROOT + '/Moderator/deleteTravelSpot', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ spotId: spotId })
+                });
+
+                const result = await response.json();
+
                 if (result.success) {
-                    alert('Travel Spot deleted successfully!');
-                    this.loadTravelSpotCards(); // Reload cards after a deletion
+                    window.showNotification('Travel Spot deleted successfully!', 'success');
+                    this.loadTravelSpotCards();
                 } else {
-                    alert('Error deleting Travel Spot: ' + result.message);
+                    window.showNotification('Error deleting Travel Spot: ' + result.message, 'error');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred while deleting the travel spot.');
-            });
+                window.showNotification('An error occurred while deleting the travel spot.', 'error');
+            }
         }
 
         async loadExistingImageToInput(imageUrl, index) {

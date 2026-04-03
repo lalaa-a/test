@@ -127,3 +127,32 @@ CREATE TABLE cover_photos (
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
     INDEX idx_user_order (userId, photo_order)
 );
+
+
+CREATE TABLE traveller_reviews (
+    reviewId INT PRIMARY KEY AUTO_INCREMENT,
+    travellerId INT NOT NULL,
+    guideDriverId INT,
+    reviewText TEXT NOT NULL,
+
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (travellerId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (guideDriverId) REFERENCES users(id) ON DELETE SET NULL
+    
+) ENGINE=InnoDB;
+
+
+CREATE TABLE serviceProvider_ratings (
+    ratingId INT PRIMARY KEY AUTO_INCREMENT,
+    serviceProviderId INT NOT NULL,
+    travellerId INT NOT NULL,
+    rating DECIMAL(2,1) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (serviceProviderId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (travellerId) REFERENCES users(id) ON DELETE CASCADE
+   
+) ENGINE=InnoDB;

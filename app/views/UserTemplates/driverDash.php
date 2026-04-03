@@ -807,8 +807,9 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="<?php echo URL_ROOT.'/Driver/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/Driver/tours'?>" data-tab="tours"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/schedule'?>" data-tab="schedule"><i class="fa-solid fa-calendar-days"></i> <span>Schedule</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/Driver/requests'?>" data-tab="requests"><i class="fa-solid fa-code-pull-request"></i> <span>Requests</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/pricing'?>" data-tab="pricing"><i class="fa-solid fa-money-check-dollar"></i> <span>Pricing</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-car"></i></i> <span>Vehicles</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
         </ul>
@@ -939,6 +940,8 @@
                 cleanupPreviousAssets(tabId);
             
                 // Inject HTML
+                console.log('Injecting HTML for tab:', tabId);
+                console.log('HTML content:', data.html);
                 tabElement.innerHTML =  data.html;
                 
                 if(data.css){

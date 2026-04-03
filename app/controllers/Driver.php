@@ -150,8 +150,8 @@
 
             try {
                 $uploadedFiles = [];
-                $specPath = 'drivers/' . $userId . '/licenses';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
+                $specPath = '/drivers/' . $userId . '/licenses';
+                $uploadDir = ROOT_PATH.'/public/uploads'.$specPath;
 
                 // Create directory if it doesn't exist
                 if (!is_dir($uploadDir)) {
@@ -482,10 +482,866 @@
                 echo json_encode(['success' => false, 'message' => 'Database error occurred when retrieving stats: ' . $e->getMessage()]);
             }
         }
+
+        public function pricing() {
+            ob_start();
+            $this->view('Driver/pricing/pricing');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/pricing/pricing.css';
+            $js = URL_ROOT.'/public/js/driver/pricing/pricing.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'pricing',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
+        public function requests(){
+            ob_start();
+            $this->view('Driver/requests/requests');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/requests/requests.css';
+            $js = URL_ROOT.'/public/js/driver/requests/requests.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'requests',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);  
+        }
+
+        /* Driver Requests API Endpoints */
+        public function getMyRequests() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $requests = $this->driverModel->getRequestsByDriver($userId);
+
+                echo json_encode(['success' => true, 'requests' => $requests]);
+            } catch (Exception $e) {
+                error_log('Error in getMyRequests: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load requests']);
+            }
+        }
+
+        public function acceptRequest($requestId = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            if (!$requestId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Request ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->driverModel->updateRequestStatus($userId, $requestId, 'accepted');
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => 'Request accepted']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in acceptRequest: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to accept request']);
+            }
+        }
+
+        public function rejectRequest($requestId = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            if (!$requestId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Request ID is required']);
+                return;
+            }
+
+            // Read rejection reason if provided (not stored currently, but logged)
+            $input = json_decode(file_get_contents('php://input'), true);
+            $reason = $input['reason'] ?? null;
+            if ($reason) {
+                error_log("Request $requestId rejected by driver $userId. Reason: " . $reason);
+            }
+
+            try {
+                $result = $this->driverModel->updateRequestStatus($userId, $requestId, 'rejected');
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => 'Request rejected']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in rejectRequest: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to reject request']);
+            }
+        }
+
+        public function getTripItinerary($tripId = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            if (!$tripId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Trip ID is required']);
+                return;
+            }
+
+            try {
+                $itinerary = $this->driverModel->getTripItinerary($tripId);
+                
+                if ($itinerary) {
+                    echo json_encode(['success' => true, 'itinerary' => $itinerary]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Trip not found']);
+                }
+            } catch (Exception $e) {
+                error_log('Error in getTripItinerary: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load trip itinerary']);
+            }
+        }
+
+        public function subtabTours(){
+            ob_start();
+            $this->view('Driver/schedule/subtabTours');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/schedule/subtabTours.css';
+            $js = URL_ROOT.'/public/js/driver/schedule/subtabTours.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
         
 
-    }
+        public function schedule(){
+            ob_start();
+            $this->view('Driver/schedule/schedule');
+            $fullcontent = ob_get_clean();
 
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/schedule/schedule.css';
+            $js = URL_ROOT.'/public/js/driver/schedule/schedule.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'schedule',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
+        public function subtabAvailabilityCalendar(){
+            ob_start();
+            $this->view('Driver/schedule/subtabAvailabilityCalendar');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/schedule/subtabAvailabilityCalendar.css';
+            $js = URL_ROOT.'/public/js/driver/schedule/subtabAvailabilityCalendar.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
+
+        // Driver Availability Management Methods
+        public function getDriverAvailability() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                // Get date range from request (default to next 60 days)
+                $startDate = $_GET['startDate'] ?? date('Y-m-d');
+                $endDate = $_GET['endDate'] ?? date('Y-m-d', strtotime('+60 days'));
+
+                $unavailableDates = $this->driverModel->getDriverUnavailableDates($userId, $startDate, $endDate);
+
+                // Format dates for frontend
+                $formattedDates = [];
+                foreach ($unavailableDates as $date) {
+                    $formattedDates[] = [
+                        'date' => $date->unavailableDate,
+                        'reason' => $date->reason,
+                        'personalReason' => $date->personalReason,
+                        'tripId' => $date->tripId
+                    ];
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'unavailableDates' => $formattedDates
+                ]);
+
+            } catch (Exception $e) {
+                error_log("Error getting driver availability: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load availability data']);
+            }
+        }
+
+        public function addUnavailableDate() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $input = json_decode(file_get_contents('php://input'), true);
+
+                if (!$input || !isset($input['date'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Date is required']);
+                    return;
+                }
+
+                $date = $input['date'];
+                $personalReason = $input['personalReason'] ?? null;
+
+                // Validate date format
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Invalid date format']);
+                    return;
+                }
+
+                // Check if date is in the past
+                if (strtotime($date) < strtotime(date('Y-m-d'))) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Cannot set past dates as unavailable']);
+                    return;
+                }
+
+                $success = $this->driverModel->addDriverUnavailableDate($userId, $date, 'personal', $personalReason);
+
+                if ($success) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Date marked as unavailable successfully'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to save unavailable date']);
+                }
+
+            } catch (Exception $e) {
+                error_log("Error adding unavailable date: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to add unavailable date']);
+            }
+        }
+
+        public function removeUnavailableDate() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $input = json_decode(file_get_contents('php://input'), true);
+
+                if (!$input || !isset($input['date'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Date is required']);
+                    return;
+                }
+
+                $date = $input['date'];
+
+                // Validate date format
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Invalid date format']);
+                    return;
+                }
+
+                $success = $this->driverModel->removeDriverUnavailableDate($userId, $date);
+
+                if ($success) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Date removed from unavailable list successfully'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to remove unavailable date']);
+                }
+
+            } catch (Exception $e) {
+                error_log("Error removing unavailable date: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to remove unavailable date']);
+            }
+        }
+
+        public function saveAvailabilityChanges() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $input = json_decode(file_get_contents('php://input'), true);
+
+                if (!$input || !isset($input['unavailableDates'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Unavailable dates data is required']);
+                    return;
+                }
+
+                $unavailableDates = $input['unavailableDates'];
+
+                // Validate each date entry
+                foreach ($unavailableDates as $dateEntry) {
+                    if (!isset($dateEntry['date']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateEntry['date'])) {
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'message' => 'Invalid date format in unavailable dates']);
+                        return;
+                    }
+
+                    // Check if date is in the past
+                    if (strtotime($dateEntry['date']) < strtotime(date('Y-m-d'))) {
+                        http_response_code(400);
+                        echo json_encode(['success' => false, 'message' => 'Cannot set past dates as unavailable']);
+                        return;
+                    }
+                }
+
+                $success = $this->driverModel->bulkUpdateDriverAvailability($userId, $unavailableDates);
+
+                if ($success) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Availability changes saved successfully'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to save availability changes']);
+                }
+
+            } catch (Exception $e) {
+                error_log("Error saving availability changes: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to save availability changes']);
+            }
+        }
+
+        public function getVerifiedVehicles() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $vehicles = $this->driverModel->getVerifiedVehiclesWithPricing($userId);
+                echo json_encode(['success' => true, 'vehicles' => $vehicles]);
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
+            }
+        }
+
+        public function saveVehiclePricing() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            if (!$input || !isset($input['vehicleId'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid input data']);
+                return;
+            }
+
+            // Verify the vehicle belongs to the driver and is verified
+            $vehicle = $this->driverModel->getVehicleById($input['vehicleId']);
+            if (!$vehicle || $vehicle->driverId != $userId || $vehicle->status != 1) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized or vehicle not verified']);
+                return;
+            }
+
+            try {
+                $pricingData = [
+                    'vehicleId' => $input['vehicleId'],
+                    'driverId' => $userId,
+                    'vehicleChargePerKm' => $input['vehicleChargePerKm'] ?? 0,
+                    'driverChargePerKm' => $input['driverChargePerKm'] ?? 0,
+                    'vehicleChargePerDay' => $input['vehicleChargePerDay'] ?? 0,
+                    'driverChargePerDay' => $input['driverChargePerDay'] ?? 0,
+                    'minimumKm' => $input['minimumKm'] ?? 0,
+                    'minimumDays' => $input['minimumDays'] ?? 1
+                ];
+
+                $success = $this->driverModel->saveVehiclePricing($pricingData);
+
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Pricing saved successfully']);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to save pricing']);
+                }
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
+            }
+        }
+
+        public function deleteVehiclePricing() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            if (!$input || !isset($input['vehicleId'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid input data']);
+                return;
+            }
+
+            // Verify the vehicle belongs to the driver and is verified
+            $vehicle = $this->driverModel->getVehicleById($input['vehicleId']);
+            if (!$vehicle || $vehicle->driverId != $userId || $vehicle->status != 1) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized or vehicle not verified']);
+                return;
+            }
+
+            try {
+                $success = $this->driverModel->deleteVehiclePricing($input['vehicleId']);
+
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Pricing deleted successfully']);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to delete pricing']);
+                }
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred: ' . $e->getMessage()]);
+            }
+        }
+
+        /* Driver Tours API Endpoints */
+        public function getDriverTours() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $tours = $this->driverModel->getDriverTours($userId);
+                echo json_encode(['success' => true, 'tours' => $tours]);
+            } catch (Exception $e) {
+                error_log('Error in getDriverTours: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load tours']);
+            }
+        }
+
+        public function getTourDetails($acceptId = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            if (!$acceptId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Accept ID is required']);
+                return;
+            }
+
+            try {
+                $tour = $this->driverModel->getTourDetails($acceptId);
+
+                if ($tour) {
+                    echo json_encode(['success' => true, 'tour' => $tour]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Tour not found']);
+                }
+            } catch (Exception $e) {
+                error_log('Error in getTourDetails: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load tour details']);
+            }
+        }
+
+        public function startTrip() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            if (!$input || !isset($input['tripId']) || !isset($input['pin'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Trip ID and PIN are required']);
+                return;
+            }
+
+            try {
+                $result = $this->driverModel->startTrip($input['tripId'], $input['pin']);
+
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => $result['message']]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in startTrip: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to start trip']);
+            }
+        }
+
+        public function getTripEvents() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $tripId = $_GET['tripId'] ?? null;
+
+            if (!$tripId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Trip ID is required']);
+                return;
+            }
+
+            try {
+                $events = $this->driverModel->getTripEvents($tripId);
+                echo json_encode(['success' => true, 'events' => $events]);
+            } catch (Exception $e) {
+                error_log('Error in getTripEvents: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load trip events']);
+            }
+        }
+
+        public function markEventComplete() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            if (!$input || !isset($input['eventId'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Event ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->driverModel->markEventComplete($input['eventId']);
+
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => $result['message']]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in markEventComplete: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to mark event complete']);
+            }
+        }
+
+        public function completeTrip() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            if (!$input || !isset($input['tripId'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Trip ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->driverModel->completeTrip($input['tripId']);
+
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => $result['message']]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in completeTrip: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to complete trip']);
+            }
+        }
+
+        public function getDriverProfile($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $profileData = $this->driverModel->getDriverProfileByDriverId($driverId);
+                if (!$profileData) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Driver not found']);
+                    return;
+                }
+
+                // Get stats for total reviews
+                $stats = $this->driverModel->getDriverStats($driverId);
+
+                // Calculate verification status
+                $isVerified = ($profileData->dlVerified == 1 && $profileData->tlVerified == 1);
+
+                // Prepare response data
+                $profile = [
+                    'userId' => $profileData->userId,
+                    'profile_name' => $profileData->profile_name,
+                    'phone' => $profileData->phone,
+                    'email' => $profileData->email,
+                    'profile_photo' => $profileData->profile_photo,
+                    'bio' => $profileData->bio,
+                    'languages' => $profileData->languages,
+                    'instaAccount' => $profileData->instaAccount,
+                    'facebookAccount' => $profileData->facebookAccount,
+                    'dlVerified' => $profileData->dlVerified,
+                    'tlVerified' => $profileData->tlVerified,
+                    'tLicenseNumber' => $profileData->tLicenseNumber,
+                    'tLicenseExpiryDate' => $profileData->tLicenseExpiryDate,
+                    'averageRating' => $profileData->averageRating,
+                    'totalReviews' => $stats['totalReviews'] ?? 0,
+                    'isVerified' => $isVerified
+                ];
+
+                echo json_encode(['success' => true, 'profile' => $profile]);
+            } catch (Exception $e) {
+                error_log('Error getting driver profile: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load driver profile']);
+            }
+        }
+
+        public function getDriverCoverPhotos($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $photos = $this->driverModel->getDriverCoverPhotos($driverId);
+                echo json_encode(['success' => true, 'photos' => $photos]);
+            } catch (Exception $e) {
+                error_log('Error getting driver cover photos: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load cover photos']);
+            }
+        }
+
+        public function getDriverVehicles($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $vehicles = $this->driverModel->getDriverVehiclesById($driverId);
+                echo json_encode(['success' => true, 'vehicles' => $vehicles]);
+            } catch (Exception $e) {
+                error_log('Error getting driver vehicles: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load vehicles']);
+            }
+        }
+
+        public function getDriverReviews($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $reviews = $this->driverModel->getDriverReviews($driverId);
+                echo json_encode(['success' => true, 'reviews' => $reviews]);
+            } catch (Exception $e) {
+                error_log('Error getting driver reviews: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load reviews']);
+            }
+        }
+
+        public function getDriverPricing($driverId) {
+            header('Content-Type: application/json');
+
+            if (!$driverId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Driver ID is required']);
+                return;
+            }
+
+            try {
+                $pricing = $this->driverModel->getVehiclePricing($driverId);
+                echo json_encode(['success' => true, 'pricing' => $pricing]);
+            } catch (Exception $e) {
+                error_log('Error getting driver pricing: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load pricing']);
+            }
+        }
+
+    }
 
     // `/controller/method/parameters
 ?>

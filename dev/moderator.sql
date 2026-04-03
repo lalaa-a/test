@@ -212,3 +212,106 @@ ORDER BY
     CASE WHEN tsf.subFilterName IS NULL THEN 1 ELSE 0 END,
     tsf.subFilterName,
     ts.spotName;
+
+
+--verification sql tables
+CREATE TABLE account_verifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT NOT NULL,
+    
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    reviewedBy INT,
+    reviewedAt TIMESTAMP NULL,
+    expiryDate DATE NULL,
+    
+    rejectionReason TEXT,
+    
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign keys
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewedBy) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- Indexes
+    INDEX idx_status (status),
+    INDEX idx_userId (userId),
+    INDEX idx_reviewedBy (reviewedBy),
+    INDEX idx_createdAt (createdAt),
+    INDEX idx_status_userId (status, userId),
+    INDEX idx_reviewedAt (reviewedAt)
+
+) ENGINE=InnoDB;
+
+--trigger to create a record automatically when user is inserted to the users table
+DELIMITER $$
+CREATE TRIGGER after_user_insert_verification
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    -- Only create verification record for drivers and guides
+    IF NEW.account_type IN ('driver', 'guide') THEN
+        INSERT INTO account_verifications (
+            userId, 
+            status, 
+            createdAt, 
+            updatedAt
+        ) VALUES (
+            NEW.id,
+            'pending',
+            NEW.created_at,
+            NEW.created_at
+        );
+    END IF;
+END$$
+DELIMITER ;
+
+
+--view of vehicle information with user details
+CREATE OR REPLACE VIEW driver_vehicles_view AS
+SELECT 
+    -- Users table columns (driver info)
+    u.id AS driverId,
+    u.account_type AS accountType,
+    u.fullname AS driverName,
+    u.language AS driverLanguage,
+    u.dob AS driverDob,
+    u.gender AS driverGender,
+    u.phone AS driverPhone,
+    u.secondary_phone AS driverSecondaryPhone,
+    u.address AS driverAddress,
+    u.email AS driverEmail,
+    u.profile_photo AS driverProfilePhoto,
+    u.verified AS driverVerified,
+    u.driver_data AS driverData,
+    u.last_login AS driverLastLogin,
+    u.created_at AS driverCreatedAt,
+    u.updated_at AS driverUpdatedAt,
+    
+    -- Vehicles table columns
+    v.vehicleId,
+    v.make,
+    v.model,
+    v.year,
+    v.color,
+    v.licensePlate,
+    v.seatingCapacity,
+    v.childSeats,
+    v.fuelEfficiency,
+    v.description AS vehicleDescription,
+    v.frontViewPhoto,
+    v.backViewPhoto,
+    v.sideViewPhoto,
+    v.interiorPhoto1,
+    v.interiorPhoto2,
+    v.interiorPhoto3,
+    v.status AS vehicleStatus,
+    v.availability AS vehicleAvailability,
+    v.isApproved AS vehicleApproved,
+    v.createdAt AS vehicleCreatedAt,
+    v.updatedAt AS vehicleUpdatedAt
+    -- REMOVED THE EXTRA COMMA HERE
+    
+FROM users u
+INNER JOIN vehicles v ON u.id = v.driverId
+WHERE u.account_type = 'driver';

@@ -360,5 +360,810 @@
             return $this->db->execute();
         }
 
+        // Account Verification Methods
+        public function getAccountsByStatus($status) {
+            try {
+                $query = "SELECT
+                            userId AS id,
+                            fullName AS name,
+                            email,
+                            CASE
+                                WHEN accountType = 'guide' AND JSON_UNQUOTE(JSON_EXTRACT(guideTouristData, '$.nic_passport')) IS NOT NULL
+                                THEN JSON_UNQUOTE(JSON_EXTRACT(guideTouristData, '$.nic_passport'))
+                                WHEN accountType = 'driver' AND JSON_UNQUOTE(JSON_EXTRACT(driverData, '$.nic_passport')) IS NOT NULL
+                                THEN JSON_UNQUOTE(JSON_EXTRACT(driverData, '$.nic_passport'))
+                                ELSE 'Not provided'
+                            END AS nic,
+                            accountType AS account_type,
+                            profilePhoto AS profile_photo,
+                            accountCreatedAt AS created_at,
+                            verificationStatus AS status,
+                            verificationCreatedAt AS verification_created_at
+                          FROM user_verifications_view
+                          WHERE verificationStatus = :status
+                          ORDER BY verificationCreatedAt DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':status', $status);
+                $results = $this->db->resultSet();
+                error_log("getAccountsByStatus: status=$status, found " . count($results) . " accounts");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getAccountsByStatus: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getUserDetailsForVerification($userId) {
+            try {
+                $query = "SELECT
+                            userId AS id,
+                            fullName AS name,
+                            email,
+                            phone,
+                            secondaryPhone AS secondary_phone,
+                            address,
+                            accountType AS account_type,
+                            profilePhoto AS profile_photo,
+                            verified,
+                            accountCreatedAt AS created_at,
+                            driverData AS driver_data,
+                            guideTouristData AS guide_tourist_data,
+                            verificationStatus AS status,
+                            rejectionReason,
+                            reviewedAt,
+                            expiryDate
+                          FROM user_verifications_view
+                          WHERE userId = :userId";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $user = $this->db->single();
+
+                if ($user) {
+                    // Process driver/guide data
+                    if ($user->account_type === 'driver' && $user->driver_data) {
+                        $driverData = json_decode($user->driver_data, true);
+                        $user->license_number = $driverData['license_number'] ?? null;
+                        $user->license_expire_date = $driverData['license_expire_date'] ?? null;
+                        $user->nic_passport = $driverData['nic_passport'] ?? null;
+
+                        // Extract NIC photos
+                        $user->nic_front = $driverData['id_front'] ?? null;
+                        $user->nic_back = $driverData['id_back'] ?? null;
+
+                        // Extract license photos
+                        $user->license_front = $driverData['license_front'] ?? null;
+                        $user->license_back = $driverData['license_back'] ?? null;
+                    }
+
+                    if ($user->account_type === 'guide' && $user->guide_tourist_data) {
+                        $guideData = json_decode($user->guide_tourist_data, true);
+                        $user->nic_passport = $guideData['nic_passport'] ?? null;
+
+                        // Extract NIC photos
+                        $user->nic_front = $guideData['nic_front'] ?? null;
+                        $user->nic_back = $guideData['nic_back'] ?? null;
+                    }
+
+                    // Remove raw JSON data
+                    unset($user->driver_data);
+                    unset($user->guide_tourist_data);
+                }
+
+                return $user;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getUserDetailsForVerification: " . $e->getMessage());
+                return null;
+            }
+        }
+
+        public function verifyAccount($userId, $moderatorId) {
+            try {
+                // Update the account_verifications table
+                $query = "UPDATE account_verifications
+                          SET status = 'approved',
+                              reviewedBy = :moderatorId,
+                              reviewedAt = NOW(),
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'pending'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $this->db->bind(':moderatorId', $moderatorId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Also update the users table verified status
+                    $userQuery = "UPDATE users SET verified = 1, updated_at = NOW() WHERE id = :userId";
+                    $this->db->query($userQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in verifyAccount: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function rejectAccount($userId, $moderatorId, $reason) {
+            try {
+                // Update the account_verifications table
+                $query = "UPDATE account_verifications
+                          SET status = 'rejected',
+                              reviewedBy = :moderatorId,
+                              reviewedAt = NOW(),
+                              rejectionReason = :reason,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'pending'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $this->db->bind(':moderatorId', $moderatorId);
+                $this->db->bind(':reason', $reason);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the users table verified status to 0
+                    $userQuery = "UPDATE users SET verified = 0, updated_at = NOW() WHERE id = :userId";
+                    $this->db->query($userQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in rejectAccount: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeVerification($userId, $moderatorId) {
+            try {
+                // Update the account_verifications table back to pending
+                $query = "UPDATE account_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              rejectionReason = NULL,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'approved'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the users table verified status to 0
+                    $userQuery = "UPDATE users SET verified = 0, updated_at = NOW() WHERE id = :userId";
+                    $this->db->query($userQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeVerification: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeRejection($userId, $moderatorId) {
+            try {
+                // Update the account_verifications table back to pending
+                $query = "UPDATE account_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              rejectionReason = NULL,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'rejected'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+
+                $result = $this->db->execute();
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeRejection: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        // Tourist License Verification Methods
+        public function getPendingLicenses() {
+            try {
+                $query = "SELECT
+                            v.userId AS id,
+                            p.fullname AS name,
+                            p.email,
+                            p.phone,
+                            p.account_type,
+                            p.profile_photo,
+                            p.tLicenseNumber AS license_number,
+                            p.tLicenseExpiryDate AS license_expire_date,
+                            p.tLicensePhotoFront AS license_photo_front,
+                            p.tLicensePhotoBack AS license_photo_back,
+                            v.status,
+                            v.createdAt AS created_at
+                          FROM tlicense_verifications v
+                          JOIN vw_user_complete_profiles p ON v.userId = p.userId
+                          WHERE v.status = 'pending'
+                          ORDER BY v.createdAt DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getPendingLicenses: found " . count($results) . " pending licenses");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getPendingLicenses: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getVerifiedLicenses() {
+            try {
+                $query = "SELECT
+                            v.userId AS id,
+                            p.fullname AS name,
+                            p.email,
+                            p.phone,
+                            p.account_type,
+                            p.profile_photo,
+                            p.tLicenseNumber AS license_number,
+                            p.tLicenseExpiryDate AS license_expire_date,
+                            p.tLicensePhotoFront AS license_photo_front,
+                            p.tLicensePhotoBack AS license_photo_back,
+                            v.status,
+                            v.reviewedAt AS verified_at,
+                            v.expiryDate AS verification_expiry
+                          FROM tlicense_verifications v
+                          JOIN vw_user_complete_profiles p ON v.userId = p.userId
+                          WHERE v.status = 'approved'
+                          ORDER BY v.reviewedAt DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getVerifiedLicenses: found " . count($results) . " verified licenses");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getVerifiedLicenses: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getRejectedLicenses() {
+            try {
+                $query = "SELECT
+                            v.userId AS id,
+                            p.fullname AS name,
+                            p.email,
+                            p.phone,
+                            p.account_type,
+                            p.profile_photo,
+                            p.tLicenseNumber AS license_number,
+                            p.tLicenseExpiryDate AS license_expire_date,
+                            p.tLicensePhotoFront AS license_photo_front,
+                            p.tLicensePhotoBack AS license_photo_back,
+                            v.status,
+                            v.rejectionReason,
+                            v.reviewedAt AS rejected_at
+                          FROM tlicense_verifications v
+                          JOIN vw_user_complete_profiles p ON v.userId = p.userId
+                          WHERE v.status = 'rejected'
+                          ORDER BY v.reviewedAt DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getRejectedLicenses: found " . count($results) . " rejected licenses");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getRejectedLicenses: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getLicenseDetails($userId) {
+            try {
+                $userId = (int) $userId;
+                $query = "SELECT
+                            v.id,
+                            v.userId,
+                            p.fullname AS name,
+                            p.email,
+                            p.phone,
+                            p.account_type,
+                            p.tLicenseNumber AS license_number,
+                            p.tLicenseExpiryDate AS license_expire_date,
+                            p.tLicensePhotoFront AS license_photo_front,
+                            p.tLicensePhotoBack AS license_photo_back,
+                            p.profile_photo,
+                            p.address,
+                            v.status,
+                            v.rejectionReason,
+                            v.reviewedAt,
+                            v.expiryDate AS verification_expiry,
+                            v.createdAt AS submitted_at
+                          FROM tlicense_verifications v
+                          JOIN vw_user_complete_profiles p ON v.userId = p.userId
+                          WHERE v.userId = :userId";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $license = $this->db->single();
+
+                return $license;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getLicenseDetails: " . $e->getMessage());
+                return null;
+            }
+        }
+
+        public function verifyLicense($userId, $moderatorId) {
+            try {
+                // Update the tlicense_verifications table
+                $query = "UPDATE tlicense_verifications
+                          SET status = 'approved',
+                              reviewedBy = :moderatorId,
+                              reviewedAt = NOW(),
+                              expiryDate = (SELECT tLicenseExpiryDate FROM vw_user_complete_profiles WHERE userId = :userId),
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'pending'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $this->db->bind(':moderatorId', $moderatorId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the profile_details table tlVerified status
+                    $profileQuery = "UPDATE profile_details SET tlVerified = 1, updatedAt = NOW() WHERE userId = :userId";
+                    $this->db->query($profileQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in verifyLicense: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function rejectLicense($userId, $moderatorId, $reason) {
+            try {
+                // Update the tlicense_verifications table
+                $query = "UPDATE tlicense_verifications
+                          SET status = 'rejected',
+                              reviewedBy = :moderatorId,
+                              reviewedAt = NOW(),
+                              rejectionReason = :reason,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'pending'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+                $this->db->bind(':moderatorId', $moderatorId);
+                $this->db->bind(':reason', $reason);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the profile_details table tlVerified status to 0
+                    $profileQuery = "UPDATE profile_details SET tlVerified = 0, updatedAt = NOW() WHERE userId = :userId";
+                    $this->db->query($profileQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in rejectLicense: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeLicenseVerification($userId, $moderatorId) {
+            try {
+                // Update the tlicense_verifications table back to pending
+                $query = "UPDATE tlicense_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              expiryDate = NULL,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'approved'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the profile_details table tlVerified status to 0
+                    $profileQuery = "UPDATE profile_details SET tlVerified = 0, updatedAt = NOW() WHERE userId = :userId";
+                    $this->db->query($profileQuery);
+                    $this->db->bind(':userId', $userId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeLicenseVerification: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeLicenseRejection($userId, $moderatorId) {
+            try {
+                // Update the tlicense_verifications table back to pending
+                $query = "UPDATE tlicense_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              rejectionReason = NULL,
+                              updatedAt = NOW()
+                          WHERE userId = :userId AND status = 'rejected'";
+
+                $this->db->query($query);
+                $this->db->bind(':userId', $userId);
+
+                $result = $this->db->execute();
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeLicenseRejection: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function getPendingVehicles() {
+            try {
+                // Get vehicles that either:
+                // 1. Have no verification record yet
+                // 2. Have a verification record with status = 'pending'
+                $query = "SELECT
+                            dv.vehicleId AS id,
+                            dv.driverName AS owner_name,
+                            dv.driverEmail AS driver_email,
+                            dv.driverPhone AS driver_phone,
+                            CONCAT(dv.make, ' ', dv.model) AS vehicle_type,
+                            dv.model,
+                            dv.licensePlate AS registration_number,
+                            dv.frontViewPhoto AS vehicle_photo,
+                            dv.seatingCapacity,
+                            dv.childSeats,
+                            dv.vehicleDescription,
+                            dv.frontViewPhoto,
+                            dv.backViewPhoto,
+                            dv.sideViewPhoto,
+                            dv.interiorPhoto1,
+                            dv.interiorPhoto2,
+                            dv.interiorPhoto3,
+                            dv.driverPhone,
+                            dv.driverSecondaryPhone,
+                            dv.driverEmail,
+                            dv.vehicleCreatedAt AS created_at,
+                            COALESCE(vv.createdAt, dv.vehicleCreatedAt) AS submission_date
+                          FROM `driver_vehicles_view` dv
+                          LEFT JOIN vehicle_verifications vv ON dv.vehicleId = vv.vehicleId
+                          WHERE vv.id IS NULL OR vv.status = 'pending'
+                          ORDER BY submission_date DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getPendingVehicles: found " . count($results) . " pending vehicles");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getPendingVehicles: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getVerifiedVehicles() {
+            try {
+                $query = "SELECT
+                            dv.vehicleId AS id,
+                            dv.driverName AS owner_name,
+                            dv.driverEmail AS driver_email,
+                            dv.driverPhone AS driver_phone,
+                            CONCAT(dv.make, ' ', dv.model) AS vehicle_type,
+                            dv.model,
+                            dv.licensePlate AS registration_number,
+                            dv.frontViewPhoto AS vehicle_photo,
+                            dv.seatingCapacity,
+                            dv.childSeats,
+                            dv.vehicleDescription,
+                            dv.frontViewPhoto,
+                            dv.backViewPhoto,
+                            dv.sideViewPhoto,
+                            dv.interiorPhoto1,
+                            dv.interiorPhoto2,
+                            dv.interiorPhoto3,
+                            dv.vehicleCreatedAt AS created_at,
+                            vv.status AS verification_status,
+                            vv.reviewedAt AS reviewed_at
+                          FROM `driver_vehicles_view` dv
+                          INNER JOIN vehicle_verifications vv ON dv.vehicleId = vv.vehicleId
+                          WHERE vv.status = 'approved'
+                          ORDER BY vv.reviewedAt DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getVerifiedVehicles: found " . count($results) . " verified vehicles");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getVerifiedVehicles: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function getRejectedVehicles() {
+            try {
+                $query = "SELECT
+                            dv.vehicleId AS id,
+                            dv.driverName AS owner_name,
+                            dv.driverEmail AS driver_email,
+                            dv.driverPhone AS driver_phone,
+                            CONCAT(dv.make, ' ', dv.model) AS vehicle_type,
+                            dv.model,
+                            dv.licensePlate AS registration_number,
+                            dv.frontViewPhoto AS vehicle_photo,
+                            dv.seatingCapacity,
+                            dv.childSeats,
+                            dv.vehicleDescription,
+                            dv.frontViewPhoto,
+                            dv.backViewPhoto,
+                            dv.sideViewPhoto,
+                            dv.interiorPhoto1,
+                            dv.interiorPhoto2,
+                            dv.interiorPhoto3,
+                            dv.vehicleCreatedAt AS created_at,
+                            vv.status AS verification_status,
+                            vv.reviewedAt AS reviewed_at,
+                            vv.rejectionReason
+                          FROM `driver_vehicles_view` dv
+                          LEFT JOIN vehicle_verifications vv ON dv.vehicleId = vv.vehicleId
+                          WHERE vv.status = 'rejected'
+                          ORDER BY vv.reviewedAt DESC";
+
+                $this->db->query($query);
+                $results = $this->db->resultSet();
+                error_log("getRejectedVehicles: found " . count($results) . " rejected vehicles");
+                return $results;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getRejectedVehicles: " . $e->getMessage());
+                return [];
+            }
+        }
+
+        public function verifyVehicle($vehicleId, $moderatorId) {
+            try {
+                // First check if there's already a verification record
+                $checkQuery = "SELECT id FROM vehicle_verifications WHERE vehicleId = :vehicleId";
+                $this->db->query($checkQuery);
+                $this->db->bind(':vehicleId', $vehicleId);
+                $existing = $this->db->single();
+
+                if ($existing) {
+                    // Update existing record
+                    $query = "UPDATE vehicle_verifications
+                              SET status = 'approved',
+                                  reviewedBy = :moderatorId,
+                                  reviewedAt = NOW(),
+                                  updatedAt = NOW()
+                              WHERE vehicleId = :vehicleId AND status = 'pending'";
+                } else {
+                    // Insert new record
+                    $query = "INSERT INTO vehicle_verifications (vehicleId, userId, status, reviewedBy, reviewedAt, createdAt, updatedAt)
+                              VALUES (:vehicleId, (SELECT driverId FROM vehicles WHERE vehicleId = :vehicleId), 'approved', :moderatorId, NOW(), NOW(), NOW())";
+                }
+
+                $this->db->query($query);
+                $this->db->bind(':vehicleId', $vehicleId);
+                $this->db->bind(':moderatorId', $moderatorId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the vehicles table isApproved status
+                    $vehicleQuery = "UPDATE vehicles SET isApproved = 1, updatedAt = NOW() WHERE vehicleId = :vehicleId";
+                    $this->db->query($vehicleQuery);
+                    $this->db->bind(':vehicleId', $vehicleId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in verifyVehicle: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function rejectVehicle($vehicleId, $moderatorId, $reason) {
+            try {
+                // First check if there's already a verification record
+                $checkQuery = "SELECT id FROM vehicle_verifications WHERE vehicleId = :vehicleId";
+                $this->db->query($checkQuery);
+                $this->db->bind(':vehicleId', $vehicleId);
+                $existing = $this->db->single();
+
+                if ($existing) {
+                    // Update existing record
+                    $query = "UPDATE vehicle_verifications
+                              SET status = 'rejected',
+                                  reviewedBy = :moderatorId,
+                                  reviewedAt = NOW(),
+                                  rejectionReason = :reason,
+                                  updatedAt = NOW()
+                              WHERE vehicleId = :vehicleId AND status = 'pending'";
+                } else {
+                    // Insert new record
+                    $query = "INSERT INTO vehicle_verifications (vehicleId, userId, status, reviewedBy, reviewedAt, rejectionReason, createdAt, updatedAt)
+                              VALUES (:vehicleId, (SELECT driverId FROM vehicles WHERE vehicleId = :vehicleId), 'rejected', :moderatorId, NOW(), :reason, NOW(), NOW())";
+                }
+
+                $this->db->query($query);
+                $this->db->bind(':vehicleId', $vehicleId);
+                $this->db->bind(':moderatorId', $moderatorId);
+                $this->db->bind(':reason', $reason);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the vehicles table isApproved status to 0
+                    $vehicleQuery = "UPDATE vehicles SET isApproved = 0, updatedAt = NOW() WHERE vehicleId = :vehicleId";
+                    $this->db->query($vehicleQuery);
+                    $this->db->bind(':vehicleId', $vehicleId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in rejectVehicle: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeVehicleVerification($vehicleId, $moderatorId) {
+            try {
+                // Update the vehicle_verifications table to set status back to pending
+                $query = "UPDATE vehicle_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              rejectionReason = NULL,
+                              updatedAt = NOW()
+                          WHERE vehicleId = :vehicleId AND status = 'approved'";
+
+                $this->db->query($query);
+                $this->db->bind(':vehicleId', $vehicleId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the vehicles table isApproved status to 0 (pending)
+                    $vehicleQuery = "UPDATE vehicles SET isApproved = 0, updatedAt = NOW() WHERE vehicleId = :vehicleId";
+                    $this->db->query($vehicleQuery);
+                    $this->db->bind(':vehicleId', $vehicleId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeVehicleVerification: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revokeVehicleRejection($vehicleId, $moderatorId) {
+            try {
+                // Update the vehicle_verifications table to set status back to pending
+                $query = "UPDATE vehicle_verifications
+                          SET status = 'pending',
+                              reviewedBy = NULL,
+                              reviewedAt = NULL,
+                              rejectionReason = NULL,
+                              updatedAt = NOW()
+                          WHERE vehicleId = :vehicleId AND status = 'rejected'";
+
+                $this->db->query($query);
+                $this->db->bind(':vehicleId', $vehicleId);
+
+                $result = $this->db->execute();
+
+                if ($result) {
+                    // Update the vehicles table isApproved status to 0 (pending)
+                    $vehicleQuery = "UPDATE vehicles SET isApproved = 0, updatedAt = NOW() WHERE vehicleId = :vehicleId";
+                    $this->db->query($vehicleQuery);
+                    $this->db->bind(':vehicleId', $vehicleId);
+                    $this->db->execute();
+                }
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in revokeVehicleRejection: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function getVehicleDetails($vehicleId) {
+            try {
+                $query = "SELECT
+                            dv.vehicleId AS id,
+                            dv.driverName AS owner_name,
+                            dv.driverEmail AS driver_email,
+                            dv.driverPhone,
+                            dv.driverSecondaryPhone,
+                            dv.driverAddress,
+                            dv.make,
+                            CONCAT(dv.make, ' ', dv.model) AS vehicle_type,
+                            dv.model,
+                            dv.year,
+                            dv.color,
+                            dv.licensePlate AS registration_number,
+                            dv.seatingCapacity,
+                            dv.childSeats,
+                            dv.fuelEfficiency,
+                            dv.vehicleDescription,
+                            dv.frontViewPhoto AS vehicle_photo,
+                            dv.frontViewPhoto,
+                            dv.backViewPhoto,
+                            dv.sideViewPhoto,
+                            dv.interiorPhoto1,
+                            dv.interiorPhoto2,
+                            dv.interiorPhoto3,
+                            dv.vehicleCreatedAt AS created_at,
+                            vv.status AS verification_status,
+                            vv.reviewedAt AS reviewed_at,
+                            vv.rejectionReason
+                          FROM `driver_vehicles_view` dv
+                          LEFT JOIN vehicle_verifications vv ON dv.vehicleId = vv.vehicleId
+                          WHERE dv.vehicleId = :vehicleId";
+
+                $this->db->query($query);
+                $this->db->bind(':vehicleId', $vehicleId);
+                $vehicle = $this->db->single();
+
+                error_log("getVehicleDetails: vehicleId=" . $vehicleId . ", found=" . ($vehicle ? 'yes' : 'no'));
+                return $vehicle;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getVehicleDetails: " . $e->getMessage());
+                return null;
+            }
+        }
+
+        
+
+        
     }
 ?>

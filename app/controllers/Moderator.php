@@ -1,6 +1,6 @@
 <?php
 
-    class moderator extends controller{
+    class Moderator extends Controller{
 
         private $moderatorModel;
         public function __construct(){
@@ -12,8 +12,807 @@
         }
         
         public function verification(){
+            ob_start();
+            $this->view('Moderator/verification/verification');
+            $html =  ob_get_clean();
 
-            $this->view('UserTemplates/moderatorDash');
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/verification/verification.css',
+                'js'   => URL_ROOT.'/public/js/moderator/verification/verification.js'
+            ];
+
+            $unEncodedResponse = [
+                'tabId' => 'verification',
+                'loadingContent' => $loadingContent
+            ];
+
+            $this->view('UserTemplates/moderatorDash',$unEncodedResponse);
+        }
+
+        public function subtabAccountVerification(){
+            ob_start();
+            $this->view('Moderator/verification/subtabAccountVerification');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/verification/subtabAccountVerification.css',
+                'js'   => URL_ROOT.'/public/js/moderator/verification/subtabAccountVerification.js'
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function subtabTLicenseVerification(){
+            ob_start();
+            $this->view('Moderator/verification/subtabTLicenseVerification');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/verification/subtabTLicenseVerification.css',
+                'js'   => URL_ROOT.'/public/js/moderator/verification/subtabTLicenseVerification.js'
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function subtabVehicleVerification(){
+            ob_start();
+            $this->view('Moderator/verification/subtabVehicleVerification');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/verification/subtabVehicleVerification.css',
+                'js'   => URL_ROOT.'/public/js/moderator/verification/subtabVehicleVerification.js'
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+
+            echo json_encode($unEncodedResponse);
+        }
+
+        // Account Verification Methods
+        public function getAccounts($status) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("get_accounts called");
+
+            $status = $status ?? 'pending';
+
+            // Map frontend status to database status
+            $statusMap = [
+                'pending' => 'pending',
+                'verified' => 'approved',
+                'rejected' => 'rejected'
+            ];
+
+            $dbStatus = $statusMap[$status] ?? 'pending';
+
+            if (!in_array($status, ['pending', 'verified', 'rejected'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid status parameter']);
+                return;
+            }
+
+            try {
+                $accounts = $this->moderatorModel->getAccountsByStatus($dbStatus);
+                error_log("get_accounts: status=$status, dbStatus=$dbStatus, found " . count($accounts) . " accounts");
+                echo json_encode([
+                    'success' => true,
+                    'accounts' => $accounts
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching accounts: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getUserDetails($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getUserDetails called for userId: " . $userId);
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            try {
+                $user = $this->moderatorModel->getUserDetailsForVerification($userId);
+
+                if (!$user) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'User not found']);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'user' => $user
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching user details: ' . $e->getMessage()]);
+            }
+        }
+
+        public function verifyAccount($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("verifyAccount called for userId: " . $userId);
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->verifyAccount($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Account verified successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to verify account']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when verifying account: ' . $e->getMessage()]);
+            }
+        }
+
+        public function rejectAccount($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("rejectAccount called for userId: " . $userId);
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get rejection reason from POST data
+            $input = json_decode(file_get_contents('php://input'), true);
+            $reason = $input['reason'] ?? '';
+
+            if (empty($reason)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Rejection reason is required']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->rejectAccount($userId, $moderatorId, $reason);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Account rejected']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to reject account']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when rejecting account: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeVerification($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeVerification called for userId: " . $userId);
+            
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeVerification($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Verification revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke verification']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking verification: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeRejection($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeRejection called for userId: " . $userId);
+            
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeRejection($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Rejection revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke rejection']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking rejection: ' . $e->getMessage()]);
+            }
+        }
+
+        // Tourist License Verification Methods
+        public function getPendingLicenses() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getPendingLicenses called");
+
+            try {
+                $licenses = $this->moderatorModel->getPendingLicenses();
+                error_log("getPendingLicenses: found " . count($licenses) . " pending licenses");
+                echo json_encode([
+                    'success' => true,
+                    'licenses' => $licenses
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching pending licenses: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getVerifiedLicenses() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getVerifiedLicenses called");
+
+            try {
+                $licenses = $this->moderatorModel->getVerifiedLicenses();
+                error_log("getVerifiedLicenses: found " . count($licenses) . " verified licenses");
+                echo json_encode([
+                    'success' => true,
+                    'licenses' => $licenses
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching verified licenses: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getRejectedLicenses() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getRejectedLicenses called");
+
+            try {
+                $licenses = $this->moderatorModel->getRejectedLicenses();
+                error_log("getRejectedLicenses: found " . count($licenses) . " rejected licenses");
+                echo json_encode([
+                    'success' => true,
+                    'licenses' => $licenses
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching rejected licenses: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getLicenseDetails($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getLicenseDetails called for userId: " . $userId);
+
+            $userId = (int) $userId;
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            try {
+                $license = $this->moderatorModel->getLicenseDetails($userId);
+
+                if (!$license) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'License not found']);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'license' => $license
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching license details: ' . $e->getMessage()]);
+            }
+        }
+
+        public function verifyLicense($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("verifyLicense called for userId: " . $userId);
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->verifyLicense($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'License verified successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to verify license']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when verifying license: ' . $e->getMessage()]);
+            }
+        }
+
+        public function rejectLicense($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("rejectLicense called for userId: " . $userId);
+
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get rejection reason from POST data
+            $input = json_decode(file_get_contents('php://input'), true);
+            $reason = $input['reason'] ?? '';
+
+            if (empty($reason)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Rejection reason is required']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->rejectLicense($userId, $moderatorId, $reason);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'License rejected']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to reject license']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when rejecting license: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeLicenseVerification($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeLicenseVerification called for userId: " . $userId);
+            
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeLicenseVerification($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'License verification revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke license verification']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking license verification: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeLicenseRejection($userId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeLicenseRejection called for userId: " . $userId);
+            
+            if (!$userId || !is_numeric($userId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeLicenseRejection($userId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'License rejection revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke license rejection']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking license rejection: ' . $e->getMessage()]);
+            }
+        }
+
+        // Vehicle Verification Methods
+        public function getPendingVehicles() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getPendingVehicles called");
+
+            try {
+                $vehicles = $this->moderatorModel->getPendingVehicles();
+                error_log("getPendingVehicles: found " . count($vehicles) . " pending vehicles");
+                echo json_encode([
+                    'success' => true,
+                    'vehicles' => $vehicles
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching pending vehicles: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getVerifiedVehicles() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getVerifiedVehicles called");
+
+            try {
+                $vehicles = $this->moderatorModel->getVerifiedVehicles();
+                error_log("getVerifiedVehicles: found " . count($vehicles) . " verified vehicles");
+                echo json_encode([
+                    'success' => true,
+                    'vehicles' => $vehicles
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching verified vehicles: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getRejectedVehicles() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getRejectedVehicles called");
+
+            try {
+                $vehicles = $this->moderatorModel->getRejectedVehicles();
+                error_log("getRejectedVehicles: found " . count($vehicles) . " rejected vehicles");
+                echo json_encode([
+                    'success' => true,
+                    'vehicles' => $vehicles
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching rejected vehicles: ' . $e->getMessage()]);
+            }
+        }
+
+        public function verifyVehicle($vehicleId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("verifyVehicle called for vehicleId: " . $vehicleId);
+
+            if (!$vehicleId || !is_numeric($vehicleId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid vehicle ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->verifyVehicle($vehicleId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Vehicle verified successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to verify vehicle']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when verifying vehicle: ' . $e->getMessage()]);
+            }
+        }
+
+        public function rejectVehicle($vehicleId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("rejectVehicle called for vehicleId: " . $vehicleId);
+
+            if (!$vehicleId || !is_numeric($vehicleId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid vehicle ID']);
+                return;
+            }
+
+            // Get rejection reason from POST data
+            $input = json_decode(file_get_contents('php://input'), true);
+            $reason = $input['reason'] ?? '';
+
+            if (empty($reason)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Rejection reason is required']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->rejectVehicle($vehicleId, $moderatorId, $reason);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Vehicle rejected']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to reject vehicle']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when rejecting vehicle: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeVehicleVerification($vehicleId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeVehicleVerification called for vehicleId: " . $vehicleId);
+
+            if (!$vehicleId || !is_numeric($vehicleId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid vehicle ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeVehicleVerification($vehicleId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Vehicle verification revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke vehicle verification']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking vehicle verification: ' . $e->getMessage()]);
+            }
+        }
+
+        public function revokeVehicleRejection($vehicleId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("revokeVehicleRejection called for vehicleId: " . $vehicleId);
+
+            if (!$vehicleId || !is_numeric($vehicleId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid vehicle ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            try {
+                $result = $this->moderatorModel->revokeVehicleRejection($vehicleId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Vehicle rejection revoked successfully']);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to revoke vehicle rejection']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when revoking vehicle rejection: ' . $e->getMessage()]);
+            }
+        }
+
+        public function getVehicleDetails($vehicleId) {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("getVehicleDetails called for vehicleId: " . $vehicleId);
+
+            if (!$vehicleId || !is_numeric($vehicleId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid vehicle ID']);
+                return;
+            }
+
+            try {
+                $vehicle = $this->moderatorModel->getVehicleDetails($vehicleId);
+
+                if ($vehicle) {
+                    echo json_encode(['success' => true, 'vehicle' => $vehicle]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Vehicle not found']);
+                }
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching vehicle details: ' . $e->getMessage()]);
+            }
         }
 
         public function content(){
@@ -396,20 +1195,29 @@
                     }    
                 }
 
-                $photos = ['photo1', 'photo2', 'photo3', 'photo4'];
+                // Support up to 10 photos, only photo1 is required
+                $photos = ['photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8', 'photo9', 'photo10'];
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                $uploadedPhotos = [];
 
+                // Check that photo1 is required
+                if (!isset($_FILES['photo1']) || $_FILES['photo1']['error'] === UPLOAD_ERR_NO_FILE) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Photo 1 (main photo) is required']);  
+                    return;
+                }
+
+                // Validate all uploaded photos
                 foreach ($photos as $photoKey) {
-                    if (!isset($_FILES[$photoKey])) {
-                        http_response_code(400);
-                        echo json_encode(['success' => false, 'message' => ucfirst(str_replace('_', ' ', $photoKey)) . ' is required']);  
-                        return;
-                    }   
+                    // Skip if photo not uploaded (only photo1 is required)
+                    if (!isset($_FILES[$photoKey]) || $_FILES[$photoKey]['error'] === UPLOAD_ERR_NO_FILE) {
+                        continue;
+                    }
 
                     $file = $_FILES[$photoKey];
 
-                    if ($file['size'] > 1.5 * 1024 * 1024) { // 5MB
-                        echo json_encode(['success' => false, 'message' => 'File size exeeded 5MB !']);  
+                    if ($file['size'] > 5 * 1024 * 1024) { // 5MB
+                        echo json_encode(['success' => false, 'message' => 'File size exceeded 5MB for ' . $photoKey . '!']);  
                         return;
                     }
 
@@ -421,9 +1229,12 @@
                     $mimeType = mime_content_type($file['tmp_name']);
 
                     if (!in_array($mimeType, $allowedTypes)) {
-                        echo json_encode(['success' => false, 'message' => 'File type is not matching !']);  
+                        echo json_encode(['success' => false, 'message' => 'File type is not matching for ' . $photoKey . '!']);  
                         return;
                     }
+
+                    // Store valid photo key for later processing
+                    $uploadedPhotos[] = $photoKey;
                 }
 
                 $spotsTableInsertingData = [
@@ -468,20 +1279,23 @@
                                 $this->moderatorModel->addTravelSpotItinerary($insertedSpotId, $location['name'],$location['lat'], $location['lng']);
                             }
 
-                            foreach($photos as $photoKey){
+                            // Upload only the photos that were actually provided
+                            foreach($uploadedPhotos as $photoKey){
                                 $extension = pathinfo($_FILES[$photoKey]['name'], PATHINFO_EXTENSION);
                                 $newName = $photoKey . '_' . uniqid('spot_', true).'.'. $extension;
+                                $uploadDir = ROOT_PATH.'/public/uploads/travelSpots/'.$insertedSpotId.'/'; // Directory path
+                                $databasePath = '/travelSpots/'.$insertedSpotId.'/'.$newName; // Full path for database
+                                $fullFilePath = $uploadDir . $newName; // Full file path for upload
 
                                 //error_log("Received photo input: " . print_r($_FILES[$photoKey]['name'], true));
                                 error_log('new name :'. print_r($newName,true) );
 
-                                $uploadDir = ROOT_PATH.'/public/uploads/travelSpots';
                                 if (!is_dir($uploadDir)) {
                                     mkdir($uploadDir, 0755, true);
                                 }
-                                move_uploaded_file($_FILES[$photoKey]['tmp_name'], $uploadDir . $newName);
+                                move_uploaded_file($_FILES[$photoKey]['tmp_name'], $fullFilePath);
                                 
-                                if($this->moderatorModel->addTravelSpotPhotos($insertedSpotId, $newName)){
+                                if($this->moderatorModel->addTravelSpotPhotos($insertedSpotId, $databasePath)){
                                     error_log('travel spot photo added to the database successfully.');
                                 };
                             }
@@ -506,7 +1320,7 @@
 
                 } catch(PDOException $e) {
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+                    echo json_encode(['success' => false, 'message' => 'Database error occurred'.$e->getMessage()]);
                     return;
                 }
 
@@ -545,7 +1359,7 @@
                 'message' => 'Travel Spot Card data loaded Successfully.'
             ]);
             return;
-        }  
+        }
         
         public function getTravelSpotData($travelSpotId){
 
@@ -574,7 +1388,7 @@
 
             } catch(PDOException $e){
                 http_response_code(500);
-                echo json_encode(['success' => false, 'travelSpotData'=>NULL, 'message' => 'Database error occurred when getting travel Spot Data(not a card full travel spot)']);
+                echo json_encode(['success' => false, 'travelSpotData'=>NULL, 'message' => 'Database error occurred when getting travel Spot Data(not a card full travel spot)'.$e->getMessage()]);
                 return;
             }
         }
@@ -612,29 +1426,34 @@
                     }    
                 }
 
-                $photos = ['photo1', 'photo2', 'photo3', 'photo4'];
+                // Support up to 10 photos, all optional when editing
+                $photos = ['photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8', 'photo9', 'photo10'];
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                $uploadedPhotos = [];
 
+                // Validate all uploaded photos (all optional when editing)
                 foreach ($photos as $photoKey) {
-                    if (!isset($_FILES[$photoKey])) {
-                        http_response_code(400);
-                        echo json_encode(['success' => false, 'message' => ucfirst(str_replace('_', ' ', $photoKey)) . ' is required']);  
-                        return;
-                    }   
+                    // Skip if photo not uploaded
+                    if (!isset($_FILES[$photoKey]) || $_FILES[$photoKey]['error'] === UPLOAD_ERR_NO_FILE) {
+                        continue;
+                    }
 
                     $file = $_FILES[$photoKey];
 
                     if ($file['size'] > 5 * 1024 * 1024) { // 5MB
-                        echo json_encode(['success' => false, 'message' => 'File size exceeded 5MB !']);  
+                        echo json_encode(['success' => false, 'message' => 'File size exceeded 5MB for ' . $photoKey . '!']);  
                         return;
                     }
 
                     $mimeType = mime_content_type($file['tmp_name']);
 
                     if (!in_array($mimeType, $allowedTypes)) {
-                        echo json_encode(['success' => false, 'message' => 'File type is not matching !']);  
+                        echo json_encode(['success' => false, 'message' => 'File type is not matching for ' . $photoKey . '!']);  
                         return;
                     }
+
+                    // Store valid photo key for later processing
+                    $uploadedPhotos[] = $photoKey;
                 }
 
                 $spotsTableInsertingData = [
@@ -685,20 +1504,27 @@
                                 $this->moderatorModel->addTravelSpotItinerary($insertedSpotId, $location['name'],$location['lat'], $location['lng']);
                             }
 
-                            $this->moderatorModel->deleteTravelSpotPhotos($insertedSpotId);
+                            // Only delete and re-upload if new photos are provided
+                            if (count($uploadedPhotos) > 0) {
+                                $this->moderatorModel->deleteTravelSpotPhotos($insertedSpotId);
 
-                            foreach($photos as $photoKey){
-                                $extension = pathinfo($_FILES[$photoKey]['name'], PATHINFO_EXTENSION);
-                                $newName = $photoKey . '_' . uniqid('spot_', true) . '.' . $extension;
+                                foreach($uploadedPhotos as $photoKey){
+                                    $extension = pathinfo($_FILES[$photoKey]['name'], PATHINFO_EXTENSION);
+                                    $newName = $photoKey . '_' . uniqid('spot_', true) . '.' . $extension;
+                                    $uploadDir = ROOT_PATH.'/public/uploads/travelSpots/'.$insertedSpotId.'/'; // Directory path
+                                    $databasePath = '/travelSpots/'.$insertedSpotId.'/'.$newName; // Full path for database
+                                    $fullFilePath = $uploadDir . $newName; // Full file path for upload
 
-                                error_log("Received photo input: " . print_r($_FILES[$photoKey]['name'], true));
+                                    error_log("Received photo input: " . print_r($_FILES[$photoKey]['name'], true));
 
-                                $uploadDir = ROOT_PATH.'/public/uploads/travelSpots';
-                                if (!is_dir($uploadDir)) {
-                                    mkdir($uploadDir, 0755, true);
+                                    if (!is_dir($uploadDir)) {
+                                        mkdir($uploadDir, 0755, true);
+                                    }
+                                    move_uploaded_file($_FILES[$photoKey]['tmp_name'], $fullFilePath);
+                                    $this->moderatorModel->addTravelSpotPhotos($insertedSpotId, $databasePath);
                                 }
-                                move_uploaded_file($_FILES[$photoKey]['tmp_name'], $uploadDir . '/' . $newName);
-                                $this->moderatorModel->addTravelSpotPhotos($insertedSpotId, $newName);
+                            } else {
+                                error_log("No new photos uploaded, keeping existing photos.");
                             }
 
                             $contributionData = [

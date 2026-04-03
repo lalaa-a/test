@@ -405,19 +405,32 @@
 
     .trip-details {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        gap: 12px;
         margin-bottom: 16px;
     }
 
-    .trip-dates {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+    .trip-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
     }
 
-    .trip-dates i {
+    .trip-dates, .trip-people {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+    }
+
+    .trip-dates i, .trip-people i {
         margin-right: 6px;
         color: var(--primary-color);
+    }
+
+    .trip-people {
+        font-weight: 500;
     }
 
     /* Status Badge */

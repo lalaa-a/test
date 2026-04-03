@@ -550,7 +550,7 @@
                             </select>
                             <div class="error-message" id="gender-error">Please select gender</div>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label>Profile Photo *</label>
                             <div class="photo-upload" id="profile-upload">
                                 <div class="photo-upload-icon"></div>
@@ -560,6 +560,13 @@
                                 <strong>Choose File</strong> No file chosen
                             </div>
                             <div class="error-message" id="profile-error">Profile photo is required</div>
+                        </div>
+                        <div class="form-group" id="currency-group-page1" style="display: none;">
+                            <label for="currency">Preferred Currency *</label>
+                            <select id="currency" required>
+                                <option value="">Select your currency</option>
+                            </select>
+                            <div class="error-message" id="currency-error">Please select your preferred currency</div>
                         </div>
                     </div>
                     <div class="form-actions" style="display:none">
@@ -711,6 +718,7 @@
                             <input type="date" id="expireDate" placeholder="mm/dd/yyyy">
                             <div class="error-message" id="expireDate-error">License expire date is required</div>
                         </div>
+                        
                         <div class="form-group">
                             <label for="licenseFront">Driving License (Front)</label>
                             <input type="file" id="licenseFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseFront')">
@@ -720,6 +728,12 @@
                             <label for="licenseBack">Driving License (Back)</label>
                             <input type="file" id="licenseBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseBack')">
                             <div class="error-message" id="licenseBack-error">License back image is required</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nic">NIC Number</label>
+                            <input type="text" id="nic" placeholder="Enter NIC number">
+                            <div class="error-message" id="nic-error">NIC number is required</div>
                         </div>
 
                         <div class="form-group">
@@ -738,7 +752,7 @@
                     <div class="form-grid3" id="guide-tourist-documents" style="display: none;">
                         <div class="form-group">
                             <label for="nic">NIC/Passport Number</label>
-                            <input type="text" id="nic" placeholder="Enter NIC or Passport number">
+                            <input type="text" id="nicGuideTourist" placeholder="Enter NIC or Passport number">
                             <div class="error-message" id="nic-error">NIC/Passport is required</div>
                         </div>
                         <div class="form-group">
@@ -761,6 +775,7 @@
         </div>
     </div>
     <script>
+        console.log('JavaScript loading...');
         // Global variables
         let currentPage = 1;
         let selectedAccountType = null;
@@ -997,8 +1012,17 @@
             });
             // Update left section based on account type
             updateLeftSection(accountType);
-            // Update 3rd step content based on account type
-            updateThirdStepContent(accountType);
+
+            // Show/hide currency selector in personal info (page1) for tourists only
+            const currencyPage1 = document.getElementById('currency-group-page1');
+            if (currencyPage1) {
+                if (accountType === 'tourist') {
+                    currencyPage1.style.display = 'block';
+                    populateCurrencyDropdown();
+                } else {
+                    currencyPage1.style.display = 'none';
+                }
+            }
         }
         // Update left section image and content
         function updateLeftSection(accountType) {
@@ -1358,6 +1382,15 @@
                 showError('profile', 'Profile photo is required');
                 isValid = false;
             }
+
+            // Currency validation for tourists in personal info (page1)
+            if (selectedAccountType === 'tourist') {
+                const currency = document.getElementById('currency');
+                if (!currency || !currency.value) {
+                    showError('currency', 'Please select your preferred currency');
+                    isValid = false;
+                }
+            }
             return isValid;
         }
         function validatePage2() {
@@ -1426,9 +1459,11 @@
         }
         function validatePage4() {
             let isValid = true;
+            
             if (selectedAccountType === 'driver') {
                 const license = document.getElementById('license');
                 const expireDate = document.getElementById('expireDate');
+                
                 if (!license || !license.value.trim()) {
                     showError('license', 'License number is required');
                     isValid = false;
@@ -1437,6 +1472,15 @@
                     showError('expireDate', 'License expire date is required');
                     isValid = false;
                 }
+                
+                // Get NIC from driver section
+                const driverSection = document.getElementById('driver-documents');
+                const nicField = driverSection ? driverSection.querySelector('#nic') : null;
+                if (!nicField || !nicField.value.trim()) {
+                    showError('nic', 'NIC number is required');
+                    isValid = false;
+                }
+                
                 // Check required files for driver
                 const requiredFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
                 requiredFiles.forEach(fileId => {
@@ -1446,11 +1490,18 @@
                     }
                 });
             } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
-                const nic = document.getElementById('nic');
-                if (!nic || !nic.value.trim()) {
+                // Get NIC from guide-tourist section (not driver section)
+                
+                const nicField = document.getElementById('nicGuideTourist');
+                
+                if (!nicField) {
+                    alert('Error: NIC/Passport field not found. Please refresh the page and try again.');
+                    isValid = false;
+                } else if (!nicField.value.trim()) {
                     showError('nic', 'NIC/Passport is required');
                     isValid = false;
                 }
+                
                 // Check required files for guide/tourist
                 if (!uploadedFiles['nicFront']) {
                     showError('nicFront', 'NIC/Passport front image is required');
@@ -1461,6 +1512,7 @@
                     isValid = false;
                 }
             }
+            
             return isValid;
         }
         function showError(fieldId, message) {
@@ -1499,9 +1551,14 @@
                 navigateTo(3);
                 return;
             }
+            
             if (!validatePage4()) {
+                console.log('Validation failed for page 4');
                 return;
             }
+            
+            console.log('Starting form submission...');
+            
             // Create FormData object
             const formData = new FormData();
             formData.append('account_type', selectedAccountType);
@@ -1526,6 +1583,7 @@
             if (selectedAccountType === 'driver') {
                 formData.append('license_number', document.getElementById('license').value);
                 formData.append('license_expire_date', document.getElementById('expireDate').value);
+                formData.append('nic_passport', document.getElementById('nic').value);
                 // Add driver files
                 const driverFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
                 driverFiles.forEach(fileId => {
@@ -1534,7 +1592,14 @@
                     }
                 });
             } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
-                formData.append('nic_passport', document.getElementById('nic').value);
+                formData.append('nic_passport', document.getElementById('nicGuideTourist').value);
+                
+                // Currency is collected in personal info (page1) for tourists
+                if (selectedAccountType === 'tourist') {
+                    const currencyEl = document.getElementById('currency');
+                    if (currencyEl) formData.append('currency_code', currencyEl.value);
+                }
+                
                 // Add guide/tourist files
                 if (uploadedFiles['nicFront']) {
                     formData.append('nic_front', uploadedFiles['nicFront']);
@@ -1548,13 +1613,32 @@
             const originalText = submitButton.textContent;
             submitButton.textContent = 'Creating Account...';
             submitButton.disabled = true;
+            
+            console.log('Sending form data to backend...');
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(key + ':', 'File -', value.name, value.size + ' bytes');
+                } else {
+                    console.log(key + ':', value);
+                }
+            }
+            
             // Send to PHP backend
             fetch('/test/User/register', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Backend response:', data);
                 if (data.success) {
                     // Show success message
                     document.getElementById('success-message').style.display = 'block';
@@ -1573,141 +1657,59 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 const errorDiv = document.getElementById('error-message-global');
-                errorDiv.textContent = 'An error occurred during registration. Please try again.';
+                errorDiv.textContent = 'Connection error: ' + error.message + '. Please try again.';
                 errorDiv.style.display = 'block';
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
         }
-        // Update 3rd step content based on account type
-        function updateThirdStepContent(accountType) {
-            const page3 = document.getElementById('page3');
-            if (!page3) return;
-            const accountSelection = page3.querySelector('.account-selection');
-            const formGrid = page3.querySelector('.form-grid3');
-            if (!accountSelection || !formGrid) return;
-            switch (accountType) {
-                case 'driver':
-                    accountSelection.innerHTML = '<h3>Driver Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="license">Driving License Number *</label>
-                            <input type="text" id="license" placeholder="License number" required>
-                            <div class="error-message" id="license-error">License number is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="expireDate">License Expire Date *</label>
-                            <input type="date" id="expireDate" placeholder="mm/dd/yyyy" required>
-                            <div class="error-message" id="expireDate-error">License expire date is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="licenseFront">Driving License (Front) *</label>
-                            <input type="file" id="licenseFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseFront')">
-                            <div class="error-message" id="licenseFront-error">License front image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="licenseBack">Driving License (Back) *</label>
-                            <input type="file" id="licenseBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseBack')">
-                            <div class="error-message" id="licenseBack-error">License back image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="idFront">National ID Card (Front) *</label>
-                            <input type="file" id="idFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idFront')">
-                            <div class="error-message" id="idFront-error">ID card front image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="idBack">National ID Card (Back) *</label>
-                            <input type="file" id="idBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idBack')">
-                            <div class="error-message" id="idBack-error">ID card back image is required</div>
-                        </div>
-                    `;
-                    break;
-                case 'guide':
-                    accountSelection.innerHTML = '<h3>Guide Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="nic">NIC/Passport *</label>
-                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
-                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Front img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
-                                </div>
-                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
-                            </div>
-                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Back img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
-                                </div> 
-                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
-                            </div>
-                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
-                        </div>
-                    `;
-                    break;
-                case 'tourist':
-                    accountSelection.innerHTML = '<h3>Tourist Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="nic">NIC/Passport *</label>
-                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
-                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Front img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
-                                </div>
-                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
-                            </div>
-                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Back img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
-                                </div> 
-                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
-                            </div>
-                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
-                        </div>
-                    `;
-                    break;
+
+        
+        // Currency data and population function
+        function populateCurrencyDropdown() {
+            const currencies = [
+                { code: 'USD', name: 'US Dollar', symbol: '$' },
+                { code: 'EUR', name: 'Euro', symbol: '€' },
+                { code: 'GBP', name: 'British Pound', symbol: '£' },
+                { code: 'LKR', name: 'Sri Lankan Rupee', symbol: 'Rs' },
+                { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+                { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+                { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+                { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+                { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+                { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+                { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+                { code: 'THB', name: 'Thai Baht', symbol: '฿' },
+                { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+                { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
+                { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+                { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+                { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+                { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+                { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+                { code: 'ZAR', name: 'South African Rand', symbol: 'R' }
+            ];
+            
+            const currencySelect = document.getElementById('currency');
+            if (!currencySelect) return;
+            
+            // Clear existing options except the first one
+            while (currencySelect.children.length > 1) {
+                currencySelect.removeChild(currencySelect.lastChild);
             }
-            // Reattach event listeners for new file inputs
-            const newFileInputs = formGrid.querySelectorAll('input[type="file"]');
-            newFileInputs.forEach(input => {
-                input.addEventListener('change', function(e) {
-                    if (e.target.files[0]) {
-                        const fieldId = e.target.id;
-                        handleFileUpload(e.target.files[0], fieldId);
-                        clearError(e.target);
-                    }
-                });
+            
+            // Add currency options
+            currencies.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency.code;
+                option.textContent = `${currency.code} - ${currency.name} (${currency.symbol})`;
+                currencySelect.appendChild(option);
             });
+            
+            // Set default to USD
+            currencySelect.value = 'USD';
         }
     </script>
 </body>

@@ -356,7 +356,7 @@ class DriverProfileManager {
                 this.deletedPhotos = []; // Reset deleted photos
                 
                 data.photos.forEach(photo => {
-                    const photoUrl = `${this.UP_ROOT}/${photo.photo_path}`;
+                    const photoUrl = `${this.UP_ROOT}${photo.photo_path}`;
                     this.uploadedPhotos[photo.photo_order] = {
                         url: photoUrl,
                         id: photo.id,
@@ -456,7 +456,7 @@ class DriverProfileManager {
             // Remove existing avatar and reload the new one
             this.profileAvatar.innerHTML = '';
             const img = document.createElement('img');
-            img.src = `${this.UP_ROOT}/${data.profilePhoto}`;
+            img.src = `${this.UP_ROOT}${data.profilePhoto}`;
             img.alt = 'Profile Photo';
             this.profileAvatar.appendChild(img);
         }
@@ -516,14 +516,14 @@ class DriverProfileManager {
         if (data.driverLicenseFrontPhoto) {
             const frontImg = document.getElementById('verifiedDriverLicenseFront');
             if (frontImg) {
-                frontImg.src = `${this.UP_ROOT}/${data.driverLicenseFrontPhoto}`;
+                frontImg.src = `${this.UP_ROOT}${data.driverLicenseFrontPhoto}`;
                 frontImg.style.display = 'block';
             }
         }
         if (data.driverLicenseBackPhoto) {
             const backImg = document.getElementById('verifiedDriverLicenseBack');
             if (backImg) {
-                backImg.src = `${this.UP_ROOT}/${data.driverLicenseBackPhoto}`;
+                backImg.src = `${this.UP_ROOT}${data.driverLicenseBackPhoto}`;
                 backImg.style.display = 'block';
             }
         }
@@ -532,14 +532,14 @@ class DriverProfileManager {
         if (data.touristLicenseFrontPhoto) {
             const frontImg = document.getElementById('verifiedTouristLicenseFront');
             if (frontImg) {
-                frontImg.src = `${this.UP_ROOT}/${data.touristLicenseFrontPhoto}`;
+                frontImg.src = `${this.UP_ROOT}${data.touristLicenseFrontPhoto}`;
                 frontImg.style.display = 'block';
             }
         }
         if (data.touristLicenseBackPhoto) {
             const backImg = document.getElementById('verifiedTouristLicenseBack');
             if (backImg) {
-                backImg.src = `${this.UP_ROOT}/${data.touristLicenseBackPhoto}`;
+                backImg.src = `${this.UP_ROOT}${data.touristLicenseBackPhoto}`;
                 backImg.style.display = 'block';
             }
         }
@@ -947,7 +947,7 @@ class DriverProfileManager {
                 const frontContainer = document.getElementById('licenseFrontContainer');
                 if (frontContainer) {
                     const img = document.createElement('img');
-                    img.src = `${this.UP_ROOT}/${this.currentData.driverLicenseFrontPhoto}`;
+                    img.src = `${this.UP_ROOT}${this.currentData.driverLicenseFrontPhoto}`;
                     img.alt = 'Current Front License';
                     img.style.width = '100%';
                     img.style.height = '100%';
@@ -962,7 +962,7 @@ class DriverProfileManager {
                 const backContainer = document.getElementById('licenseBackContainer');
                 if (backContainer) {
                     const img = document.createElement('img');
-                    img.src = `${this.UP_ROOT}/${this.currentData.driverLicenseBackPhoto}`;
+                    img.src = `${this.UP_ROOT}${this.currentData.driverLicenseBackPhoto}`;
                     img.alt = 'Current Back License';
                     img.style.width = '100%';
                     img.style.height = '100%';
@@ -978,7 +978,7 @@ class DriverProfileManager {
                 const frontContainer = document.getElementById('touristLicenseFrontContainer');
                 if (frontContainer) {
                     const img = document.createElement('img');
-                    img.src = `${this.UP_ROOT}/${this.currentData.touristLicenseFrontPhoto}`;
+                    img.src = `${this.UP_ROOT}${this.currentData.touristLicenseFrontPhoto}`;
                     img.alt = 'Current Front Tourist License';
                     img.style.width = '100%';
                     img.style.height = '100%';
@@ -993,7 +993,7 @@ class DriverProfileManager {
                 const backContainer = document.getElementById('touristLicenseBackContainer');
                 if (backContainer) {
                     const img = document.createElement('img');
-                    img.src = `${this.UP_ROOT}/${this.currentData.touristLicenseBackPhoto}`;
+                    img.src = `${this.UP_ROOT}${this.currentData.touristLicenseBackPhoto}`;
                     img.alt = 'Current Back Tourist License';
                     img.style.width = '100%';
                     img.style.height = '100%';

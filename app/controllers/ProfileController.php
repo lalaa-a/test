@@ -97,8 +97,8 @@
             try {
                 $uploadedPhotos = [];
                 $deletedCount = 0;
-                $specPath = 'drivers/' . $userId . '/cover_photos';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
+                $specPath = '/drivers/' . $userId . '/cover_photos';
+                $uploadDir = ROOT_PATH.'/public/uploads'.$specPath;
                 
                 // Handle deletions first
                 if (isset($_POST['deletedPhotos'])) {
@@ -183,7 +183,6 @@
             }
         }
 
-
         public function submitTLicense() {
             header('Content-Type: application/json');
 
@@ -202,8 +201,8 @@
 
             try {
                 $uploadedFiles = [];
-                $specPath = 'drivers/' . $userId . '/licenses';
-                $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
+                $specPath = '/drivers/' . $userId . '/licenses';
+                $uploadDir = ROOT_PATH.'/public/uploads'.$specPath;
 
                 // Create directory if it doesn't exist
                 if (!is_dir($uploadDir)) {
@@ -308,7 +307,7 @@
 
             try {
                 $uploadedFiles = [];
-                $specPath = 'drivers/' . $userId . '/licenses';
+                $specPath = '/drivers/' . $userId . '/licenses';
                 $uploadDir = ROOT_PATH.'/public/uploads/'.$specPath;
 
                 // Create directory if it doesn't exist
@@ -542,6 +541,6 @@
                 echo json_encode(['success' => false, 'message' => 'An error occurred while updating your email']);
             }
         }
-    }
-
+    
+}
 ?>

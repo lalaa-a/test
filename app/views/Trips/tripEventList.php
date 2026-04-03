@@ -93,6 +93,12 @@
                         <?php
                     }
                 ?>
+                
+                <!-- Finalize Trip Button -->
+                <div class="date-nav-item finalize-item" id="finalize-trip-btn">
+                    <div class="finalize-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="finalize-text">FINALIZE</div>
+                </div>
             </div>
         </div>
 
@@ -104,17 +110,6 @@
                 </div>
                 
                 <div class="popup-body">
-                    <!-- Time Selection Row -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="start-time">Start Time</label>
-                            <input type="text" id="start-time" class="form-input" placeholder="Select start time" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="end-time">End Time</label>
-                            <input type="text" id="end-time" class="form-input" placeholder="Select end time" readonly>
-                        </div>
-                    </div>
 
                     <!-- Type and Status Dropdowns -->
                     <div class="form-row">
@@ -137,6 +132,18 @@
                         </div>
                     </div>
 
+                    <!-- Time Selection Row -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-time">Start Time</label>
+                            <input type="text" id="start-time" class="form-input" placeholder="Select start time" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="end-time">End Time</label>
+                            <input type="text" id="end-time" class="form-input" placeholder="Select end time" readonly>
+                        </div>
+                    </div>
+
                     <!-- Content Display Area -->
                     <div class="event-type-data" id="event-type-data">
 
@@ -146,12 +153,44 @@
                                 <label for="location-description">Description</label>
                                 <textarea id="location-description" class="form-textarea location-description" placeholder="Add a small description about what would you do in this location..." rows="3" required></textarea>
                             </div>
-
+                            
+                        <div class="form-group">
+                            <label for="location-description">Enter a place you need to search around</label>
                             <div id="autocomplete-container"> 
                                 <gmp-place-autocomplete id="location-input-container"></gmp-place-autocomplete>
                             </div>
+                        </div>
+
+                            <!-- Search Controls Row -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="spot-type-select">Spot Type</label>
+                                    <select id="controls" class="form-select">
+                                        <option value="restaurant" selected>Restaurant</option>
+                                        <option value="cafe">Cafe</option>
+                                        <option value="museum">Museum</option>
+                                        <option value="monument">Monument</option>
+                                        <option value="park">Park</option>
+                                        <option value="tourist_attraction">Tourist Attraction</option>
+                                        <option value="lodging">Lodging</option>
+                                        <option value="shopping_mall">Shopping Mall</option>
+                                        <option value="point_of_interest">Point of Interest</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="search-radius">Search Radius (meters)</label>
+                                    <input type="number" id="search-radius" class="form-input" value="1500" min="100" max="5000" step="100" placeholder="1500">
+                                </div>
+                            </div>
+
                             <div id='selected-location-container'></div>
-                            <div id="map" class="location-map"></div>
+
+                            <gmp-map center="45.438646,12.327573" zoom="14" map-id="12b46b4ecb983b59886cb6a1"
+                                ><!-- Map id is required for Advanced Markers. -->
+                                <gmp-advanced-marker></gmp-advanced-marker>
+                                
+                            </gmp-map>
+
                         </div>
 
                         <div id="travel-spot-select" class="travel-spot-select">
@@ -176,17 +215,123 @@
             </div>
         </div>
 
-        <!-- Events Section -->
-        <div class="events-section">
-            <div class="events-header">
-                <div>
-                    <h3 class="events-title">Events Schedule</h3>
-                    <p class="selected-date-info"><?php  
-                                                  $date =  new DateTime($basicTripDetails->startDate);
-                                                  echo $date->format('D, M j,Y'); 
-                    ?></p>
+        <!-- Recommendations Modal -->
+        <div class="popup-overlay" id="recommendations-popup">
+            <div class="popup-content recommendations-popup-content">
+                <div class="popup-header">
+                    <h2>Add Recommendations</h2>
+                    <button class="popup-close-btn" id="recommendations-close-btn">&times;</button>
+                </div>
+                
+                <div class="popup-body">
+                    <div class="recommendations-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="province-select">Select Province</label>
+                                <select id="province-select" class="form-select">
+                                    <option value="">Select a province</option>
+                                    <option value="western">Western Province</option>
+                                    <option value="central">Central Province</option>
+                                    <option value="southern">Southern Province</option>
+                                    <option value="northern">Northern Province</option>
+                                    <option value="eastern">Eastern Province</option>
+                                    <option value="north-western">North Western Province</option>
+                                    <option value="north-central">North Central Province</option>
+                                    <option value="uva">Uva Province</option>
+                                    <option value="sabaragamuwa">Sabaragamuwa Province</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="district-select">Select District</label>
+                                <select id="district-select" class="form-select" disabled>
+                                    <option value="">Select a district</option>
+                                    <!-- Districts will be populated based on province selection -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <p>When you select district and province with this, the places will be recommended based on this.</p>
+                        
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+                <div class="popup-footer">
+                    <button class="btn-cancel" id="recommendations-cancel-btn">Cancel</button>
+                    <button class="btn-save" id="recommendations-save-btn" disabled>Show Places on Map</button>
                 </div>
             </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="events-map-container">
+            <!-- Trip Summary Section (Hidden by default, shown when Finalize is clicked) -->
+            <div class="trip-summary-section" id="trip-summary-section" style="display: none;">
+                <div class="summary-header">
+                    <h3 class="summary-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Trip Summary & Confirmation
+                    </h3>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button class="view-map-btn" id="view-map-btn" title="View route map">
+                            <i class="fas fa-map"></i>
+                            View Map
+                        </button>
+                        <button class="close-summary-btn" id="close-summary-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="summary-content" id="summary-content">
+                    <!-- Summary will be dynamically loaded here -->
+                </div>
+                
+                <div class="summary-footer">
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-calendar-day"></i>
+                            <span id="total-days">0 Days</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="total-events">0 Events</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-route"></i>
+                            <span id="total-spots">0 Locations</span>
+                        </div>
+                    </div>
+                    <div class="summary-middle-section">
+                        <div class="summary-start-end" id="summary-start-end">
+                            <!-- Start and End events will be dynamically loaded here -->
+                        </div>
+                    </div>
+                    <div class="confirm-trip-section">
+                        <button class="confirm-trip-btn" id="confirm-trip-btn">
+                            <i class="fas fa-check-double"></i>
+                            Confirm Trip
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Section -->
+            <div class="events-section">
+                <div class="events-header">
+                    <div>
+                        <h3 class="events-title">Events Schedule</h3>
+                        <p class="selected-date-info"><?php  
+                                                      $date =  new DateTime($basicTripDetails->startDate);
+                                                      echo $date->format('D, M j,Y'); 
+                        ?></p>
+                    </div>
+                    <div class="events-header-actions">
+                        <button class="add-recommendations-btn" id="add-recommendations-btn">
+                            <i class="fas fa-lightbulb"></i>
+                            Add Recommendations
+                        </button>
+                    </div>
+                </div>
 
             <div class="events-container" id="events-container">
                 <!-- Custom Event Card with Two Badge Types -->
@@ -275,6 +420,17 @@
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Route Map Section -->
+        <div class="route-map-section">
+            <div class="route-map-header">
+                <h3 class="route-map-title">
+                    <i class="fas fa-route"></i>
+                    Route Map
+                </h3>
+            </div>
+            <div id="route-map" class="route-map"></div>
+        </div>
+    </div>
+    </div>
 

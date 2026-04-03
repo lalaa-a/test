@@ -139,6 +139,7 @@
         // Populate form with existing data
         document.getElementById('trip-title').value = trip.tripTitle || '';
         document.getElementById('trip-description').value = trip.description || '';
+        document.getElementById('people-count').value = trip.numberOfPeople || '1';
         document.getElementById('start-date').value = trip.startDate || '';
         document.getElementById('end-date').value = trip.endDate || '';
         
@@ -238,9 +239,15 @@
             ${trip.description ? `<p class="trip-description">${escapeHtml(trip.description)}</p>` : ''}
             
             <div class="trip-details">
-                <div class="trip-dates">
-                    <i class="fas fa-calendar-alt"></i>
-                    ${startDate} - ${endDate}
+                <div class="trip-info-row">
+                    <div class="trip-dates">
+                        <i class="fas fa-calendar-alt"></i>
+                        ${startDate} - ${endDate}
+                    </div>
+                    <div class="trip-people">
+                        <i class="fas fa-users"></i>
+                        ${trip.numberOfPeople || 1} ${(trip.numberOfPeople || 1) === 1 ? 'person' : 'people'}
+                    </div>
                 </div>
                 <span class="trip-status status-${trip.status.toLowerCase()}">
                     ${trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
@@ -322,6 +329,7 @@ createTripForm.addEventListener('submit', async (e) => {
     const tripData = {
         tripTitle: formData.get('trip_title').trim(),
         description: formData.get('trip_description').trim(),
+        numberOfPeople: parseInt(formData.get('people_count')),
         startDate: formData.get('start_date'),
         endDate: formData.get('end_date')
     };
@@ -346,7 +354,10 @@ createTripForm.addEventListener('submit', async (e) => {
         alert('End date cannot be before start date');
         return;
     }
-
+    if (!tripData.numberOfPeople || tripData.numberOfPeople < 1) {
+        alert('Please enter a valid number of people (at least 1).');
+        return;
+    }
     if(currentEditingTrip){
         console.log(tripData);
     }

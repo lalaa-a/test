@@ -86,6 +86,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="people-count">Number of People</label>
+                    <input type="number" id="people-count" name="people_count" placeholder="How many people?" min="1" max="50" required>
+                </div>
+                
+                <div class="form-group">
                     <label>Trip Dates</label>
                     <div class="date-inputs">
                         <div>

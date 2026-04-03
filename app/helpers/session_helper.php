@@ -102,7 +102,7 @@ function clearUserSession() {
     $sessionKeys = [
         'user_id', 'user_email', 'user_fullname', 
         'user_account_type', 'user_profile_photo', 
-        'user_logged_in', 'user_login_time'
+        'user_logged_in', 'user_login_time', 'user_currency'
     ];
     
     foreach ($sessionKeys as $key) {

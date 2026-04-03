@@ -1,0 +1,21 @@
+1	userId	int			No	0		
+	2	account_type	enum('driver', 'guide', 'tourist', 'admin', 'site_...	utf8mb4_unicode_ci		No	None		
+	3	fullname	varchar(255)	utf8mb4_unicode_ci		No	None		
+	4	dob	date			No	None		
+	5	gender	varchar(20)	utf8mb4_unicode_ci		No	None		
+	6	phone	varchar(25)	utf8mb4_unicode_ci		No	None		
+	7	secondary_phone	varchar(25)	utf8mb4_unicode_ci		Yes	NULL		
+	8	address	text	utf8mb4_unicode_ci		No	None		
+	9	email	varchar(255)	utf8mb4_unicode_ci		No	None		
+	10	profile_photo	varchar(255)	utf8mb4_unicode_ci		Yes	NULL		
+	11	driver_data	json			Yes	NULL						
+	16	bio	text	utf8mb4_unicode_ci		Yes	NULL		
+	17	languages	varchar(500)	utf8mb4_unicode_ci		Yes	NULL		
+	18	instaAccount	varchar(255)	utf8mb4_unicode_ci		Yes	NULL		
+	19	facebookAccount	varchar(255)	utf8mb4_unicode_ci		Yes	NULL		
+	20	dlVerified	tinyint(1)			Yes	0			
+	22	tlVerified	tinyint(1)			Yes	0		
+	27	averageRating	decimal(3,2)			Yes	0.00		
+	28	profile_created_at	timestamp			Yes	CURRENT_TIMESTAMP		DEFAULT_GENERATED
+	29	profile_updated_at	timestamp		on update CURRENT_TIMESTAMP	Yes	CURRENT_TIMESTAMP		DEFAULT_GENERATED ON UPDATE CURRENT_TIMESTAMP
+	30	age	bigint			Yes	NULL		
