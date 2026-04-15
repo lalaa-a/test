@@ -50,6 +50,7 @@
         // Actions
         claimChatBtn: document.getElementById('claimChatBtn'),
         closeChatBtn: document.getElementById('closeChatBtn'),
+        deleteChatBtn: document.getElementById('deleteChatBtn'),
         claimOverlay: document.getElementById('claimOverlay'),
         claimOverlayBtn: document.getElementById('claimOverlayBtn'),
 
@@ -109,6 +110,28 @@
         if (elements.closeChatBtn) {
             elements.closeChatBtn.addEventListener('click', closeChat);
         }
+
+        // Delete chat button
+        if (elements.deleteChatBtn) {
+            elements.deleteChatBtn.addEventListener('click', deleteChat);
+        }
+
+        // Delete message (event delegation)
+        if (elements.chatMessages) {
+            elements.chatMessages.addEventListener('click', (e) => {
+                const btn = e.target.closest('.message-delete-btn');
+                if (!btn) return;
+                const messageId = btn.dataset.messageId;
+                if (!messageId) return;
+                deleteMessage(messageId);
+            });
+        }
+    }
+
+    function canDeleteInCurrentChat() {
+        if (isAdmin || !currentChatId) return false;
+        const chat = chatsList.find(c => parseInt(c.id) === currentChatId);
+        return !!(chat && chat.is_mine);
     }
 
     // Handle Filter Change
@@ -284,6 +307,7 @@
         if (isAdmin) {
             elements.claimChatBtn.style.display = 'none';
             elements.closeChatBtn.style.display = 'none';
+            if (elements.deleteChatBtn) elements.deleteChatBtn.style.display = 'none';
             elements.chatInputArea.style.display = 'none';
             elements.claimOverlay.style.display = 'none';
             return;
@@ -293,18 +317,21 @@
             // Chat is claimed by current moderator
             elements.claimChatBtn.style.display = 'none';
             elements.closeChatBtn.style.display = 'flex';
+            if (elements.deleteChatBtn) elements.deleteChatBtn.style.display = 'flex';
             elements.chatInputArea.style.display = 'block';
             elements.claimOverlay.style.display = 'none';
         } else if (!isClaimed) {
             // Chat is open - show claim overlay
             elements.claimChatBtn.style.display = 'flex';
             elements.closeChatBtn.style.display = 'none';
+            if (elements.deleteChatBtn) elements.deleteChatBtn.style.display = 'none';
             elements.chatInputArea.style.display = 'none';
             elements.claimOverlay.style.display = 'flex';
         } else {
             // Claimed by another moderator (shouldn't see this)
             elements.claimChatBtn.style.display = 'none';
             elements.closeChatBtn.style.display = 'none';
+            if (elements.deleteChatBtn) elements.deleteChatBtn.style.display = 'none';
             elements.chatInputArea.style.display = 'none';
             elements.claimOverlay.style.display = 'none';
         }
@@ -353,6 +380,7 @@
             const isOutgoing = msg.sender_type === 'Moderator';
             const initial = msg.sender_name ? msg.sender_name.charAt(0).toUpperCase() : '?';
             const time = formatTime(msg.created_at);
+            const showDelete = canDeleteInCurrentChat();
 
             html += `
                 <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}">
@@ -360,6 +388,7 @@
                     <div class="message-content">
                         <p class="message-text">${escapeHtml(msg.message)}</p>
                         <span class="message-time">${time}</span>
+                        ${showDelete ? `<button type="button" class="message-delete-btn" data-message-id="${msg.id}">Delete</button>` : ''}
                     </div>
                 </div>
             `;
@@ -367,6 +396,63 @@
 
         elements.chatMessages.innerHTML = html;
         scrollToBottom();
+    }
+
+    async function deleteMessage(messageId) {
+        if (!canDeleteInCurrentChat()) return;
+        if (!confirm('Delete this message?')) return;
+
+        try {
+            const response = await fetch(`${URL_ROOT}/helpc/deleteMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message_id: messageId })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                await loadMessages(currentChatId);
+                showToast('Message deleted', 'success');
+            } else {
+                showToast(data.message || 'Could not delete message', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            showToast('Error deleting message', 'error');
+        }
+    }
+
+    async function deleteChat() {
+        if (!canDeleteInCurrentChat()) return;
+        if (!confirm('Delete this chat and all its messages?')) return;
+
+        try {
+            const response = await fetch(`${URL_ROOT}/helpc/deleteChat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                showToast('Chat deleted', 'success');
+
+                // Remove from list + reset UI
+                chatsList = chatsList.filter(c => parseInt(c.id) !== currentChatId);
+                currentChatId = null;
+                currentChatStatus = null;
+                elements.activeChatContainer.style.display = 'none';
+                elements.chatEmptyState.style.display = 'flex';
+                updateChatCounts();
+                renderChatList();
+                stopMessagePolling();
+            } else {
+                showToast(data.message || 'Could not delete chat', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting chat:', error);
+            showToast('Error deleting chat', 'error');
+        }
     }
 
     // Scroll to Bottom

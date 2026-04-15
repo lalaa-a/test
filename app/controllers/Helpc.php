@@ -113,8 +113,9 @@ class Helpc extends Controller {
                 }
             }
 
-            if ($this->helpMessageModel->addMessage($chatId, $senderId, $senderType, $message)) {
-                echo json_encode(['status' => 'success']);
+            $messageId = $this->helpMessageModel->addMessage($chatId, $senderId, $senderType, $message);
+            if ($messageId) {
+                echo json_encode(['status' => 'success', 'message_id' => $messageId]);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
             }
@@ -335,6 +336,127 @@ class Helpc extends Controller {
             ]);
         } else {
             echo json_encode(['status' => 'no_chat']);
+        }
+    }
+
+    // Delete a single message
+    // - Moderator: can delete messages inside chats assigned to them
+    // - Regular user: can delete only their own messages inside their own chat
+    public function deleteMessage() {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $messageId = $data['message_id'] ?? null;
+
+        if (!$messageId) {
+            echo json_encode(['status' => 'error', 'message' => 'Message ID required']);
+            return;
+        }
+
+        $userId = $_SESSION['user_id'] ?? null;
+        $accountType = $_SESSION['user_account_type'] ?? null;
+
+        if (!$userId || !$accountType) {
+            echo json_encode(['status' => 'error', 'message' => 'Not logged in']);
+            return;
+        }
+
+        // Admin remains view-only
+        if ($this->isAdmin($accountType)) {
+            echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+            return;
+        }
+
+        $message = $this->helpMessageModel->getMessageById($messageId);
+        if (!$message) {
+            echo json_encode(['status' => 'error', 'message' => 'Message not found']);
+            return;
+        }
+
+        $chat = $this->helpChatModel->getChatById($message->chat_id);
+        if (!$chat) {
+            echo json_encode(['status' => 'error', 'message' => 'Chat not found']);
+            return;
+        }
+
+        if ($this->isModerator($accountType)) {
+            // Must be assigned to this chat
+            if ($chat->status !== 'Assigned' || $chat->assigned_moderator_id != $userId) {
+                echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+                return;
+            }
+        } else {
+            // Regular user: chat must belong to them
+            if ($chat->user_id != $userId) {
+                echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+                return;
+            }
+
+            // Can only delete own messages
+            $userType = $this->mapAccountType($accountType);
+            if ($message->sender_id != $userId || $message->sender_type !== $userType) {
+                echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+                return;
+            }
+        }
+
+        if ($this->helpMessageModel->deleteMessage($messageId)) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Could not delete message']);
+        }
+    }
+
+    // Delete a chat (hard delete)
+    // Moderator only: can delete chats assigned to them.
+    public function deleteChat() {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $chatId = $data['chat_id'] ?? null;
+
+        if (!$chatId) {
+            echo json_encode(['status' => 'error', 'message' => 'Chat ID required']);
+            return;
+        }
+
+        $userId = $_SESSION['user_id'] ?? null;
+        $accountType = $_SESSION['user_account_type'] ?? null;
+
+        if (!$userId || !$accountType) {
+            echo json_encode(['status' => 'error', 'message' => 'Not logged in']);
+            return;
+        }
+
+        if (!$this->isModerator($accountType)) {
+            echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+            return;
+        }
+
+        $chat = $this->helpChatModel->getChatById($chatId);
+        if (!$chat) {
+            echo json_encode(['status' => 'error', 'message' => 'Chat not found']);
+            return;
+        }
+
+        if ($chat->status !== 'Assigned' || $chat->assigned_moderator_id != $userId) {
+            echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+            return;
+        }
+
+        // Delete messages first (no FK cascade assumed)
+        $this->helpMessageModel->deleteMessagesByChatId($chatId);
+
+        if ($this->helpChatModel->deleteChat($chatId)) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Could not delete chat']);
         }
     }
 }

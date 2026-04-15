@@ -87,6 +87,10 @@
                             <i class="fas fa-check-circle"></i>
                             <span>Close</span>
                         </button>
+                        <button class="action-btn delete-btn" id="deleteChatBtn" title="Delete this chat" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            <span>Delete</span>
+                        </button>
                     </div>
                 </div>
 

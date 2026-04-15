@@ -14,7 +14,17 @@ class HelpMessage {
         $this->db->bind(':sender_id', $senderId);
         $this->db->bind(':sender_type', $senderType);
         $this->db->bind(':message', $message);
-        return $this->db->execute();
+        if ($this->db->execute()) {
+            return (int)$this->db->lastInsertId();
+        }
+        return false;
+    }
+
+    // Get a single message by ID
+    public function getMessageById($messageId) {
+        $this->db->query('SELECT * FROM help_messages WHERE id = :id');
+        $this->db->bind(':id', $messageId);
+        return $this->db->single();
     }
 
     // Get messages for a chat
@@ -91,6 +101,22 @@ class HelpMessage {
         }
         $this->db->bind(':chat_id', $chatId);
         return $this->db->execute();
+    }
+
+    // Delete a single message by ID
+    public function deleteMessage($messageId) {
+        $this->db->query('DELETE FROM help_messages WHERE id = :id');
+        $this->db->bind(':id', $messageId);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
+
+    // Delete all messages in a chat
+    public function deleteMessagesByChatId($chatId) {
+        $this->db->query('DELETE FROM help_messages WHERE chat_id = :chat_id');
+        $this->db->bind(':chat_id', $chatId);
+        $this->db->execute();
+        return $this->db->rowCount();
     }
 }
 

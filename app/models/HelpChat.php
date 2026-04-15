@@ -107,4 +107,12 @@ class HelpChat {
         // Assigned chats only to the assigned moderator
         return $chat->assigned_moderator_id == $moderatorId;
     }
+
+    // Delete a chat by ID (hard delete)
+    public function deleteChat($chatId) {
+        $this->db->query('DELETE FROM help_chats WHERE id = :id');
+        $this->db->bind(':id', $chatId);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
 }

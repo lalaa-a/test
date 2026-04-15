@@ -634,6 +634,31 @@
     text-align: right;
 }
 
+.message-delete-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.8;
+}
+
+.message-delete-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.chat-actions .action-btn.delete-btn {
+    border: 1px solid var(--support-danger);
+    color: var(--support-danger);
+}
+
+.chat-actions .action-btn.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.08);
+}
+
 /* Date Divider */
 .date-divider {
     display: flex;
