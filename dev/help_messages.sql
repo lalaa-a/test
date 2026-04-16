@@ -1,31 +1,10 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: localhost
--- Generation Time: Apr 15, 2026 at 10:03 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `tripingoo`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `help_messages`
---
 
 CREATE TABLE `help_messages` (
   `id` bigint(20) NOT NULL,
@@ -37,9 +16,7 @@ CREATE TABLE `help_messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `help_messages`
---
+
 
 INSERT INTO `help_messages` (`id`, `chat_id`, `sender_id`, `sender_type`, `message`, `is_read`, `created_at`) VALUES
 (1, 1, 2, 'Traveller', 'hello', 1, '2026-02-07 12:49:50'),
@@ -216,39 +193,18 @@ INSERT INTO `help_messages` (`id`, `chat_id`, `sender_id`, `sender_type`, `messa
 (186, 33, 2, 'Driver', 'hihihi\'', 1, '2026-04-15 07:09:53'),
 (187, 33, 19, 'Moderator', '-0-0-', 0, '2026-04-15 07:10:10');
 
---
--- Indexes for dumped tables
---
 
---
--- Indexes for table `help_messages`
---
 ALTER TABLE `help_messages`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_chat` (`chat_id`),
   ADD KEY `idx_sender` (`sender_id`);
 
---
--- AUTO_INCREMENT for dumped tables
---
 
---
--- AUTO_INCREMENT for table `help_messages`
---
 ALTER TABLE `help_messages`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=188;
 
---
--- Constraints for dumped tables
---
 
---
--- Constraints for table `help_messages`
---
 ALTER TABLE `help_messages`
   ADD CONSTRAINT `help_messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `help_chats` (`id`) ON DELETE CASCADE;
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

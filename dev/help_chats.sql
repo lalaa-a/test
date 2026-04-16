@@ -1,31 +1,9 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: localhost
--- Generation Time: Apr 15, 2026 at 10:03 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `tripingoo`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `help_chats`
---
 
 CREATE TABLE `help_chats` (
   `id` bigint(20) NOT NULL,
@@ -37,9 +15,6 @@ CREATE TABLE `help_chats` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `help_chats`
---
 
 INSERT INTO `help_chats` (`id`, `user_id`, `user_type`, `status`, `assigned_moderator_id`, `created_at`, `updated_at`) VALUES
 (1, 2, 'Traveller', 'Closed', 19, '2026-02-07 12:49:45', '2026-02-09 04:55:55'),
@@ -74,30 +49,15 @@ INSERT INTO `help_chats` (`id`, `user_id`, `user_type`, `status`, `assigned_mode
 (31, 12, 'Driver', 'Closed', 19, '2026-04-15 06:22:16', '2026-04-15 06:41:32'),
 (33, 2, 'Driver', 'Closed', 19, '2026-04-15 07:09:20', '2026-04-15 07:29:55');
 
---
--- Indexes for dumped tables
---
 
---
--- Indexes for table `help_chats`
---
 ALTER TABLE `help_chats`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_user` (`user_id`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_moderator` (`assigned_moderator_id`);
 
---
--- AUTO_INCREMENT for dumped tables
---
 
---
--- AUTO_INCREMENT for table `help_chats`
---
 ALTER TABLE `help_chats`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

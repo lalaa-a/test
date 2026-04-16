@@ -1,6 +1,3 @@
-               
--- Table: help_chats
--- store  chat session between users and. moderators
 
 
 CREATE TABLE IF NOT EXISTS help_chats (
@@ -20,7 +17,6 @@ CREATE TABLE IF NOT EXISTS help_chats (
     INDEX idx_created (created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- individual chats karana tika store krnnwa
 
 CREATE TABLE IF NOT EXISTS help_messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +34,6 @@ CREATE TABLE IF NOT EXISTS help_messages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Trigger: Admin has read only steps 
 
 DELIMITER $$
 
@@ -56,7 +51,6 @@ DELIMITER ;
 
 
 
--- Update help chat eka after new msg comming
 -
 DELIMITER $$
 
@@ -72,7 +66,6 @@ END$$
 DELIMITER ;
 
 
--- meken chat summery ekak.driver/guide/traveller 
 
 CREATE OR REPLACE VIEW view_chat_summaries AS
 SELECT 
