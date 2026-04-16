@@ -283,7 +283,7 @@
         elements.chatUserName.textContent = chat.user_name || 'Unknown User';
         elements.chatUserType.textContent = chat.user_type;
         elements.chatUserType.className = `user-type-badge ${userType}`;
-        elements.chatIdDisplay.textContent = `#${chatId}`;
+        //elements.chatIdDisplay.textContent = `#${chatId}`;
 
         // Update action buttons based on status and role
         updateActionButtons(chat);

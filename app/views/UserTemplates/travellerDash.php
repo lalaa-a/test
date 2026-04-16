@@ -1169,13 +1169,130 @@
                 closeDropdown();
             }
         }
+         function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10001;
+                animation: slideInRight 0.3s ease;
+                max-width: 400px;
+            `;
+
+            // Set colors based on type
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Make it globally available
+        window.showNotification = showNotification;
 
 
     </script>
 
-    <!-- Help Widget & Chat -->
-    <?php $helpRoute = 'reguser/help'; include APP_ROOT . '/views/Help/helpWidget.php'; ?>
-    <?php include APP_ROOT . '/views/Help/chatWidget.php'; ?>
+    
+     <!-- Help Widget CSS -->
+    <link rel="stylesheet" href="<?php echo URL_ROOT.'/public/css/helper/helpWidget.css'?>">
+
+    <!-- Help Widget Container -->
+    <div class="help-widget-container">
+        <div class="help-options-popup" id="helpOptionsPopup">
+            <div class="help-popup-header">
+                <h4><i class="fas fa-hands-helping"></i> How can we help?</h4>
+            </div>
+            <div class="help-option-item" id="openChatBtn">
+                <div class="help-option-icon chat-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Chat with Us</h5>
+                    <p>Chat with our support team</p>
+                </div>
+            </div>
+            <a href="<?php echo URL_ROOT.'/reguser/help'?>" class="help-option-item">
+                <div class="help-option-icon center-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="help-option-text">
+                    <h5>Help Center</h5>
+                    <p>Browse FAQs & guides</p>
+                </div>
+            </a>
+        </div>
+        <button class="floating-help-btn" id="helpBtn" title="Need Help?">
+            <img src="<?php echo IMG_ROOT.'/help/support.png'?>" alt="Help">
+        </button>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="agent-avatar">
+                    <i class="fas fa-headset"></i>
+                    <span class="status-dot"></span>
+                </div>
+                <div class="agent-details">
+                    <h3>Travel Support</h3>
+                    <p>Online | Typically replies in minutes</p>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <i class="fas fa-times" id="closeChatBtn"></i>
+            </div>
+        </div>
+        <div class="chat-body">
+            <div class="chat-messages" id="chatMessages">
+                <div class="date-divider"><span>Today</span></div>
+                <div class="message support-message">
+                    <div class="message-content">
+                        <p>Hello there! 👋 Welcome to Tripingoo Travel Support. How can we help you today?</p>
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button class="send-btn" id="chatSendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Widget JS -->
+    <script src="<?php echo URL_ROOT.'/public/js/helper/helpWidget.js'?>"></script>
 </body>
 </html>
 

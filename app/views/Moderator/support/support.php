@@ -74,7 +74,7 @@
                             <h3 id="chatUserName">User Name</h3>
                             <div class="user-meta">
                                 <span class="user-type-badge" id="chatUserType">Traveller</span>
-                                <span class="chat-id" id="chatIdDisplay">#Chat ID</span>
+                                <span class="chat-id" id="chatIdDisplay"></span>
                             </div>
                         </div>
                     </div>
