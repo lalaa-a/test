@@ -74,7 +74,7 @@
                             <h3 id="chatUserName">User Name</h3>
                             <div class="user-meta">
                                 <span class="user-type-badge" id="chatUserType">Traveller</span>
-                                <span class="chat-id" id="chatIdDisplay">#Chat ID</span>
+                                <span class="chat-id" id="chatIdDisplay"></span>
                             </div>
                         </div>
                     </div>
@@ -86,6 +86,10 @@
                         <button class="action-btn close-btn" id="closeChatBtn" title="Close this chat">
                             <i class="fas fa-check-circle"></i>
                             <span>Close</span>
+                        </button>
+                        <button class="action-btn delete-btn" id="deleteChatBtn" title="Delete this chat" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            <span>Delete</span>
                         </button>
                     </div>
                 </div>

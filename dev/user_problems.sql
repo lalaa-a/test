@@ -1,4 +1,3 @@
--- User Problems table for Help Center issue submissions
 CREATE TABLE IF NOT EXISTS user_problems (
     problemId INT AUTO_INCREMENT PRIMARY KEY,
     userId INT NOT NULL,

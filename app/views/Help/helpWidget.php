@@ -1,23 +1,5 @@
 <?php
-/**
- * Help Widget - Floating Help Button with Popup Options
- * 
- * A reusable floating help button that shows "Chat with Us" and "Help Center" options.
- * Include this in any dashboard/page where you want the help button.
- * 
- * Usage:
- *   <?php $helpRoute = 'reguser/help'; include APP_ROOT . '/views/Help/helpWidget.php'; ?>
- * 
- * Required variable:
- *   $helpRoute (string) - Route for the Help Center link (e.g., 'reguser/help', 'guide/help', 'driver/help')
- * 
- * Dependencies:
- *   - public/css/helper/helpWidget.css
- *   - public/img/help/support.png
- *   - Should include chatWidget.php after this for the chat to work
- */
 
-// Default fallback if $helpRoute is not set
 if (!isset($helpRoute)) {
     $helpRoute = 'helpc';
 }

@@ -120,7 +120,7 @@
         console.log(`[SEND] Sending message to chat #${currentChatId}: "${text}"`);
 
         // Optimistically show the message
-        addUserMessage(text);
+        const optimisticEl = addUserMessage(text);
         chatInput.value = '';
 
         try {
@@ -141,6 +141,17 @@
                 showSystemMessage('Failed to send message. Please try again.');
             } else {
                 console.log('[SEND] Message sent successfully');
+                if (optimisticEl && data.message_id) {
+                    optimisticEl.dataset.messageId = data.message_id;
+                    const deleteBtn = optimisticEl.querySelector('.delete-message-btn');
+                    if (!deleteBtn) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'delete-message-btn';
+                        btn.textContent = 'Delete';
+                        optimisticEl.appendChild(btn);
+                    }
+                }
             }
         } catch (error) {
             console.error('[SEND] Error sending message:', error);
@@ -207,7 +218,7 @@
                 addModeratorMessage(msg.message, msg.sender_name, msg.created_at);
             } else {
                 console.log(`[RENDER] Adding as user message`);
-                addUserMessage(msg.message, msg.created_at);
+                addUserMessage(msg.message, msg.created_at, msg.id);
             }
             lastMessageId = Math.max(lastMessageId, parseInt(msg.id));
         });
@@ -235,16 +246,25 @@
     }
 
     // Add user message
-    function addUserMessage(text, timestamp = null) {
+    function addUserMessage(text, timestamp = null, messageId = null) {
         const time = timestamp ? formatTime(timestamp) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message user-message';
+        if (messageId) msgDiv.dataset.messageId = messageId;
         msgDiv.innerHTML = `
             <div class="message-content"><p>${escapeHtml(text)}</p></div>
             <span class="message-time">${time}</span>
         `;
+        if (messageId) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'delete-message-btn';
+            btn.textContent = 'Delete';
+            msgDiv.appendChild(btn);
+        }
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return msgDiv;
     }
 
     // Add moderator message
@@ -330,6 +350,38 @@
     // Bind events
     if (chatSendBtn) {
         chatSendBtn.addEventListener('click', sendChatMessage);
+    }
+
+    // Delete message (event delegation)
+    if (chatMessages) {
+        chatMessages.addEventListener('click', async function (e) {
+            const btn = e.target.closest('.delete-message-btn');
+            if (!btn) return;
+
+            const msgEl = btn.closest('.message.user-message');
+            const messageId = msgEl ? msgEl.dataset.messageId : null;
+            if (!messageId) return;
+
+            if (!confirm('Delete this message?')) return;
+
+            try {
+                const response = await fetch(`${URL_ROOT}/helpc/deleteMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message_id: messageId })
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    msgEl.remove();
+                } else {
+                    showSystemMessage(data.message || 'Could not delete message');
+                }
+            } catch (error) {
+                console.error('Error deleting message:', error);
+                showSystemMessage('Could not delete message');
+            }
+        });
     }
 
     if (chatInput) {
