@@ -25,4 +25,20 @@
 
     // ROOT_PATH real root
     define('ROOT_PATH', dirname(dirname(dirname(__FILE__))));
+
+    // Email Configuration
+    define('SMTP_HOST', 'smtp.gmail.com');
+    define('SMTP_USERNAME', 'lwravishan@gmail.com'); // Replace with your email
+    define('SMTP_PASSWORD', 'qfmq spro uelu gerd'); // Replace with your app password
+    define('SMTP_PORT', 587);
+    define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
+    define('FROM_EMAIL', 'lwravishan@gmail.com'); // Must match SMTP_USERNAME for Gmail
+    define('FROM_NAME', 'Tripingoo');
+    define('SMTP_DEBUG', 0); // Set to 2 for detailed debugging
+
+    // PayHere Configuration
+    define('PAYHERE_MERCHANT_ID', '1235176');
+    define('PAYHERE_MERCHANT_SECRET', 'MjYxNjc3NTk5NDEwNDYxNjg1MzA0MTcwOTc4NjA2MzU3Njk2ODk2NQ==');
+    define('PAYHERE_CURRENCY', 'LKR');
+    define('PAYHERE_CHECKOUT_URL', 'https://sandbox.payhere.lk/pay/checkout');
 ?>

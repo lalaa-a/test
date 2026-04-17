@@ -24,8 +24,8 @@
         });
     });
 
-    setTimeout(() => {
-        loadSubtabContent('subtabTravelSpots');
+    setTimeout(async () => {
+        await loadSubtabContent('subtabTravelSpots');
     }, 1000);
 
 

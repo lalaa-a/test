@@ -17,10 +17,10 @@ class UserModel {
     public function create($data) {
         $query = "INSERT INTO users (
             account_type, fullname, language, dob, gender, phone, secondary_phone,
-            address, email, password, profile_photo, driver_data, guide_tourist_data
+            address, email, password, profile_photo, driver_data, guide_tourist_data, currency_code
         ) VALUES (
             :account_type, :fullname, :language, :dob, :gender, :phone, :secondary_phone,
-            :address, :email, :password, :profile_photo, :driver_data, :guide_tourist_data
+            :address, :email, :password, :profile_photo, :driver_data, :guide_tourist_data, :currency_code
         )";
 
         $this->db->query($query);
@@ -37,6 +37,7 @@ class UserModel {
         $this->db->bind(':profile_photo', $data['profile_photo']);
         $this->db->bind(':driver_data', $data['driver_data'] ?? null);
         $this->db->bind(':guide_tourist_data', $data['guide_tourist_data'] ?? null);
+        $this->db->bind(':currency_code', $data['currency_code'] ?? null);
 
         return $this->db->execute();
     }
@@ -343,38 +344,6 @@ class UserModel {
         */
 
         return null;
-    }
-
-    public function getDashboardStatistics() {
-        $stats = [];
-        
-        // Count total trips (completed)
-        $this->db->query("SELECT COUNT(*) as total FROM created_trips WHERE status = 'completed'");
-        $result = $this->db->single();
-        $stats['trips_completed'] = $result ? $result->total : 0;
-        
-        // Count total users (all account types except admin)
-        $this->db->query("SELECT COUNT(*) as total FROM users WHERE account_type != 'admin'");
-        $result = $this->db->single();
-        $stats['total_users'] = $result ? $result->total : 0;
-        
-        // Count total bookings/trips (all statuses)
-        $this->db->query("SELECT COUNT(*) as total FROM created_trips");
-        $result = $this->db->single();
-        $stats['total_bookings'] = $result ? $result->total : 0;
-        
-        // Calculate total earnings from completed transactions
-        $this->db->query("SELECT SUM(amount) as total FROM transactions WHERE transaction_status = 'completed'");
-        $result = $this->db->single();
-        $stats['total_earnings'] = $result && $result->total ? $result->total : 0;
-        
-        return $stats;
-    }
-
-    public function getRecentNotifications($limit = 5) {
-        $this->db->query("SELECT * FROM notifications ORDER BY created_at DESC LIMIT :limit");
-        $this->db->bind(':limit', $limit);
-        return $this->db->resultSet();
     }
 
 }

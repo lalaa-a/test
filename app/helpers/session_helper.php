@@ -102,7 +102,7 @@ function clearUserSession() {
     $sessionKeys = [
         'user_id', 'user_email', 'user_fullname', 
         'user_account_type', 'user_profile_photo', 
-        'user_logged_in', 'user_login_time'
+        'user_logged_in', 'user_login_time', 'user_currency'
     ];
     
     foreach ($sessionKeys as $key) {
@@ -145,7 +145,7 @@ function redirectIfLoggedIn($redirect_url = '/dashboard') {
                 $redirect_url = '/dashboard/guide';
                 break;
             case 'tourist':
-                $redirect_url = '/User/account';
+                $redirect_url = '/RegUser/home';
                 break;
         }
         header('Location: ' . URL_ROOT . $redirect_url);

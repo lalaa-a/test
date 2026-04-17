@@ -1,7 +1,8 @@
 <?php
     require_once '../app/helpers/session_helper.php';
     require_once '../app/helpers/upload_helper.php';
-    
+    require_once '../app/helpers/mail_helper.php';
+
     class User extends Controller{
         
         private $userModel;
@@ -81,6 +82,10 @@
             redirectIfLoggedIn();
             
             if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                error_log("Registration function called");
+                error_log("POST data: " . print_r($_POST, true));
+                error_log("FILES data: " . print_r($_FILES, true));
+                
                 header('Content-Type: application/json');
 
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -98,6 +103,7 @@
                 $secondaryPhone = trim($_POST['secondary_phone'] ?? '');
                 $address = trim($_POST['address'] ?? '');
                 $email = trim($_POST['email'] ?? '');
+                $nic_passport = trim($_POST['nic_passport'] ?? '');
                 $password = $_POST['password'] ?? '';
                 $confirmPassword = $_POST['confirm_password'] ?? '';
 
@@ -132,8 +138,14 @@
                     return;
                 }
 
+                // Check if email is verified
+                if (!isset($_SESSION['email_verified']) || $_SESSION['email_verified'] !== $email) {
+                    echo json_encode(['success' => false, 'message' => 'Email verification required']);
+                    return;
+                }
+
                 // Upload profile photo
-                $profilePhoto = uploadFile($_FILES['profile_photo'] ?? null, 'profile');
+                $profilePhoto = uploadFile($_FILES['profile_photo'] ?? null,'/signup/profile','profile');
                 if (!$profilePhoto) {
                     echo json_encode(['success' => false, 'message' => 'Profile photo is required and must be a valid image (JPG/PNG, max 5MB)']);
                     return;
@@ -144,35 +156,29 @@
                 $guideTouristData = null;
 
                 if ($accountType === 'driver') {
-                    $vehicleNumber = trim($_POST['vehicle_number'] ?? '');
                     $licenseNumber = trim($_POST['license_number'] ?? '');
                     $licenseExpireDate = trim($_POST['license_expire_date'] ?? '');
 
-                    if (empty($vehicleNumber) || empty($licenseNumber) || empty($licenseExpireDate)) {
+                    if ( empty($licenseNumber) || empty($licenseExpireDate)) {
                         echo json_encode(['success' => false, 'message' => 'All driver fields are required']);
                         return;
                     }
 
-                    $licenseFront = uploadFile($_FILES['licenseFront'] ?? null, 'license_front');
-                    $licenseBack = uploadFile($_FILES['licenseBack'] ?? null, 'license_back');
-                    $vehicleDoc = uploadFile($_FILES['vehicleDoc'] ?? null, 'vehicle_doc');
-                    $insurance = uploadFile($_FILES['insurance'] ?? null, 'insurance');
-                    $idFront = uploadFile($_FILES['idFront'] ?? null, 'id_front');
-                    $idBack = uploadFile($_FILES['idBack'] ?? null, 'id_back');
-
-                    if (!$licenseFront || !$licenseBack || !$vehicleDoc || !$insurance || !$idFront || !$idBack) {
+                    $licenseFront = uploadFile($_FILES['licenseFront'] ?? null,'/signup/license','license_front',);
+                    $licenseBack = uploadFile($_FILES['licenseBack'] ?? null, '/signup/license','license_back',);
+                    $idFront = uploadFile($_FILES['idFront'] ?? null, '/signup/nic','nic_front_driver');
+                    $idBack = uploadFile($_FILES['idBack'] ?? null, '/signup/nic','nic_back_driver');
+                    if (!$licenseFront || !$licenseBack || !$idFront || !$idBack) {
                         echo json_encode(['success' => false, 'message' => 'All driver documents are required']);
                         return;
                     }
 
                     $driverData = json_encode([
-                        'vehicle_number' => $vehicleNumber,
                         'license_number' => $licenseNumber,
                         'license_expire_date' => $licenseExpireDate,
                         'license_front' => $licenseFront,
                         'license_back' => $licenseBack,
-                        'vehicle_doc' => $vehicleDoc,
-                        'insurance' => $insurance,
+                        'nic_passport' => $nic_passport,
                         'id_front' => $idFront,
                         'id_back' => $idBack
                     ]);
@@ -184,8 +190,8 @@
                         return;
                     }
 
-                    $nicFront = uploadFile($_FILES['nic_front'] ?? null, 'nic_front');
-                    $nicBack = uploadFile($_FILES['nic_back'] ?? null, 'nic_back');
+                    $nicFront = uploadFile($_FILES['nic_front'] ?? null, '/signup/nic','nic_front');
+                    $nicBack = uploadFile($_FILES['nic_back'] ?? null, '/signup/nic','nic_back');
 
                     if (!$nicFront || !$nicBack) {
                         echo json_encode(['success' => false, 'message' => 'Both NIC/Passport images are required']);
@@ -202,6 +208,16 @@
                 // Hash the password
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+                // Get currency for tourist accounts
+                $currency = 'USD'; // Default currency
+                if ($accountType === 'tourist') {
+                    $currency = trim($_POST['currency_code'] ?? '');
+                    if (empty($currency)) {
+                        echo json_encode(['success' => false, 'message' => 'Currency selection is required for tourists']);
+                        return;
+                    }
+                }
+
                 // Prepare data for model
                 $userData = [
                     'account_type' => $accountType,
@@ -216,7 +232,8 @@
                     'password' => $hashedPassword,
                     'profile_photo' => $profilePhoto,
                     'driver_data' => $driverData,
-                    'guide_tourist_data' => $guideTouristData
+                    'guide_tourist_data' => $guideTouristData,
+                    'currency_code' => $currency
                 ];
 
                 // Double-check email existence right before insert
@@ -227,6 +244,7 @@
 
                 try {
                     if ($this->userModel->create($userData)) {
+                        unset($_SESSION['email_verified']); // Clear email verification after successful registration
                         echo json_encode(['success' => true, 'message' => 'Account created successfully']);
                     } else {
                         echo json_encode(['success' => false, 'message' => 'Failed to create account. Please try again.']);
@@ -248,6 +266,97 @@
                 // Load view
                 $this->view('Users/register');
             }
+        }
+
+        public function sendOTP() {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $email = trim($input['email'] ?? '');
+
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['success' => false, 'message' => 'Valid email is required']);
+                return;
+            }
+
+            // Check if email already exists
+            if ($this->userModel->emailExists($email)) {
+                echo json_encode(['success' => false, 'message' => 'This email is already registered']);
+                return;
+            }
+
+            // Generate 6-digit OTP
+            $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            
+            // Store OTP in session with expiration (10 minutes)
+            $_SESSION['otp'] = [
+                'code' => $otp,
+                'email' => $email,
+                'expires' => time() + (10 * 60) // 10 minutes
+            ];
+
+            // Send OTP email using helper function
+            $result = sendOTPEmail($email, $otp);
+            
+            // Log the attempt
+            error_log("OTP send attempt for email: " . $email . " - Result: " . ($result['success'] ? 'Success' : 'Failed'));
+            
+            if ($result['success']) {
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Verification code sent successfully. Please check your email (including spam folder).'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Failed to send verification code. Please try again or contact support.',
+                    'debug_info' => $result['debug_error'] ?? 'No additional debug info'
+                ]);
+            }
+        }
+
+        public function verifyOTP() {
+            header('Content-Type: application/json');
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $email = trim($input['email'] ?? '');
+            $otp = trim($input['otp'] ?? '');
+
+            if (empty($email) || empty($otp)) {
+                echo json_encode(['success' => false, 'message' => 'Email and OTP are required']);
+                return;
+            }
+
+            // Check if OTP exists in session
+            if (!isset($_SESSION['otp']) || 
+
+                $_SESSION['otp']['code'] !== $otp) {
+                echo json_encode(['success' => false, 'message' => 'Invalid OTP']);
+                return;
+            }
+
+            // Check if OTP is expired
+            if (time() > $_SESSION['otp']['expires']) {
+                unset($_SESSION['otp']);
+                echo json_encode(['success' => false, 'message' => 'OTP has expired. Please request a new one.']);
+                return;
+            }
+
+            // OTP is valid
+            $_SESSION['email_verified'] = $email;
+            unset($_SESSION['otp']); // Clear the OTP after successful verification
+            
+            echo json_encode(['success' => true, 'message' => 'Email verified successfully']);
         }
 
         //For login a user
@@ -306,6 +415,11 @@
                     
                     setUserSession($userData);
 
+                    // Store currency in session for tourists
+                    if ($user->account_type === 'tourist' && !empty($user->currency_code)) {
+                        setSession('user_currency', $user->currency_code);
+                    }
+
                     // Handle remember me
                     if ($remember) {
                         /*
@@ -344,6 +458,7 @@
 
         //For logout a user
         public function logout() {
+        
             // Clear remember me cookie
             clearRememberMeCookie();
             
@@ -493,7 +608,7 @@
                 }
 
                 // Upload new profile photo
-                $profilePhoto = uploadFile($_FILES['profile_photo'], 'profile');
+                $profilePhoto = uploadFile($_FILES['profile_photo'], 'profile','/signup/profile');
                 if (!$profilePhoto) {
                     echo json_encode(['success' => false, 'message' => 'Failed to upload image. Please ensure it\'s a valid JPG/PNG file under 5MB']);
                     return;
@@ -532,7 +647,7 @@
                 case 'guide':
                     return URL_ROOT . '/dashboard/guide';
                 case 'tourist':
-                    return URL_ROOT . '/User/account';
+                    return URL_ROOT . '/RegUser/home';
                 case 'site_moderator':
                     return URL_ROOT . '/dashboard/siteModerator';
                 case 'business_manager':

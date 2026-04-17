@@ -46,12 +46,12 @@
             if (this.selectedCard) {
                 this.selectedCard.classList.add('selected');
             }
-            this.confirmModel.style.display = 'flex';
+            this.confirmModel.classList.add('show');
             this.selectingSpot.innerHTML = spotName;
         }
 
         hideModal() {
-            this.confirmModel.style.display = 'none';
+            this.confirmModel.classList.remove('show');
             if (this.selectedCard) {
                 this.selectedCard.classList.remove('selected');
             }
@@ -65,7 +65,19 @@
             if (window.opener && !window.opener.closed) {
                 if (window.location.origin === window.opener.location.origin) {
                     console.log('Same origin, calling function directly.');
-                    window.opener.tripEventListManager.handleSpotSelection(spotId);
+
+                    // Get spot data for the selected spot
+                    const spotData = this.getSpotData(spotId);
+
+                    // Check if called from guide spots or trip events
+                    if (window.opener.guideSpotsManager) {
+                        // Called from guide spots page
+                        window.opener.guideSpotsManager.handleSpotSelection(spotData);
+                    } else if (window.opener.tripEventListManager) {
+                        // Called from trip events page
+                        window.opener.tripEventListManager.handleSpotSelection(spotId);
+                    }
+
                     window.close();
                 }
             } else {
@@ -74,6 +86,24 @@
                     cardData: cardData
                 }, window.opener.location.origin);
             }
+        }
+
+        getSpotData(spotId) {
+            // Find the spot card and extract its data
+            const spotCard = document.getElementById(`spot-${spotId}`);
+            if (spotCard) {
+                const spotName = spotCard.querySelector('.place-title').textContent.trim();
+                return {
+                    id: spotId,
+                    name: spotName
+                };
+            }
+
+            // Fallback if card not found
+            return {
+                id: spotId,
+                name: this.selectedSpotName || `Spot ${spotId}`
+            };
         } 
         
     }

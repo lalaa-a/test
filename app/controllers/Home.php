@@ -12,11 +12,11 @@
         }
 
         public function trips() {
-            $this->view('Explore/trending');
+            $this->view('pay');
         }
 
         public function dest() {
-            $this->view('Explore/packages');
+            $this->view('landing');
         }
 
         public function drive() {

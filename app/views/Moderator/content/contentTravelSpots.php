@@ -5,7 +5,7 @@
             <h1 class="page-title">Travel Spots Management</h1>
             <p class="page-subtitle">Manage and organize travel destinations</p>
         </div>
-        <button id="add-main-filter-btn" class="add-main-filter-btn">
+        <button id="add-main-filter-btn" class="btn-add-vehicle">
             <i class="fas fa-plus"></i>
             Add Travel Spot
         </button>
@@ -13,19 +13,17 @@
 </div>
 
 <!-- Travel Spot Popup -->
-<div id="travel-spot-popup" class="popup-overlay">
-    <div class="popup-content">
-        <div class="popup-header">
-            <h2>Add Travel Spot</h2>
-            <button class="popup-close" id="popup-close">
-                <i class="fas fa-times"></i>
-            </button>
+<div id="travel-spot-popup" class="modal">
+    <div class="modal-content travel-spot-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus"></i> Add Travel Spot</h3>
+            <button class="modal-close" id="popup-close">&times;</button>
         </div>
-
-        <form id="travel-spot-form" class="travel-spot-form">
-            <!-- Basic Information -->
-            <div class="form-section">
-                <h3 class="section-title">Basic Information</h3>
+        <div class="modal-body">
+            <form id="travel-spot-form" class="travel-spot-form">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="spotName">Spot Name *</label>
@@ -40,9 +38,9 @@
                 </div>
             </div>
 
-            <!-- Location Information -->
-            <div class="form-section">
-                <h3 class="section-title">Location</h3>
+                <!-- Location Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-map-marker-alt"></i> Location</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="province">Province *</label>
@@ -93,23 +91,19 @@
                 </div>
             </div>
 
-            <div class="form-section">
-                <h3 class="section-title">Itinerary</h3>
+                <div class="form-section">
+                    <h4><i class="fas fa-route"></i> Itinerary</h4>
                     <div id="autocomplete-container"> </div>
                     
-                    <div id="itinerary" class="selected-nearby" style="margin: 5px;">
-                            <!-- Selected locations spots will appear here -->
-                    </div>
-
                     <div id="map" class="location-map"></div>
                     <div id="itinerary" class="selected-nearby">
                             <!-- Selected locations spots will appear here -->
                     </div>       
             </div>
 
-            <!-- Timing Information -->
-            <div class="form-section">
-                <h3 class="section-title">Timing Information</h3>
+                <!-- Timing Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-clock"></i> Timing Information</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="bestTimeFrom">Best Time From *</label>
@@ -156,9 +150,9 @@
                 </div>
             </div>
 
-            <!-- Practical Information -->
-            <div class="form-section">
-                <h3 class="section-title">Practical Information</h3>
+                <!-- Practical Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-ticket-alt"></i> Practical Information</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="ticketPriceLocal">Ticket Price (Local) - LKR</label>
@@ -187,9 +181,9 @@
                 </div>
             </div>
 
-            <!-- Accessibility & Facilities -->
-            <div class="form-section">
-                <h3 class="section-title">Accessibility & Facilities</h3>
+                <!-- Accessibility & Facilities -->
+                <div class="form-section">
+                    <h4><i class="fas fa-wheelchair"></i> Accessibility & Facilities</h4>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="accessibility">Accessibility</label>
@@ -208,9 +202,9 @@
                 </div>
             </div>
 
-            <!-- Subfilters -->
-            <div class="form-section">
-                <h3 class="section-title">Subfilters</h3>
+                <!-- Subfilters -->
+                <div class="form-section">
+                    <h4><i class="fas fa-filter"></i> Subfilters</h4>
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label for="subfilter-search">Search and Add Subfilters *</label>
@@ -230,56 +224,181 @@
                 </div>
             </div>
 
-            <!-- Photos -->
-            <div class="form-section">
-                <h3 class="section-title">Photos</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Photo 1 *</label>
-                        <div class="photo-upload">
-                            <input type="file" id="photo1" accept="image/*" required>
-                            <div class="photo-preview" id="photo1-preview">
-                                <i class="fas fa-camera"></i>
-                                <span>Click to upload</span>
-                            </div>
-                        </div>
+                <!-- Photos -->
+                <div class="form-section">
+                    <h4><i class="fas fa-camera"></i> Photos</h4>
+                    <div class="upload-instructions">
+                        <p><i class="fas fa-info-circle"></i> Upload up to 10 photos to showcase the travel spot. The first photo will be featured as the main image.</p>
                     </div>
-                    <div class="form-group">
-                        <label>Photo 2</label>
-                        <div class="photo-upload">
-                            <input type="file" id="photo2" accept="image/*">
-                            <div class="photo-preview" id="photo2-preview">
-                                <i class="fas fa-camera"></i>
-                                <span>Click to upload</span>
+                    
+                    <div class="photo-upload-grid">
+                        <!-- Photo Upload Slots -->
+                        <div class="photo-upload-slot" data-slot="1">
+                            <div class="upload-preview" id="uploadPreview1">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Main Photo</p>
+                                    <span class="upload-hint">Recommended: 1200x800px</span>
+                                </div>
                             </div>
+                            <input type="file" id="photoUpload1" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload1">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="1" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Photo 3</label>
-                        <div class="photo-upload">
-                            <input type="file" id="photo3" accept="image/*">
-                            <div class="photo-preview" id="photo3-preview">
-                                <i class="fas fa-camera"></i>
-                                <span>Click to upload</span>
+
+                        <div class="photo-upload-slot" data-slot="2">
+                            <div class="upload-preview" id="uploadPreview2">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 2</p>
+                                </div>
                             </div>
+                            <input type="file" id="photoUpload2" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload2">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="2" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Photo 4</label>
-                        <div class="photo-upload">
-                            <input type="file" id="photo4" accept="image/*">
-                            <div class="photo-preview" id="photo4-preview">
-                                <i class="fas fa-camera"></i>
-                                <span>Click to upload</span>
+
+                        <div class="photo-upload-slot" data-slot="3">
+                            <div class="upload-preview" id="uploadPreview3">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 3</p>
+                                </div>
                             </div>
+                            <input type="file" id="photoUpload3" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload3">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="3" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="4">
+                            <div class="upload-preview" id="uploadPreview4">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 4</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload4" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload4">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="4" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="5">
+                            <div class="upload-preview" id="uploadPreview5">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 5</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload5" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload5">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="5" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="6">
+                            <div class="upload-preview" id="uploadPreview6">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 6</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload6" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload6">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="6" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="7">
+                            <div class="upload-preview" id="uploadPreview7">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 7</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload7" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload7">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="7" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="8">
+                            <div class="upload-preview" id="uploadPreview8">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 8</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload8" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload8">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="8" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="9">
+                            <div class="upload-preview" id="uploadPreview9">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 9</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload9" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload9">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="9" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="photo-upload-slot" data-slot="10">
+                            <div class="upload-preview" id="uploadPreview10">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Photo 10</p>
+                                </div>
+                            </div>
+                            <input type="file" id="photoUpload10" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload-photo" data-target="photoUpload10">
+                                <i class="fas fa-plus"></i> Upload
+                            </button>
+                            <button type="button" class="btn-remove-photo" data-slot="10" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Nearby Spots -->
-            <div class="form-section">
-                <h3 class="section-title">Nearby Spots</h3>
+                <!-- Nearby Spots -->
+                <div class="form-section">
+                    <h4><i class="fas fa-map-marked-alt"></i> Nearby Spots</h4>
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label for="nearby-search">Search Nearby Spots</label>
@@ -299,12 +418,15 @@
                 </div>
             </div>
 
-            <!-- Form Actions -->
+                <!-- Form Actions -->
+            </form>
             <div class="form-actions">
                 <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
-                <button type="submit" id="submit-btn" class="btn-primary">Add Travel Spot</button>
+                <button type="submit" id="submit-btn" class="btn-primary" form="travel-spot-form">
+                    <i class="fas fa-save"></i> Add Travel Spot
+                </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -340,5 +462,22 @@
 
     </section>
 
-
-
+<!-- Delete Travel Spot Confirmation Modal -->
+<div id="deleteTravelSpotConfirmModal" class="modal">
+    <div class="modal-content confirm-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-trash-alt"></i> Confirm Delete Travel Spot</h3>
+        </div>
+        <div class="modal-body">
+            <div class="confirm-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Are you sure you want to delete this travel spot?</p>
+                <p class="confirm-warning">This action cannot be undone and will permanently remove all data associated with this travel spot.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelDeleteTravelSpotBtn">Cancel</button>
+            <button class="btn btn-danger" id="confirmDeleteTravelSpotBtn">Delete Travel Spot</button>
+        </div>
+    </div>
+</div>

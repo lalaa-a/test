@@ -109,13 +109,13 @@
         .right-section {
             flex: 1.5;
             background: #f8f9fa;
-            padding: 60px 80px;
+            padding: 40px 60px;
             overflow-y: auto;
         }
         .form-container {
-            max-width: 700px;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 40px;
+            padding: 30px;
             border: 0px solid #49a6afbc;
             border-radius: 12px;
             background: #ffffffb8;
@@ -123,23 +123,23 @@
         }
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
         .header h2 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 600;
             color: #1a1a1a;
             margin-bottom: 8px;
         }
         .header p {
             color: #6b7280;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         .progress-container {
             background: white;
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .progress-steps {
@@ -191,13 +191,13 @@
             font-weight: 600;
         }
         .account-selection {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .account-selection h3 {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .account-option {
             display: flex;
@@ -241,14 +241,14 @@
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .form-grid3 {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .form-group {
             display: flex;
@@ -258,20 +258,21 @@
             grid-column: 1 / -1;
         }
         .form-group label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             opacity: 1;
         }
         .form-group input,
         .form-group select,
         .form-group textarea,
         .form-group input[type="file"] {
-            padding: 12px 16px;
+            padding: 10px 12px;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'Geologica', sans-serif;
             background: white;
             transition: border-color 0.2s;
         }
@@ -289,6 +290,7 @@
         .form-group input::placeholder,
         .form-group textarea::placeholder {
             color: #9ca3af;
+            font-family: 'Geologica', sans-serif;
         }
         .img-contain {
             display: flex;
@@ -350,28 +352,41 @@
         .form-actions {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 16px;
         }
-        .previous-button,
-        .next-button,
-        .next-button1 {
-            background: #35939e;
-            color: white;
+        .previous-button {
+            background: #e5e7eb;
+            color: #111827;
             border: none;
-            padding: 14px 32px;
-            border-radius: 20px;
-            font-size: 1rem;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+        }
+        .previous-button:hover {
+            background: #d1d5db;
+        }
+        .next-button,
+        .next-button1 {
+            background: #006a71;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
         .next-button1 {
             margin-left: 460px;
         }
-        .previous-button:hover,
         .next-button:hover,
         .next-button1:hover {
-            background: #236666;
+            background: #005a61;
+            transform: translateY(-1px);
         }
         .form-page {
             display: none;
@@ -381,7 +396,7 @@
         }
         .error-message {
             color: #ef4444;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             margin-top: 4px;
             display: none;
         }
@@ -466,11 +481,14 @@
                             <div class="step inactive">2</div>
                             <div class="step-connector"></div>
                             <div class="step inactive">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
                         </div>
                         <div class="step-labels">
                             <span class="step-label active-label">Personal Info</span>
                             <span class="step-label">Contact Details</span>
-                            <span class="step-label">Verification</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
                         </div>
                     </div>
                     <div class="account-selection">
@@ -532,7 +550,7 @@
                             </select>
                             <div class="error-message" id="gender-error">Please select gender</div>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label>Profile Photo *</label>
                             <div class="photo-upload" id="profile-upload">
                                 <div class="photo-upload-icon"></div>
@@ -542,6 +560,13 @@
                                 <strong>Choose File</strong> No file chosen
                             </div>
                             <div class="error-message" id="profile-error">Profile photo is required</div>
+                        </div>
+                        <div class="form-group" id="currency-group-page1" style="display: none;">
+                            <label for="currency">Preferred Currency *</label>
+                            <select id="currency" required>
+                                <option value="">Select your currency</option>
+                            </select>
+                            <div class="error-message" id="currency-error">Please select your preferred currency</div>
                         </div>
                     </div>
                     <div class="form-actions" style="display:none">
@@ -561,11 +586,14 @@
                             <div class="step active">2</div>
                             <div class="step-connector"></div>
                             <div class="step inactive">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
                         </div>
                         <div class="step-labels">
                             <span class="step-label">Personal Info</span>
                             <span class="step-label active-label">Contact Details</span>
-                            <span class="step-label">Verification</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
                         </div>
                     </div>
                     <div class="form-grid">
@@ -584,11 +612,6 @@
                             <div class="error-message" id="address-error">Address is required</div>
                         </div>
                         <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" placeholder="youremail@gmail.com" required>
-                            <div class="error-message" id="email-error">Valid email is required</div>
-                        </div>
-                        <div class="form-group">
                             <label for="password">Password *</label>
                             <input type="password" id="password" placeholder="Enter your password (min 8 characters)" required>
                             <div class="error-message" id="password-error">Password must be at least 8 characters long</div>
@@ -604,8 +627,61 @@
                         <button class="next-button" onclick="navigateTo(3)">Next</button>
                     </div>
                 </div>
-                <!-- Page 3: Verification (content switches by account type) -->
+                <!-- Page 3: Email Verification -->
                 <div class="form-page" id="page3">
+                    <div class="header">
+                        <h2>Verify Your Email</h2>
+                        <p>Enter your email address and verify it to continue</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <div class="step active">1</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">2</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">3</div>
+                            <div class="step-connector"></div>
+                            <div class="step inactive">4</div>
+                        </div>
+                        <div class="step-labels">
+                            <span class="step-label">Personal Info</span>
+                            <span class="step-label">Contact Details</span>
+                            <span class="step-label active-label">Email Verify</span>
+                            <span class="step-label">Documents</span>
+                        </div>
+                    </div>
+                    <!-- Email Input Section -->
+                    <div id="email-section" class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" placeholder="youremail@gmail.com" required>
+                            <div class="error-message" id="email-error">Valid email is required</div>
+                        </div>
+                    </div>
+                    <!-- OTP Verification Section (hidden initially) -->
+                    <div id="otp-section" class="form-grid" style="display: none;">
+                        <div class="form-group full-width">
+                            <label for="otp">Enter Verification Code *</label>
+                            <input type="text" id="otp" placeholder="Enter 6-digit code" maxlength="6" required>
+                            <div class="error-message" id="otp-error">Please enter a valid 6-digit code</div>
+                            <div class="success-message" id="otp-success" style="display:none; background:transparent; color:#065f46; padding:0; font-size:0.9rem; margin-top:6px;">Code verified successfully!</div>
+                        </div>
+                        <div class="form-group full-width">
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 12px;">
+                                Didn't receive the code? 
+                                <button type="button" id="resend-otp" style="background: none; border: none; color: #006a71; text-decoration: underline; cursor: pointer; font-size: 0.9rem;">Resend Code</button>
+                            </p>
+                            <div id="otp-timer" style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 12px;">Resend available in 60 seconds</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="previous-button" onclick="navigateTo(2)">Previous</button>
+                        <button id="send-otp-btn" class="next-button" onclick="sendOTPFromPage()">Send OTP</button>
+                        <button id="verify-otp-btn" class="next-button" onclick="verifyOTP()" style="display: none;">Verify & Continue</button>
+                    </div>
+                </div>
+                <!-- Page 4: Verification (content switches by account type) -->
+                <div class="form-page" id="page4">
                     <div class="header">
                         <h2>Create Your Account</h2>
                         <p>Join our community and start your journey today</p>
@@ -617,56 +693,81 @@
                             <div class="step active">2</div>
                             <div class="step-connector active"></div>
                             <div class="step active">3</div>
+                            <div class="step-connector active"></div>
+                            <div class="step active">4</div>
                         </div>
                         <div class="step-labels">
                             <span class="step-label">Personal Info</span>
                             <span class="step-label">Contact Details</span>
-                            <span class="step-label active-label">Verification</span>
+                            <span class="step-label">Email Verify</span>
+                            <span class="step-label active-label">Documents</span>
                         </div>
                     </div>
                     <div class="account-selection">
-                        <h3>Driver Documents & Information</h3>
+                        <h3 id="documents-title">Documents & Information</h3>
                     </div>
-                    <div class="form-grid3">
-                        <div class="form-group">
-                            <label for="VehicleNo">Vehicle Number</label>
-                            <input type="text" id="VehicleNo" placeholder="Enter vehicle number">
-                        </div>
+                    <!-- Driver Documents -->
+                    <div class="form-grid3" id="driver-documents" style="display: none;">
                         <div class="form-group">
                             <label for="license">Driving License Number</label>
                             <input type="text" id="license" placeholder="License number">
+                            <div class="error-message" id="license-error">License number is required</div>
                         </div>
                         <div class="form-group">
                             <label for="expireDate">License Expire Date</label>
                             <input type="date" id="expireDate" placeholder="mm/dd/yyyy">
+                            <div class="error-message" id="expireDate-error">License expire date is required</div>
                         </div>
+                        
                         <div class="form-group">
                             <label for="licenseFront">Driving License (Front)</label>
-                            <input type="file" id="licenseFront" accept="image/*">
+                            <input type="file" id="licenseFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseFront')">
+                            <div class="error-message" id="licenseFront-error">License front image is required</div>
                         </div>
                         <div class="form-group">
                             <label for="licenseBack">Driving License (Back)</label>
-                            <input type="file" id="licenseBack" accept="image/*">
+                            <input type="file" id="licenseBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'licenseBack')">
+                            <div class="error-message" id="licenseBack-error">License back image is required</div>
                         </div>
+
                         <div class="form-group">
-                            <label for="vehicleDoc">Vehicle Registration Documents</label>
-                            <input type="file" id="vehicleDoc" accept="application/pdf,image/*">
+                            <label for="nic">NIC Number</label>
+                            <input type="text" id="nic" placeholder="Enter NIC number">
+                            <div class="error-message" id="nic-error">NIC number is required</div>
                         </div>
-                        <div class="form-group">
-                            <label for="insurance">Vehicle Insurance</label>
-                            <input type="file" id="insurance" accept="application/pdf,image/*">
-                        </div>
+
                         <div class="form-group">
                             <label for="idFront">National ID Card (Front)</label>
-                            <input type="file" id="idFront" accept="image/*">
+                            <input type="file" id="idFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'idFront')">
+                            <div class="error-message" id="idFront-error">ID card front image is required</div>
                         </div>
                         <div class="form-group">
                             <label for="idBack">National ID Card (Back)</label>
-                            <input type="file" id="idBack" accept="image/*">
+                            <input type="file" id="idBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'idBack')">
+                            <div class="error-message" id="idBack-error">ID card back image is required</div>
+                        </div>
+                        
+                    </div>
+                    <!-- Guide/Tourist Documents -->
+                    <div class="form-grid3" id="guide-tourist-documents" style="display: none;">
+                        <div class="form-group">
+                            <label for="nic">NIC/Passport Number</label>
+                            <input type="text" id="nicGuideTourist" placeholder="Enter NIC or Passport number">
+                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="nicFront">NIC/Passport (Front)</label>
+                            <input type="file" id="nicFront" accept="image/*" onchange="handleFileUpload(this.files[0], 'nicFront')">
+                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="nicBack">NIC/Passport (Back)</label>
+                            <input type="file" id="nicBack" accept="image/*" onchange="handleFileUpload(this.files[0], 'nicBack')">
+                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button class="previous-button" onclick="navigateTo(2)">Previous</button>
+                        <button class="previous-button" onclick="navigateTo(3)">Previous</button>
                         <button class="next-button" onclick="submitForm()">Create Account</button>
                     </div>
                 </div>
@@ -674,11 +775,16 @@
         </div>
     </div>
     <script>
+        console.log('JavaScript loading...');
         // Global variables
         let currentPage = 1;
         let selectedAccountType = null;
         let profileFile = null;
         let uploadedFiles = {};
+        let emailVerified = false;
+        let otpSent = false;
+        let otpTimer = null;
+        let otpCountdown = 60;
         // DOM elements
         let leftSection;
         let progressSteps;
@@ -775,10 +881,35 @@
                     }
                 });
             }
+            
+            // OTP input event listener
+            const otpInput = document.getElementById('otp');
+            if (otpInput) {
+                otpInput.addEventListener('input', function() {
+                    clearError('otp');
+                    document.getElementById('otp-success').style.display = 'none';
+                    // Allow only numbers and limit to 6 digits
+                    this.value = this.value.replace(/\D/g, '').substring(0, 6);
+                });
+            }
+            
+            // Email input event listener for real-time validation
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    clearError('email');
+                });
+            }
+            
+            // Resend OTP button event listener
+            const resendButton = document.getElementById('resend-otp');
+            if (resendButton) {
+                resendButton.addEventListener('click', resendOTP);
+            }
         }
         // Navigate between pages
         function navigateTo(pageNumber) {
-            if (pageNumber < 1 || pageNumber > 3) return;
+            if (pageNumber < 1 || pageNumber > 4) return;
             // Block navigation if no account type chosen yet
             if (pageNumber > 1 && !selectedAccountType) {
                 alert('Please select Driver, Guide, or Tourist first.');
@@ -790,6 +921,14 @@
             }
             if (pageNumber === 3 && !validatePage2()) {
                 return;
+            }
+            // Note: Page 4 validation happens only on form submission, not navigation
+            // Special handling for email verification - reset state when moving to page 3
+            if (pageNumber === 3 && currentPage === 2) {
+                // Reset email verification state when entering page 3
+                emailVerified = false;
+                otpSent = false;
+                showEmailInputMode();
             }
             // Hide current page
             const currentPageElement = document.getElementById(`page${currentPage}`);
@@ -803,8 +942,23 @@
             }
             // Update current page
             currentPage = pageNumber;
+            
+            // Show appropriate document fields when navigating to page 4
+            if (pageNumber === 4) {
+                updateDocumentFields();
+            }
+            
             // Update progress indicator
             updateProgressIndicator();
+            
+            // Reset email verification state when going back from page 3
+            if (currentPage < 3) {
+                emailVerified = false;
+                otpSent = false;
+                if (otpTimer) {
+                    clearInterval(otpTimer);
+                }
+            }
         }
         // Update progress indicator
         function updateProgressIndicator() {
@@ -858,8 +1012,17 @@
             });
             // Update left section based on account type
             updateLeftSection(accountType);
-            // Update 3rd step content based on account type
-            updateThirdStepContent(accountType);
+
+            // Show/hide currency selector in personal info (page1) for tourists only
+            const currencyPage1 = document.getElementById('currency-group-page1');
+            if (currencyPage1) {
+                if (accountType === 'tourist') {
+                    currencyPage1.style.display = 'block';
+                    populateCurrencyDropdown();
+                } else {
+                    currencyPage1.style.display = 'none';
+                }
+            }
         }
         // Update left section image and content
         function updateLeftSection(accountType) {
@@ -968,7 +1131,226 @@
                 }
             }
         }
+        
+        // Update document fields based on account type
+        function updateDocumentFields() {
+            const documentsTitle = document.getElementById('documents-title');
+            const driverDocs = document.getElementById('driver-documents');
+            const guideTouristDocs = document.getElementById('guide-tourist-documents');
+            
+            if (selectedAccountType === 'driver') {
+                documentsTitle.textContent = 'Driver Documents & Information';
+                driverDocs.style.display = 'grid';
+                guideTouristDocs.style.display = 'none';
+            } else if (selectedAccountType === 'guide') {
+                documentsTitle.textContent = 'Guide Documents & Information';
+                driverDocs.style.display = 'none';
+                guideTouristDocs.style.display = 'grid';
+            } else if (selectedAccountType === 'tourist') {
+                documentsTitle.textContent = 'Tourist Documents & Information';
+                driverDocs.style.display = 'none';
+                guideTouristDocs.style.display = 'grid';
+            }
+        }
+        
+        // OTP Functions
+        function showEmailInputMode() {
+            document.getElementById('email-section').style.display = 'grid';
+            document.getElementById('otp-section').style.display = 'none';
+            document.getElementById('send-otp-btn').style.display = 'inline-block';
+            document.getElementById('verify-otp-btn').style.display = 'none';
+            document.querySelector('#page3 .header h2').textContent = 'Verify Your Email';
+            document.querySelector('#page3 .header p').textContent = 'Enter your email address and verify it to continue';
+            // Clear any previous OTP data
+            document.getElementById('otp').value = '';
+            document.getElementById('otp-success').style.display = 'none';
+            clearError('otp');
+            if (otpTimer) {
+                clearInterval(otpTimer);
+            }
+        }
+
+        function showOTPInputMode() {
+            document.getElementById('email-section').style.display = 'none';
+            document.getElementById('otp-section').style.display = 'grid';
+            document.getElementById('send-otp-btn').style.display = 'none';
+            document.getElementById('verify-otp-btn').style.display = 'inline-block';
+            document.querySelector('#page3 .header h2').textContent = 'Verify Your Email';
+            document.querySelector('#page3 .header p').textContent = 'We\'ve sent a verification code to your email address';
+        }
+
+        function sendOTPFromPage() {
+            const email = document.getElementById('email').value.trim();
+            
+            // Validate email
+            if (!email) {
+                showError('email', 'Email is required');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('email', 'Valid email is required');
+                return;
+            }
+
+            // Show loading state
+            const sendButton = document.getElementById('send-otp-btn');
+            const originalText = sendButton.textContent;
+            sendButton.textContent = 'Sending...';
+            sendButton.disabled = true;
+
+            // Send OTP request
+            fetch('/test/User/sendOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    otpSent = true;
+                    showOTPInputMode();
+                    startOTPTimer();
+                } else {
+                    showError('email', data.message || 'Failed to send OTP. Please try again.');
+                    sendButton.textContent = originalText;
+                    sendButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('email', 'An error occurred while sending OTP. Please try again.');
+                sendButton.textContent = originalText;
+                sendButton.disabled = false;
+            });
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otp').value.trim();
+            if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                showError('otp', 'Please enter a valid 6-digit code');
+                return;
+            }
+
+            // Show loading state
+            const verifyButton = document.querySelector('#page3 .next-button');
+            const originalText = verifyButton.textContent;
+            verifyButton.textContent = 'Verifying...';
+            verifyButton.disabled = true;
+
+            const email = document.getElementById('email').value.trim();
+
+            // Verify OTP request
+            fetch('/test/User/verifyOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, otp: otp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    emailVerified = true;
+                    document.getElementById('otp-success').style.display = 'block';
+                    document.getElementById('otp-error').style.display = 'none';
+                    setTimeout(() => {
+                        navigateTo(4);
+                    }, 1500);
+                } else {
+                    showError('otp', data.message || 'Invalid OTP. Please try again.');
+                    verifyButton.textContent = originalText;
+                    verifyButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('otp', 'An error occurred. Please try again.');
+                verifyButton.textContent = originalText;
+                verifyButton.disabled = false;
+            });
+        }
+
+        function startOTPTimer() {
+            otpCountdown = 60;
+            updateOTPTimer();
+
+            otpTimer = setInterval(() => {
+                otpCountdown--;
+                updateOTPTimer();
+
+                if (otpCountdown <= 0) {
+                    clearInterval(otpTimer);
+                    document.getElementById('otp-timer').textContent = '';
+                    document.getElementById('resend-otp').disabled = false;
+                }
+            }, 1000);
+        }
+
+        function updateOTPTimer() {
+            const timerElement = document.getElementById('otp-timer');
+            const resendButton = document.getElementById('resend-otp');
+
+            if (otpCountdown > 0) {
+                timerElement.textContent = `Resend available in ${otpCountdown} seconds`;
+                resendButton.disabled = true;
+            } else {
+                timerElement.textContent = '';
+                resendButton.disabled = false;
+            }
+        }
+
+        function resendOTP() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                alert('Email address not found.');
+                return;
+            }
+
+            // Show loading state
+            const resendButton = document.getElementById('resend-otp');
+            const originalText = resendButton.textContent;
+            resendButton.textContent = 'Sending...';
+            resendButton.disabled = true;
+
+            // Resend OTP request
+            fetch('/test/User/sendOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    startOTPTimer();
+                    alert('OTP sent successfully!');
+                } else {
+                    alert(data.message || 'Failed to resend OTP. Please try again.');
+                    resendButton.textContent = originalText;
+                    resendButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while resending OTP. Please try again.');
+                resendButton.textContent = originalText;
+                resendButton.disabled = false;
+            });
+        }
         // Validation functions
+        function validatePage3() {
+            // Check if email is verified
+            if (!emailVerified) {
+                alert('Please verify your email address before proceeding.');
+                return false;
+            }
+            return true;
+        }
         function validatePage1() {
             let isValid = true;
             // Full name validation
@@ -999,6 +1381,15 @@
             if (!profileFile) {
                 showError('profile', 'Profile photo is required');
                 isValid = false;
+            }
+
+            // Currency validation for tourists in personal info (page1)
+            if (selectedAccountType === 'tourist') {
+                const currency = document.getElementById('currency');
+                if (!currency || !currency.value) {
+                    showError('currency', 'Please select your preferred currency');
+                    isValid = false;
+                }
             }
             return isValid;
         }
@@ -1043,13 +1434,6 @@
                 showError('address', 'Address is required');
                 isValid = false;
             }
-            // Email validation
-            const email = document.getElementById('email');
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email.value.trim() || !emailRegex.test(email.value)) {
-                showError('email', 'Valid email is required');
-                isValid = false;
-            }
             
             // Password validation
             const password = document.getElementById('password');
@@ -1073,26 +1457,32 @@
             
             return isValid;
         }
-        function validatePage3() {
+        function validatePage4() {
             let isValid = true;
+            
             if (selectedAccountType === 'driver') {
-                const vehicleNo = document.getElementById('VehicleNo');
                 const license = document.getElementById('license');
                 const expireDate = document.getElementById('expireDate');
-                if (!vehicleNo.value.trim()) {
-                    showError('VehicleNo', 'Vehicle number is required');
-                    isValid = false;
-                }
-                if (!license.value.trim()) {
+                
+                if (!license || !license.value.trim()) {
                     showError('license', 'License number is required');
                     isValid = false;
                 }
-                if (!expireDate.value) {
+                if (!expireDate || !expireDate.value) {
                     showError('expireDate', 'License expire date is required');
                     isValid = false;
                 }
+                
+                // Get NIC from driver section
+                const driverSection = document.getElementById('driver-documents');
+                const nicField = driverSection ? driverSection.querySelector('#nic') : null;
+                if (!nicField || !nicField.value.trim()) {
+                    showError('nic', 'NIC number is required');
+                    isValid = false;
+                }
+                
                 // Check required files for driver
-                const requiredFiles = ['licenseFront', 'licenseBack', 'vehicleDoc', 'insurance', 'idFront', 'idBack'];
+                const requiredFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
                 requiredFiles.forEach(fileId => {
                     if (!uploadedFiles[fileId]) {
                         showError(fileId, `${fileId.replace(/([A-Z])/g, ' $1')} is required`);
@@ -1100,11 +1490,18 @@
                     }
                 });
             } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
-                const nic = document.getElementById('nic');
-                if (!nic.value.trim()) {
+                // Get NIC from guide-tourist section (not driver section)
+                
+                const nicField = document.getElementById('nicGuideTourist');
+                
+                if (!nicField) {
+                    alert('Error: NIC/Passport field not found. Please refresh the page and try again.');
+                    isValid = false;
+                } else if (!nicField.value.trim()) {
                     showError('nic', 'NIC/Passport is required');
                     isValid = false;
                 }
+                
                 // Check required files for guide/tourist
                 if (!uploadedFiles['nicFront']) {
                     showError('nicFront', 'NIC/Passport front image is required');
@@ -1115,6 +1512,7 @@
                     isValid = false;
                 }
             }
+            
             return isValid;
         }
         function showError(fieldId, message) {
@@ -1128,18 +1526,39 @@
                 fieldElement.classList.add('error');
             }
         }
-        function clearError(element) {
-            const errorElement = document.getElementById(`${element.id}-error`);
+        function clearError(elementOrId) {
+            let fieldId, element;
+            if (typeof elementOrId === 'string') {
+                fieldId = elementOrId;
+                element = document.getElementById(fieldId);
+            } else {
+                element = elementOrId;
+                fieldId = element.id;
+            }
+
+            const errorElement = document.getElementById(`${fieldId}-error`);
             if (errorElement) {
                 errorElement.style.display = 'none';
             }
-            element.classList.remove('error');
+            if (element) {
+                element.classList.remove('error');
+            }
         }
         // Submit form to backend
         function submitForm() {
-            if (!validatePage3()) {
+            if (!emailVerified) {
+                alert('Please verify your email address before proceeding.');
+                navigateTo(3);
                 return;
             }
+            
+            if (!validatePage4()) {
+                console.log('Validation failed for page 4');
+                return;
+            }
+            
+            console.log('Starting form submission...');
+            
             // Create FormData object
             const formData = new FormData();
             formData.append('account_type', selectedAccountType);
@@ -1157,21 +1576,30 @@
             formData.append('address', document.getElementById('address').value);
             formData.append('email', document.getElementById('email').value);
             formData.append('password', document.getElementById('password').value);
+
+            
             formData.append('confirm_password', document.getElementById('confirm_password').value);
             // Page 3 data based on account type
             if (selectedAccountType === 'driver') {
-                formData.append('vehicle_number', document.getElementById('VehicleNo').value);
                 formData.append('license_number', document.getElementById('license').value);
                 formData.append('license_expire_date', document.getElementById('expireDate').value);
+                formData.append('nic_passport', document.getElementById('nic').value);
                 // Add driver files
-                const driverFiles = ['licenseFront', 'licenseBack', 'vehicleDoc', 'insurance', 'idFront', 'idBack'];
+                const driverFiles = ['licenseFront', 'licenseBack', 'idFront', 'idBack'];
                 driverFiles.forEach(fileId => {
                     if (uploadedFiles[fileId]) {
                         formData.append(fileId, uploadedFiles[fileId]);
                     }
                 });
             } else if (selectedAccountType === 'guide' || selectedAccountType === 'tourist') {
-                formData.append('nic_passport', document.getElementById('nic').value);
+                formData.append('nic_passport', document.getElementById('nicGuideTourist').value);
+                
+                // Currency is collected in personal info (page1) for tourists
+                if (selectedAccountType === 'tourist') {
+                    const currencyEl = document.getElementById('currency');
+                    if (currencyEl) formData.append('currency_code', currencyEl.value);
+                }
+                
                 // Add guide/tourist files
                 if (uploadedFiles['nicFront']) {
                     formData.append('nic_front', uploadedFiles['nicFront']);
@@ -1181,17 +1609,36 @@
                 }
             }
             // Show loading message
-            const submitButton = document.querySelector('#page3 .next-button');
+            const submitButton = document.querySelector('#page4 .next-button');
             const originalText = submitButton.textContent;
             submitButton.textContent = 'Creating Account...';
             submitButton.disabled = true;
+            
+            console.log('Sending form data to backend...');
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(key + ':', 'File -', value.name, value.size + ' bytes');
+                } else {
+                    console.log(key + ':', value);
+                }
+            }
+            
             // Send to PHP backend
             fetch('/test/User/register', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Backend response:', data);
                 if (data.success) {
                     // Show success message
                     document.getElementById('success-message').style.display = 'block';
@@ -1210,156 +1657,59 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 const errorDiv = document.getElementById('error-message-global');
-                errorDiv.textContent = 'An error occurred during registration. Please try again.';
+                errorDiv.textContent = 'Connection error: ' + error.message + '. Please try again.';
                 errorDiv.style.display = 'block';
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
             });
         }
-        // Update 3rd step content based on account type
-        function updateThirdStepContent(accountType) {
-            const page3 = document.getElementById('page3');
-            if (!page3) return;
-            const accountSelection = page3.querySelector('.account-selection');
-            const formGrid = page3.querySelector('.form-grid3');
-            if (!accountSelection || !formGrid) return;
-            switch (accountType) {
-                case 'driver':
-                    accountSelection.innerHTML = '<h3>Driver Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="VehicleNo">Vehicle Number *</label>
-                            <input type="text" id="VehicleNo" placeholder="Enter vehicle number" required>
-                            <div class="error-message" id="VehicleNo-error">Vehicle number is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="license">Driving License Number *</label>
-                            <input type="text" id="license" placeholder="License number" required>
-                            <div class="error-message" id="license-error">License number is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="expireDate">License Expire Date *</label>
-                            <input type="date" id="expireDate" placeholder="mm/dd/yyyy" required>
-                            <div class="error-message" id="expireDate-error">License expire date is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="licenseFront">Driving License (Front) *</label>
-                            <input type="file" id="licenseFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseFront')">
-                            <div class="error-message" id="licenseFront-error">License front image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="licenseBack">Driving License (Back) *</label>
-                            <input type="file" id="licenseBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'licenseBack')">
-                            <div class="error-message" id="licenseBack-error">License back image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="vehicleDoc">Vehicle Registration Documents *</label>
-                            <input type="file" id="vehicleDoc" accept="application/pdf,image/*" required onchange="handleFileUpload(this.files[0], 'vehicleDoc')">
-                            <div class="error-message" id="vehicleDoc-error">Vehicle registration documents are required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="insurance">Vehicle Insurance *</label>
-                            <input type="file" id="insurance" accept="application/pdf,image/*" required onchange="handleFileUpload(this.files[0], 'insurance')">
-                            <div class="error-message" id="insurance-error">Vehicle insurance is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="idFront">National ID Card (Front) *</label>
-                            <input type="file" id="idFront" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idFront')">
-                            <div class="error-message" id="idFront-error">ID card front image is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="idBack">National ID Card (Back) *</label>
-                            <input type="file" id="idBack" accept="image/*" required onchange="handleFileUpload(this.files[0], 'idBack')">
-                            <div class="error-message" id="idBack-error">ID card back image is required</div>
-                        </div>
-                    `;
-                    break;
-                case 'guide':
-                    accountSelection.innerHTML = '<h3>Guide Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="nic">NIC/Passport *</label>
-                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
-                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Front img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
-                                </div>
-                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
-                            </div>
-                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Back img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
-                                </div> 
-                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
-                            </div>
-                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
-                        </div>
-                    `;
-                    break;
-                case 'tourist':
-                    accountSelection.innerHTML = '<h3>Tourist Documents & Information</h3>';
-                    formGrid.innerHTML = `
-                        <div class="form-group">
-                            <label for="nic">NIC/Passport *</label>
-                            <input type="text" id="nic" placeholder="Enter your nic/passport" required>
-                            <div class="error-message" id="nic-error">NIC/Passport is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Front img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicFront-upload" onclick="document.getElementById('nicFront').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicFront-preview" src="" alt="NIC Front Preview">
-                                </div>
-                                <input type="file" id="nicFront" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicFront')">
-                            </div>
-                            <div class="error-message" id="nicFront-error">NIC/Passport front image is required</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="img-contain">
-                                <div class="file-info">
-                                    <strong>Back img: </strong>NIC/Passport *
-                                </div>
-                                <div class="photo-upload" id="nicBack-upload" onclick="document.getElementById('nicBack').click()">
-                                    <div class="photo-upload-icon"></div>
-                                    <img id="nicBack-preview" src="" alt="NIC Back Preview">
-                                </div> 
-                                <input type="file" id="nicBack" accept="image/*" style="display:none" required onchange="handleFileUpload(this.files[0], 'nicBack')">
-                            </div>
-                            <div class="error-message" id="nicBack-error">NIC/Passport back image is required</div>
-                        </div>
-                    `;
-                    break;
+
+        
+        // Currency data and population function
+        function populateCurrencyDropdown() {
+            const currencies = [
+                { code: 'USD', name: 'US Dollar', symbol: '$' },
+                { code: 'EUR', name: 'Euro', symbol: '€' },
+                { code: 'GBP', name: 'British Pound', symbol: '£' },
+                { code: 'LKR', name: 'Sri Lankan Rupee', symbol: 'Rs' },
+                { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+                { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+                { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+                { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+                { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+                { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+                { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+                { code: 'THB', name: 'Thai Baht', symbol: '฿' },
+                { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+                { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
+                { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+                { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+                { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+                { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+                { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+                { code: 'ZAR', name: 'South African Rand', symbol: 'R' }
+            ];
+            
+            const currencySelect = document.getElementById('currency');
+            if (!currencySelect) return;
+            
+            // Clear existing options except the first one
+            while (currencySelect.children.length > 1) {
+                currencySelect.removeChild(currencySelect.lastChild);
             }
-            // Reattach event listeners for new file inputs
-            const newFileInputs = formGrid.querySelectorAll('input[type="file"]');
-            newFileInputs.forEach(input => {
-                input.addEventListener('change', function(e) {
-                    if (e.target.files[0]) {
-                        const fieldId = e.target.id;
-                        handleFileUpload(e.target.files[0], fieldId);
-                        clearError(e.target);
-                    }
-                });
+            
+            // Add currency options
+            currencies.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency.code;
+                option.textContent = `${currency.code} - ${currency.name} (${currency.symbol})`;
+                currencySelect.appendChild(option);
             });
+            
+            // Set default to USD
+            currencySelect.value = 'USD';
         }
     </script>
 </body>
