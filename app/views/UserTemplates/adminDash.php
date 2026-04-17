@@ -1128,7 +1128,7 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="<?php echo URL_ROOT . '/admin/dashboard' ?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT . '/admin/moderator' ?>" data-tab="moderator"><i class="fa-solid fa-user-tie"></i><span>Moderator</span></a></li>
+            <li><a href="<?php echo URL_ROOT . '/admin/moderator' ?>" data-tab="moderator"><i class="fa-solid fa-user-tie"></i><span>Moderator Info</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/userInfo' ?>" data-tab="userInfo"><i class="fa-solid fa-users"></i><span>User Info</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/tripInfo' ?>" data-tab="tripInfo"><i class="fa-solid fa-suitcase-rolling"></i></i><span>Trip Info</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/verification' ?>" data-tab="verification"><i class="fa-solid fa-circle-check"></i> <span>Verification</span></a></li>

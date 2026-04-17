@@ -15,7 +15,7 @@
         <div class="page-header">
             <div class="page-header-content">
                 <div class="page-title-section">
-                    <h1 class="page-title">Moderator Overview</h1>
+                    <h1 class="page-title">Moderator Info</h1>
                     <p class="page-subtitle" id="moderatorStatsStatus">Loading moderator records...</p>
                 </div>
                 <div class="header-actions">

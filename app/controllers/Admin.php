@@ -17,7 +17,22 @@ class Admin extends Controller
 
     public function dashboard()
     {
-        $this->view('UserTemplates/adminDash');
+        ob_start();
+        $this->view('Admin/dashboard');
+        $html = ob_get_clean();
+
+        $loadingContent = [
+            'html' => $html,
+            'css'  => URL_ROOT . '/public/css/admin/dashboard/dashboard.css',
+            'js'   => URL_ROOT . '/public/js/admin/dashboard/dashboard.js'
+        ];
+
+        $unEncodedResponse = [
+            'tabId' => 'dashboard',
+            'loadingContent' => $loadingContent
+        ];
+
+        $this->view('UserTemplates/adminDash', $unEncodedResponse);
     }
 
     public function moderator()
