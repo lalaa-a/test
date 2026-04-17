@@ -10,7 +10,8 @@
     padding: 20px 20px 20px;
     max-width: 1400px;
     margin: 0 auto;
-    margin-top: 20px; /* Add top margin to account for fixed navigation bar */
+    margin-top: 20px;
+    /* Add top margin to account for fixed navigation bar */
 }
 
 .page-header-content {
@@ -370,7 +371,8 @@
     gap: 10px;
 }
 
-.btn-verify, .btn-reject {
+.btn-verify,
+.btn-reject {
     flex: 1;
     padding: 8px 12px;
     border: none;
@@ -480,7 +482,9 @@
     gap: 10px;
 }
 
-.btn-primary, .btn-secondary, .btn-danger {
+.btn-primary,
+.btn-secondary,
+.btn-danger {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
@@ -882,7 +886,9 @@
     transform: translateY(-1px);
 }
 
-.btn-verify-small, .btn-reject-small, .btn-revoke-small {
+.btn-verify-small,
+.btn-reject-small,
+.btn-revoke-small {
     width: 30px;
     height: 30px;
     border: none;
@@ -1064,7 +1070,9 @@
     transform: translateY(-1px);
 }
 
-.btn-verify-small, .btn-reject-small, .btn-revoke-small {
+.btn-verify-small,
+.btn-reject-small,
+.btn-revoke-small {
     width: 30px;
     height: 30px;
     border: none;
@@ -1298,11 +1306,15 @@
         margin: 0 -5px;
     }
 
-    .modal-header, .modal-body, .modal-footer {
+    .modal-header,
+    .modal-body,
+    .modal-footer {
         padding: 15px;
     }
 
-    .btn-primary, .btn-secondary, .btn-danger {
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
         padding: 8px 16px;
         font-size: 0.8rem;
     }
@@ -1335,6 +1347,7 @@
 
 /* Table Responsive Styles */
 @media (max-width: 1024px) {
+
     .accounts-table th,
     .accounts-table td {
         padding: 10px 8px;
@@ -1360,7 +1373,9 @@
         font-size: 0.75rem;
     }
 
-    .btn-verify-small, .btn-reject-small, .btn-revoke-small {
+    .btn-verify-small,
+    .btn-reject-small,
+    .btn-revoke-small {
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
@@ -1393,7 +1408,8 @@
     }
 
     /* Hide less important columns on mobile */
-    .accounts-table th:nth-child(4), /* Registered Date */
+    .accounts-table th:nth-child(4),
+    /* Registered Date */
     .accounts-table td:nth-child(4) {
         display: none;
     }
@@ -1413,7 +1429,9 @@
         font-size: 0.7rem;
     }
 
-    .btn-verify-small, .btn-reject-small, .btn-revoke-small {
+    .btn-verify-small,
+    .btn-reject-small,
+    .btn-revoke-small {
         width: 25px;
         height: 25px;
         font-size: 0.7rem;
@@ -1439,9 +1457,11 @@
     }
 
     /* Hide more columns on very small screens */
-    .accounts-table th:nth-child(3), /* Email */
+    .accounts-table th:nth-child(3),
+    /* Email */
     .accounts-table td:nth-child(3),
-    .accounts-table th:nth-child(5), /* Status */
+    .accounts-table th:nth-child(5),
+    /* Status */
     .accounts-table td:nth-child(5) {
         display: none;
     }
@@ -1465,7 +1485,9 @@
         font-size: 0.65rem;
     }
 
-    .btn-verify-small, .btn-reject-small, .btn-revoke-small {
+    .btn-verify-small,
+    .btn-reject-small,
+    .btn-revoke-small {
         width: 22px;
         height: 22px;
         font-size: 0.65rem;

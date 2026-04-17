@@ -3979,6 +3979,28 @@ class Admin extends Controller
                 return;
             }
 
+            // Validate password strength
+            $password = (string)($input['password'] ?? '');
+            if (strlen($password) < 8) {
+                echo json_encode(['success' => false, 'message' => 'Password must be at least 8 characters long']);
+                return;
+            }
+
+            if (!preg_match('/[A-Z]/', $password)) {
+                echo json_encode(['success' => false, 'message' => 'Password must contain at least one uppercase letter']);
+                return;
+            }
+
+            if (!preg_match('/[a-z]/', $password)) {
+                echo json_encode(['success' => false, 'message' => 'Password must contain at least one lowercase letter']);
+                return;
+            }
+
+            if (!preg_match('/\d/', $password)) {
+                echo json_encode(['success' => false, 'message' => 'Password must contain at least one number']);
+                return;
+            }
+
             // Hash password
             $input['password'] = password_hash($input['password'], PASSWORD_DEFAULT);
 
