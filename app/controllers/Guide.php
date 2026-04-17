@@ -735,6 +735,95 @@
                 echo json_encode(['success' => false, 'message' => 'Failed to load trip itinerary']);
             }
         }
+
+        public function earnings() {
+            ob_start();
+            $this->view('Guide/earnings/earnings');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/earnings/earnings.css';
+            $js = URL_ROOT.'/public/js/guide/earnings/earnings.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'earnings',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/guideDash', $unEncodedResponse);
+        }
+
+        public function getEarningsSummary() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $summary = $this->guideModel->getEarningsSummary($userId);
+                echo json_encode(['success' => true, 'summary' => $summary]);
+            } catch (Exception $e) {
+                error_log('Error in Guide/getEarningsSummary: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load earnings summary']);
+            }
+        }
+
+        public function getEarningsByStatus($status = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $allowed = ['pending', 'paid', 'refunded'];
+            if (!$status || !in_array($status, $allowed)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid earnings status']);
+                return;
+            }
+
+            try {
+                $earnings = $this->guideModel->getEarningsByStatus($userId, $status);
+                echo json_encode(['success' => true, 'earnings' => $earnings]);
+            } catch (Exception $e) {
+                error_log('Error in Guide/getEarningsByStatus: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load earnings']);
+            }
+        }
+
+        public function getMonthlyEarnings() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $monthly = $this->guideModel->getMonthlyEarnings($userId);
+                echo json_encode(['success' => true, 'monthly' => $monthly]);
+            } catch (Exception $e) {
+                error_log('Error in Guide/getMonthlyEarnings: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load monthly earnings']);
+            }
+        }
     }
 
     // `/controller/method/parameters

@@ -1,3 +1,29 @@
+<?php
+    $tripStatus = $basicTripDetails->status ?? 'pending';
+
+    $statusLabels = [
+        'pending' => 'Pending',
+        'wConfirmation' => 'Waiting Confirmation',
+        'awPayment' => 'Awaiting Payment',
+        'scheduled' => 'Scheduled',
+        'ongoing' => 'Ongoing',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled'
+    ];
+
+    $statusIcons = [
+        'pending' => 'fa-clock',
+        'wConfirmation' => 'fa-hourglass-half',
+        'awPayment' => 'fa-credit-card',
+        'scheduled' => 'fa-calendar-check',
+        'ongoing' => 'fa-plane-departure',
+        'completed' => 'fa-check-circle',
+        'cancelled' => 'fa-ban'
+    ];
+
+    $statusLabel = $statusLabels[$tripStatus] ?? ucfirst((string)$tripStatus);
+    $statusIcon = $statusIcons[$tripStatus] ?? 'fa-calendar-check';
+?>
 
     <div class="content-wrapper">
         <div class="trip-details-card">
@@ -11,9 +37,9 @@
                         </div>
                     </div>
                     <div class="trip-status-section">
-                        <span class="trip-status">
-                            <i class="fas fa-calendar-check"></i>
-                            Scheduled
+                        <span class="trip-status" id="trip-status-badge" data-status="<?php echo htmlspecialchars($tripStatus); ?>">
+                            <i class="fas <?php echo htmlspecialchars($statusIcon); ?>"></i>
+                            <span id="trip-status-text"><?php echo htmlspecialchars($statusLabel); ?></span>
                         </span>
                     </div>
                 </div>
@@ -304,6 +330,52 @@
                     <div class="summary-middle-section">
                         <div class="summary-start-end" id="summary-start-end">
                             <!-- Start and End events will be dynamically loaded here -->
+                        </div>
+                    </div>
+                    <div class="trip-charge-summary" id="trip-charge-summary" hidden>
+                        <div class="trip-charge-summary-header">
+                            <div class="trip-charge-summary-title">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <span>Payment Breakdown</span>
+                            </div>
+                            <span class="trip-charge-state" id="trip-charge-state">Awaiting Payment</span>
+                        </div>
+                        <div class="trip-charge-summary-body">
+                            <div class="trip-charge-line">
+                                <span class="line-label">Driver Charges</span>
+                                <span class="line-value" id="trip-driver-charges">LKR 0.00</span>
+                            </div>
+                            <div class="trip-charge-line">
+                                <span class="line-label">Guide Charges</span>
+                                <span class="line-value" id="trip-guide-charges">LKR 0.00</span>
+                            </div>
+                            <div class="trip-charge-line subtotal-line">
+                                <span class="line-label">Sub Total</span>
+                                <span class="line-value" id="trip-sub-total">LKR 0.00</span>
+                            </div>
+                            <div class="trip-charge-line">
+                                <span class="line-label">Site Charges</span>
+                                <span class="line-value" id="trip-site-charges">LKR 0.00</span>
+                            </div>
+                            <div class="trip-site-charge-breakdown" id="trip-site-charge-breakdown">
+                                <div class="trip-site-charge-title">How site charges are calculated</div>
+                                <div class="trip-charge-line detail-line">
+                                    <span class="line-label" id="trip-driver-booking-label">Driver booking fee (0 x LKR 0.00)</span>
+                                    <span class="line-value" id="trip-driver-booking-charge">LKR 0.00</span>
+                                </div>
+                                <div class="trip-charge-line detail-line">
+                                    <span class="line-label" id="trip-guide-booking-label">Guide booking fee (0 x LKR 0.00)</span>
+                                    <span class="line-value" id="trip-guide-booking-charge">LKR 0.00</span>
+                                </div>
+                                <div class="trip-charge-line detail-line">
+                                    <span class="line-label" id="trip-service-fee-label">Service fee (0% of Sub Total)</span>
+                                    <span class="line-value" id="trip-service-fee-charge">LKR 0.00</span>
+                                </div>
+                            </div>
+                            <div class="trip-charge-line total-line">
+                                <span class="line-label" id="trip-total-charge-label">Total Charge</span>
+                                <span class="line-value" id="trip-total-charge">LKR 0.00</span>
+                            </div>
                         </div>
                     </div>
                     <div class="confirm-trip-section">

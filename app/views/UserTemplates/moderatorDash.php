@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=monitor_heart" />
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 
     <style>
@@ -807,8 +810,13 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="<?php echo URL_ROOT.'/moderator/dashboard'?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fas fa-user-check"></i></i> <span>Verification</span></a></li>
-            <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>    
+            <li><a href="<?php echo URL_ROOT.'/moderator/userInfo'?>" data-tab="userInfo"><i class="fa-solid fa-users"></i><span>User Info</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/tripInfo'?>" data-tab="tripInfo"><i class="fa-solid fa-suitcase-rolling"></i></i><span>Trip Info</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/verification'?>" data-tab="verification"><i class="fa-solid fa-circle-check"></i> <span>Verification</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/moderator/content'?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>   
+            <li><a href="<?php echo URL_ROOT.'/moderator/oversight'?>" data-tab="oversight"><i class="fa-solid fa-eye"></i> <span>Oversight</span></a></li>  
+            <li><a href="<?php echo URL_ROOT.'/moderator/transaction'?>" data-tab="transaction"><i class="fas fa-money-bill-transfer"></i> <span>Transaction</span></a></li>  
+            <li><a href="<?php echo URL_ROOT.'/moderator/analytics'?>" data-tab="analytics"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a></li>  
         </ul>
 
         <!-- User Info Section -->

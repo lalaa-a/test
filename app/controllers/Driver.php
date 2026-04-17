@@ -348,6 +348,29 @@
             }
         }
 
+            // Help page within the dashboard
+        public function help() {
+            ob_start();
+            $this->view('Help/helpContent');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/helper/help.css';
+            $js = URL_ROOT.'/public/js/helper/help.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'help',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
         public function deleteVehicle() {
             header('Content-Type: application/json');
 
@@ -1341,6 +1364,94 @@
             }
         }
 
+        public function earnings(){
+            ob_start();
+            $this->view('Driver/earnings/earnings');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/earnings/earnings.css';
+            $js = URL_ROOT.'/public/js/driver/earnings/earnings.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'earnings',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
+        public function getEarningsSummary() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $summary = $this->driverModel->getEarningsSummary($userId);
+                echo json_encode(['success' => true, 'summary' => $summary]);
+            } catch (Exception $e) {
+                error_log('Error in getEarningsSummary: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load earnings summary']);
+            }
+        }
+
+        public function getEarningsByStatus($status = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $allowed = ['pending', 'paid', 'refunded'];
+            if (!$status || !in_array($status, $allowed)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid earnings status']);
+                return;
+            }
+
+            try {
+                $earnings = $this->driverModel->getEarningsByStatus($userId, $status);
+                echo json_encode(['success' => true, 'earnings' => $earnings]);
+            } catch (Exception $e) {
+                error_log('Error in getEarningsByStatus: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load earnings']);
+            }
+        }
+
+        public function getMonthlyEarnings() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $monthly = $this->driverModel->getMonthlyEarnings($userId);
+                echo json_encode(['success' => true, 'monthly' => $monthly]);
+            } catch (Exception $e) {
+                error_log('Error in getMonthlyEarnings: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load monthly earnings']);
+            }
+        }
     }
 
     // `/controller/method/parameters

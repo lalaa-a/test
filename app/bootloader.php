@@ -6,6 +6,7 @@
     
     require_once 'helpers/upload_helper.php';
     require_once 'helpers/session_helper.php';
+    require_once 'helpers/notification.php';
     require_once 'helpers/html_js_css_Extractor.php';
     require_once 'config/config.php';
     require_once 'helpers/mail_helper.php';

@@ -24,8 +24,11 @@
                 <div class="profile-avatar">
                     <img id="profilePhoto" src="/public/img/signup/profile.png" alt="Driver Profile">
                 </div>
-                <div class="social-links" id="socialLinks">
-                    <!-- Social links will be loaded here -->
+                <div class="social-links-section">
+                    <h3>Social Media</h3>
+                    <div class="social-links" id="socialLinks">
+                        <!-- Social links will be loaded here -->
+                    </div>
                 </div>
             </div>
 
@@ -167,10 +170,12 @@
 
         <!-- Reviews Tab -->
         <div class="tab-pane" id="reviews-tab">
-            <div class="reviews-container">
-                <h2>Reviews</h2>
-                <hr class="divider">
+            <div>
+                <h2 style="margin-bottom: 30px;">Reviews</h2>
+                <hr class="divider"> 
+            </div>
 
+            <div>
                 <div class="rating-summary">
                     <div class="average-score">
                         <h1 id="overallRating">0.0</h1>
@@ -184,6 +189,8 @@
                         <!-- Rating breakdown will be loaded here -->
                     </div>
                 </div>
+            </div>
+            <div class="reviews-container">
 
                 <div class="reviews-list" id="reviewsList">
                     <!-- Reviews will be loaded here -->

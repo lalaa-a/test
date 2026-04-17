@@ -497,6 +497,81 @@ class GuideModel {
         }
     }
 
+    private function hasAllProviderConfirmationsForTrip($userId, $tripId) {
+        $this->db->query("SELECT
+                COUNT(*) AS totalRequests,
+                SUM(CASE WHEN requestStatus = 'accepted' THEN 1 ELSE 0 END) AS acceptedRequests
+            FROM traveller_side_d_requests
+            WHERE tripId = :tripId
+              AND rqUserId = :userId
+                            AND requestStatus IN ('pending', 'requested', 'accepted', 'rejected')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $driverStats = $this->db->single();
+
+        $totalDrivers = isset($driverStats->totalRequests) ? (int)$driverStats->totalRequests : 0;
+        $acceptedDrivers = isset($driverStats->acceptedRequests) ? (int)$driverStats->acceptedRequests : 0;
+
+        if ($totalDrivers === 0 || $acceptedDrivers < $totalDrivers) {
+            return false;
+        }
+
+        $this->db->query("SELECT
+                COUNT(*) AS totalRequests,
+                SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) AS acceptedRequests
+            FROM traveller_side_g_requests
+            WHERE tripId = :tripId
+              AND userId = :userId
+              AND guideId IS NOT NULL
+                            AND status IN ('pending', 'requested', 'accepted', 'rejected')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $guideStats = $this->db->single();
+
+        $totalGuides = isset($guideStats->totalRequests) ? (int)$guideStats->totalRequests : 0;
+        $acceptedGuides = isset($guideStats->acceptedRequests) ? (int)$guideStats->acceptedRequests : 0;
+
+        return $acceptedGuides >= $totalGuides;
+    }
+
+    private function promoteTripToScheduledIfReady($userId, $tripId) {
+        $this->db->query("SELECT status
+                         FROM created_trips
+                         WHERE tripId = :tripId AND userId = :userId
+                         LIMIT 1");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $trip = $this->db->single();
+
+        if (!$trip || $trip->status !== 'wConfirmation') {
+            return;
+        }
+
+        if (!$this->hasAllProviderConfirmationsForTrip($userId, $tripId)) {
+            return;
+        }
+
+        $this->db->query("UPDATE created_trips
+                                                 SET status = 'awPayment', updatedAt = CURRENT_TIMESTAMP
+                         WHERE tripId = :tripId
+                           AND userId = :userId
+                           AND status = 'wConfirmation'");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $this->db->execute();
+    }
+
+    private function moveTripToPendingOnRejection($userId, $tripId) {
+        $this->db->query("UPDATE created_trips
+                         SET status = 'pending', updatedAt = CURRENT_TIMESTAMP
+                         WHERE tripId = :tripId
+                           AND userId = :userId
+                                                                                                         AND status IN ('wConfirmation', 'awPayment', 'scheduled')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $this->db->execute();
+    }
+
     public function updateGuideRequestStatus($guideId, $requestId, $status) {
         try {
             // Ensure the request belongs to the guide
@@ -515,6 +590,33 @@ class GuideModel {
 
             $res = $this->db->execute();
             if ($res) {
+                try {
+                    $syncQuery = "UPDATE traveller_side_g_requests
+                                  SET status = :status,
+                                      respondedAt = CURRENT_TIMESTAMP,
+                                      updatedAt = CURRENT_TIMESTAMP
+                                  WHERE tripId = :tripId
+                                    AND eventId = :eventId
+                                    AND userId = :userId
+                                    AND guideId = :guideId
+                                                                        AND status IN ('pending', 'requested', 'accepted', 'rejected')";
+                    $this->db->query($syncQuery);
+                    $this->db->bind(':status', $status);
+                    $this->db->bind(':tripId', (int)$existing->tripId);
+                    $this->db->bind(':eventId', (int)$existing->eventId);
+                    $this->db->bind(':userId', (int)$existing->userId);
+                    $this->db->bind(':guideId', (int)$guideId);
+                    $this->db->execute();
+
+                    if ($status === 'accepted') {
+                        $this->promoteTripToScheduledIfReady((int)$existing->userId, (int)$existing->tripId);
+                    } elseif ($status === 'rejected') {
+                        $this->moveTripToPendingOnRejection((int)$existing->userId, (int)$existing->tripId);
+                    }
+                } catch (Exception $syncError) {
+                    error_log("Guide request sync warning for request $requestId: " . $syncError->getMessage());
+                }
+
                 return ['success' => true, 'message' => 'Status updated'];
             }
             return ['success' => false, 'message' => 'Failed to update status'];
@@ -584,6 +686,207 @@ class GuideModel {
         } catch (Exception $e) {
             error_log("Error fetching trip itinerary for trip $tripId: " . $e->getMessage());
             return null;
+        }
+    }
+
+    public function getEarningsSummary($guideId) {
+        try {
+            $pendingQuery = "SELECT COUNT(*) AS pending_count, COALESCE(SUM(totalCharge), 0) AS pending_amount
+                             FROM guide_accepted_trips
+                             WHERE guideId = :guideId AND paymentStatus = 'pending'";
+            $this->db->query($pendingQuery);
+            $this->db->bind(':guideId', $guideId);
+            $pending = $this->db->single();
+
+                        $paidQuery = "SELECT COUNT(*) AS paid_count, COALESCE(SUM(guideCharge), 0) AS paid_amount
+                                                    FROM guide_payments
+                                                    WHERE guideId = :guideId
+                                                        AND (COALESCE(pDoneTraveller, 0) = 1 OR COALESCE(pDoneSite, 0) = 1)
+                                                        AND COALESCE(refunded, 0) = 0";
+            $this->db->query($paidQuery);
+            $this->db->bind(':guideId', $guideId);
+            $paid = $this->db->single();
+
+            $refundedQuery = "SELECT COUNT(*) AS refunded_count,
+                                     COALESCE(SUM(COALESCE(refundAmount, guideCharge)), 0) AS refunded_amount
+                              FROM guide_payments
+                              WHERE guideId = :guideId AND refunded = 1";
+            $this->db->query($refundedQuery);
+            $this->db->bind(':guideId', $guideId);
+            $refunded = $this->db->single();
+
+            $pendingCount = (int)($pending->pending_count ?? 0);
+            $pendingAmount = (float)($pending->pending_amount ?? 0);
+            $paidCount = (int)($paid->paid_count ?? 0);
+            $paidAmount = (float)($paid->paid_amount ?? 0);
+            $refundedCount = (int)($refunded->refunded_count ?? 0);
+            $refundedAmount = (float)($refunded->refunded_amount ?? 0);
+
+            error_log("Earnings summary for guide $guideId - Pending: $pendingCount ($pendingAmount), Paid: $paidCount ($paidAmount), Refunded: $refundedCount ($refundedAmount)");
+
+            return [
+                'pending_count' => $pendingCount,
+                'pending_amount' => $pendingAmount,
+                'paid_count' => $paidCount,
+                'paid_amount' => $paidAmount,
+                'refunded_count' => $refundedCount,
+                'refunded_amount' => $refundedAmount,
+                'total_earned' => $paidAmount + $refundedAmount
+            ];
+        } catch (Exception $e) {
+            error_log("Error getting guide earnings summary: " . $e->getMessage());
+            return [
+                'pending_count' => 0,
+                'pending_amount' => 0,
+                'paid_count' => 0,
+                'paid_amount' => 0,
+                'refunded_count' => 0,
+                'refunded_amount' => 0,
+                'total_earned' => 0
+            ];
+        }
+    }
+
+    public function getEarningsByStatus($guideId, $status) {
+        try {
+            if ($status === 'pending') {
+                $query = "SELECT
+                            gat.tripId,
+                            COALESCE(gp.guideCharge, gat.totalCharge) AS guideCharge,
+                            gat.totalCharge AS totalTripCharge,
+                            gat.createdAt
+                          FROM guide_accepted_trips gat
+                          LEFT JOIN trip_payments tp ON gat.tripId = tp.tripId
+                          LEFT JOIN guide_payments gp ON tp.wholePaymentId = gp.wholePaymentId AND gp.guideId = gat.guideId
+                          WHERE gat.guideId = :guideId
+                            AND gat.paymentStatus = 'pending'
+                          ORDER BY gat.createdAt DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':guideId', $guideId);
+                return $this->db->resultSet();
+            }
+
+            if ($status === 'paid') {
+                $query = "SELECT
+                            COALESCE(tp.tripId, gat.tripId) AS tripId,
+                            gp.guideCharge,
+                            gp.pDoneSite,
+                            gp.pDateTraveller,
+                            gp.pDateSite,
+                            gp.createdAt
+                          FROM guide_payments gp
+                          LEFT JOIN trip_payments tp ON gp.wholePaymentId = tp.wholePaymentId
+                          LEFT JOIN guide_accepted_trips gat ON gat.tripId = tp.tripId AND gat.guideId = gp.guideId
+                                                    WHERE gp.guideId = :guideId
+                                                        AND (COALESCE(gp.pDoneTraveller, 0) = 1 OR COALESCE(gp.pDoneSite, 0) = 1)
+                                                        AND COALESCE(gp.refunded, 0) = 0
+                          ORDER BY COALESCE(gp.pDateTraveller, gp.createdAt) DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':guideId', $guideId);
+                return $this->db->resultSet();
+            }
+
+            if ($status === 'refunded') {
+                $query = "SELECT
+                            COALESCE(tp.tripId, gat.tripId) AS tripId,
+                            gp.guideCharge,
+                            gp.refundAmount,
+                            gp.refundDate,
+                            gp.refundReason,
+                            gp.pDoneSite,
+                            gp.createdAt
+                          FROM guide_payments gp
+                          LEFT JOIN trip_payments tp ON gp.wholePaymentId = tp.wholePaymentId
+                          LEFT JOIN guide_accepted_trips gat ON gat.tripId = tp.tripId AND gat.guideId = gp.guideId
+                          WHERE gp.guideId = :guideId
+                            AND gp.refunded = 1
+                          ORDER BY COALESCE(gp.refundDate, gp.createdAt) DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':guideId', $guideId);
+                return $this->db->resultSet();
+            }
+
+            return [];
+        } catch (Exception $e) {
+            error_log("Error getting guide earnings by status ({$status}): " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getMonthlyEarnings($guideId) {
+        try {
+            $months = [];
+
+            for ($i = 5; $i >= 0; $i--) {
+                $monthKey = date('Y-m', strtotime("-{$i} months"));
+                $months[$monthKey] = [
+                    'monthKey' => $monthKey,
+                    'monthLabel' => date('M Y', strtotime($monthKey . '-01')),
+                    'paid' => 0,
+                    'pending' => 0,
+                    'refunded' => 0
+                ];
+            }
+
+            $pendingQuery = "SELECT DATE_FORMAT(createdAt, '%Y-%m') AS monthKey,
+                                    COALESCE(SUM(totalCharge), 0) AS amount
+                             FROM guide_accepted_trips
+                             WHERE guideId = :guideId
+                               AND paymentStatus = 'pending'
+                               AND createdAt >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                             GROUP BY DATE_FORMAT(createdAt, '%Y-%m')";
+            $this->db->query($pendingQuery);
+            $this->db->bind(':guideId', $guideId);
+            $pendingRows = $this->db->resultSet();
+
+            foreach ($pendingRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['pending'] = (float)$row->amount;
+                }
+            }
+
+            $paidQuery = "SELECT DATE_FORMAT(COALESCE(pDateTraveller, createdAt), '%Y-%m') AS monthKey,
+                                 COALESCE(SUM(guideCharge), 0) AS amount
+                          FROM guide_payments
+                                                    WHERE guideId = :guideId
+                                                        AND (COALESCE(pDoneTraveller, 0) = 1 OR COALESCE(pDoneSite, 0) = 1)
+                                                        AND COALESCE(refunded, 0) = 0
+                            AND COALESCE(pDateTraveller, createdAt) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                          GROUP BY DATE_FORMAT(COALESCE(pDateTraveller, createdAt), '%Y-%m')";
+            $this->db->query($paidQuery);
+            $this->db->bind(':guideId', $guideId);
+            $paidRows = $this->db->resultSet();
+
+            foreach ($paidRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['paid'] = (float)$row->amount;
+                }
+            }
+
+            $refundedQuery = "SELECT DATE_FORMAT(COALESCE(refundDate, createdAt), '%Y-%m') AS monthKey,
+                                     COALESCE(SUM(COALESCE(refundAmount, guideCharge)), 0) AS amount
+                              FROM guide_payments
+                              WHERE guideId = :guideId
+                                AND refunded = 1
+                                AND COALESCE(refundDate, createdAt) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                              GROUP BY DATE_FORMAT(COALESCE(refundDate, createdAt), '%Y-%m')";
+            $this->db->query($refundedQuery);
+            $this->db->bind(':guideId', $guideId);
+            $refundedRows = $this->db->resultSet();
+
+            foreach ($refundedRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['refunded'] = (float)$row->amount;
+                }
+            }
+
+            return array_values($months);
+        } catch (Exception $e) {
+            error_log("Error getting guide monthly earnings: " . $e->getMessage());
+            return [];
         }
     }
 }

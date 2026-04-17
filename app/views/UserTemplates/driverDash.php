@@ -1,3 +1,8 @@
+<?php
+    $loggedInUser = getLoggedInUser();
+    $driverNotificationItems = get_notifications_for_user($loggedInUser['id'] ?? null, 20);
+    $driverUnreadCount = count_unread_notifications($driverNotificationItems);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/public/css/notification/notification-unit.css">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -854,9 +860,9 @@
             
             <!-- Header Actions -->
             <div class="header-actions">
-                <button class="header-action-btn" id="notificationsBtn" title="Notifications">
+                <button type="button" class="header-action-btn" id="notificationsBtn" title="Notifications">
                     <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: <?php echo $driverUnreadCount > 0 ? 'flex' : 'none'; ?>;"><?php echo (int)$driverUnreadCount; ?></span>
                 </button>
                 <button class="header-action-btn" id="messagesBtn" title="Messages">
                     <i class="fas fa-envelope"></i>
@@ -864,6 +870,8 @@
                 </button>
             </div>
         </div>
+
+        <?php require APP_ROOT . '/views/Notification/panel.php'; ?>
 
         <!-- Dashboard Content -->
         <div class="dashboard-content active" id="dashboard"></div>
@@ -1098,23 +1106,7 @@
             e.preventDefault();
             alert('⚙️ Opening Profile Settings...');
         });
-
-
-
-// notification and messages logic with buttons 😅        
-        // Notification button
-        const notificationsBtn = document.getElementById('notificationsBtn');
-        const notificationBadge = document.getElementById('notificationBadge');
-
-        notificationsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('🔔 Opening Notifications...');
-            // Reset badge count when opened
-            notificationBadge.textContent = '0';
-            notificationBadge.style.display = 'none';
-        });
-
-        // Messages button
+    // Messages button
         const messagesBtn = document.getElementById('messagesBtn');
         const messageBadge = document.getElementById('messageBadge');
 
@@ -1126,23 +1118,25 @@
             messageBadge.style.display = 'none';
         });
 
-        // Simulate receiving notifications (for demo purposes)
-        function simulateNotifications() {
-            setTimeout(() => {
-                notificationBadge.textContent = '3';
-                notificationBadge.style.display = 'flex';
-            }, 3000);
-
+        // Simulate message badge (demo only)
+        function simulateMessages() {
             setTimeout(() => {
                 messageBadge.textContent = '2';
                 messageBadge.style.display = 'flex';
             }, 5000);
         }
 
-        // Start simulation if user is logged in
         if (<?php echo isLoggedIn() ? 'true' : 'false'?>) {
-            simulateNotifications();
+            simulateMessages();
         }
+
+        window.driverDashboardNotifications = <?php echo json_encode($driverNotificationItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+        window.driverDashboardNotificationApi = {
+            listUrl: '<?php echo URL_ROOT; ?>/Notification/listItems',
+            markReadUrl: '<?php echo URL_ROOT; ?>/Notification/markRead',
+            markAllReadUrl: '<?php echo URL_ROOT; ?>/Notification/markAllRead',
+            refreshIntervalMs: 15000
+        };
 
 
         
@@ -1224,6 +1218,7 @@
 
 
     </script>
+    <script src="<?php echo URL_ROOT; ?>/public/js/notification/notification-unit.js"></script>
 
     <style>
         /* Notification Animations */

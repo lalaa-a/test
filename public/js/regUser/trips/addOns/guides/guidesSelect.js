@@ -17,6 +17,8 @@
             this.selectedCard = null;
             this.selectedGuideName = null;
             this.guidesData = []; // Store fetched guides data
+            const urlParams = new URLSearchParams(window.location.search);
+            this.tripId = urlParams.get('tripId');
 
             this.initializeElements();
             this.addEventListeners();
@@ -208,7 +210,8 @@
             try {
                 const spotId = window.location.pathname.split('/').pop();
                 const baseUrl = window.location.origin + '/test';
-                const response = await fetch(`${baseUrl}/RegUser/getGuidesData/${spotId}`);
+                const tripQuery = this.tripId ? `?tripId=${encodeURIComponent(this.tripId)}` : '';
+                const response = await fetch(`${baseUrl}/RegUser/getGuidesData/${spotId}${tripQuery}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -507,7 +510,8 @@
                 
                 // Make backend request with correct URL format
                 const baseUrl = window.location.origin + '/test';
-                const response = await fetch(`${baseUrl}/RegUser/filterGuides/${spotId}`, {
+                const tripQuery = this.tripId ? `?tripId=${encodeURIComponent(this.tripId)}` : '';
+                const response = await fetch(`${baseUrl}/RegUser/filterGuides/${spotId}${tripQuery}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

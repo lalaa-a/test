@@ -717,6 +717,81 @@ class DriverModel {
         }
     }
 
+    private function hasAllProviderConfirmationsForTrip($userId, $tripId) {
+        $this->db->query("SELECT
+                COUNT(*) AS totalRequests,
+                SUM(CASE WHEN requestStatus = 'accepted' THEN 1 ELSE 0 END) AS acceptedRequests
+            FROM traveller_side_d_requests
+            WHERE tripId = :tripId
+              AND rqUserId = :userId
+                            AND requestStatus IN ('pending', 'requested', 'accepted', 'rejected')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $driverStats = $this->db->single();
+
+        $totalDrivers = isset($driverStats->totalRequests) ? (int)$driverStats->totalRequests : 0;
+        $acceptedDrivers = isset($driverStats->acceptedRequests) ? (int)$driverStats->acceptedRequests : 0;
+
+        if ($totalDrivers === 0 || $acceptedDrivers < $totalDrivers) {
+            return false;
+        }
+
+        $this->db->query("SELECT
+                COUNT(*) AS totalRequests,
+                SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) AS acceptedRequests
+            FROM traveller_side_g_requests
+            WHERE tripId = :tripId
+              AND userId = :userId
+              AND guideId IS NOT NULL
+                            AND status IN ('pending', 'requested', 'accepted', 'rejected')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $guideStats = $this->db->single();
+
+        $totalGuides = isset($guideStats->totalRequests) ? (int)$guideStats->totalRequests : 0;
+        $acceptedGuides = isset($guideStats->acceptedRequests) ? (int)$guideStats->acceptedRequests : 0;
+
+        return $acceptedGuides >= $totalGuides;
+    }
+
+    private function promoteTripToScheduledIfReady($userId, $tripId) {
+        $this->db->query("SELECT status
+                         FROM created_trips
+                         WHERE tripId = :tripId AND userId = :userId
+                         LIMIT 1");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $trip = $this->db->single();
+
+        if (!$trip || $trip->status !== 'wConfirmation') {
+            return;
+        }
+
+        if (!$this->hasAllProviderConfirmationsForTrip($userId, $tripId)) {
+            return;
+        }
+
+        $this->db->query("UPDATE created_trips
+                                                 SET status = 'awPayment', updatedAt = CURRENT_TIMESTAMP
+                         WHERE tripId = :tripId
+                           AND userId = :userId
+                           AND status = 'wConfirmation'");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $this->db->execute();
+    }
+
+    private function moveTripToPendingOnRejection($userId, $tripId) {
+        $this->db->query("UPDATE created_trips
+                         SET status = 'pending', updatedAt = CURRENT_TIMESTAMP
+                         WHERE tripId = :tripId
+                           AND userId = :userId
+                                                                                                         AND status IN ('wConfirmation', 'awPayment', 'scheduled')");
+        $this->db->bind(':tripId', (int)$tripId);
+        $this->db->bind(':userId', (int)$userId);
+        $this->db->execute();
+    }
+
     public function updateRequestStatus($driverId, $requestId, $status) {
         try {
             // Ensure the request belongs to the driver
@@ -733,6 +808,31 @@ class DriverModel {
 
             $res = $this->db->execute();
             if ($res) {
+                try {
+                    $syncQuery = "UPDATE traveller_side_d_requests
+                                  SET requestStatus = :status,
+                                      respondedAt = CURRENT_TIMESTAMP,
+                                      updatedAt = CURRENT_TIMESTAMP
+                                  WHERE tripId = :tripId
+                                    AND rqUserId = :rqUserId
+                                    AND driverId = :driverId
+                                                                        AND requestStatus IN ('pending', 'requested', 'accepted', 'rejected')";
+                    $this->db->query($syncQuery);
+                    $this->db->bind(':status', $status);
+                    $this->db->bind(':tripId', (int)$existing->tripId);
+                    $this->db->bind(':rqUserId', (int)$existing->rqUserId);
+                    $this->db->bind(':driverId', (int)$driverId);
+                    $this->db->execute();
+
+                    if ($status === 'accepted') {
+                        $this->promoteTripToScheduledIfReady((int)$existing->rqUserId, (int)$existing->tripId);
+                    } elseif ($status === 'rejected') {
+                        $this->moveTripToPendingOnRejection((int)$existing->rqUserId, (int)$existing->tripId);
+                    }
+                } catch (Exception $syncError) {
+                    error_log("Driver request sync warning for request $requestId: " . $syncError->getMessage());
+                }
+
                 return ['success' => true, 'message' => 'Status updated'];
             }
             return ['success' => false, 'message' => 'Failed to update status'];
@@ -1229,6 +1329,224 @@ class DriverModel {
             return [];
         } catch (Exception $e) {
             error_log("Error getting driver reviews: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function getAcceptedTripsTableName() {
+        $tables = ['driver_accepted_trips', 'driver_accept_trips'];
+
+        foreach ($tables as $table) {
+            $this->db->query("SHOW TABLES LIKE :tableName");
+            $this->db->bind(':tableName', $table);
+            $result = $this->db->single();
+
+            if ($result) {
+                return $table;
+            }
+        }
+
+        return 'driver_accepted_trips';
+    }
+
+    public function getEarningsSummary($driverId) {
+        try {
+            $acceptedTable = $this->getAcceptedTripsTableName();
+
+            $pendingQuery = "SELECT COUNT(*) AS pending_count, COALESCE(SUM(totalAmount), 0) AS pending_amount
+                             FROM {$acceptedTable}
+                             WHERE driverId = :driverId AND paymentStatus = 'pending'";
+            $this->db->query($pendingQuery);
+            $this->db->bind(':driverId', $driverId);
+            $pending = $this->db->single();
+
+            $paidQuery = "SELECT COUNT(*) AS paid_count, COALESCE(SUM(driverCharge), 0) AS paid_amount
+                          FROM driver_payments
+                          WHERE driverId = :driverId AND pDoneTraveller = 1 AND refunded = 0";
+            $this->db->query($paidQuery);
+            $this->db->bind(':driverId', $driverId);
+            $paid = $this->db->single();
+
+            $refundedQuery = "SELECT COUNT(*) AS refunded_count,
+                                     COALESCE(SUM(COALESCE(refundAmount, driverCharge)), 0) AS refunded_amount
+                              FROM driver_payments
+                              WHERE driverId = :driverId AND refunded = 1";
+            $this->db->query($refundedQuery);
+            $this->db->bind(':driverId', $driverId);
+            $refunded = $this->db->single();
+
+            $pendingCount = (int)($pending->pending_count ?? 0);
+            $pendingAmount = (float)($pending->pending_amount ?? 0);
+            $paidCount = (int)($paid->paid_count ?? 0);
+            $paidAmount = (float)($paid->paid_amount ?? 0);
+            $refundedCount = (int)($refunded->refunded_count ?? 0);
+            $refundedAmount = (float)($refunded->refunded_amount ?? 0);
+
+            return [
+                'pending_count' => $pendingCount,
+                'pending_amount' => $pendingAmount,
+                'paid_count' => $paidCount,
+                'paid_amount' => $paidAmount,
+                'refunded_count' => $refundedCount,
+                'refunded_amount' => $refundedAmount,
+                'total_earned' => $paidAmount + $refundedAmount
+            ];
+        } catch (Exception $e) {
+            error_log("Error getting earnings summary: " . $e->getMessage());
+            return [
+                'pending_count' => 0,
+                'pending_amount' => 0,
+                'paid_count' => 0,
+                'paid_amount' => 0,
+                'refunded_count' => 0,
+                'refunded_amount' => 0,
+                'total_earned' => 0
+            ];
+        }
+    }
+
+    public function getEarningsByStatus($driverId, $status) {
+        try {
+            $acceptedTable = $this->getAcceptedTripsTableName();
+
+            if ($status === 'pending') {
+                $query = "SELECT
+                            dat.tripId,
+                            COALESCE(dp.driverCharge, dat.totalAmount) AS driverCharge,
+                            dat.totalAmount AS totalTripCharge,
+                            dat.createdAt
+                          FROM {$acceptedTable} dat
+                          LEFT JOIN trip_payments tp ON dat.tripId = tp.tripId
+                          LEFT JOIN driver_payments dp ON tp.wholePaymentId = dp.wholePaymentId AND dp.driverId = dat.driverId
+                          WHERE dat.driverId = :driverId
+                            AND dat.paymentStatus = 'pending'
+                          ORDER BY dat.createdAt DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':driverId', $driverId);
+                return $this->db->resultSet();
+            }
+
+            if ($status === 'paid') {
+                $query = "SELECT
+                            COALESCE(tp.tripId, dat.tripId) AS tripId,
+                            dp.driverCharge,
+                            dp.pDoneSite,
+                            dp.pDateTraveller,
+                            dp.pDateSite,
+                            dp.createdAt
+                          FROM driver_payments dp
+                          LEFT JOIN trip_payments tp ON dp.wholePaymentId = tp.wholePaymentId
+                          LEFT JOIN {$acceptedTable} dat ON dat.tripId = tp.tripId AND dat.driverId = dp.driverId
+                          WHERE dp.driverId = :driverId
+                            AND dp.pDoneTraveller = 1
+                            AND dp.refunded = 0
+                          ORDER BY COALESCE(dp.pDateTraveller, dp.createdAt) DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':driverId', $driverId);
+                return $this->db->resultSet();
+            }
+
+            if ($status === 'refunded') {
+                $query = "SELECT
+                            COALESCE(tp.tripId, dat.tripId) AS tripId,
+                            dp.driverCharge,
+                            dp.refundAmount,
+                            dp.refundDate,
+                            dp.refundReason,
+                            dp.pDoneSite,
+                            dp.createdAt
+                          FROM driver_payments dp
+                          LEFT JOIN trip_payments tp ON dp.wholePaymentId = tp.wholePaymentId
+                          LEFT JOIN {$acceptedTable} dat ON dat.tripId = tp.tripId AND dat.driverId = dp.driverId
+                          WHERE dp.driverId = :driverId
+                            AND dp.refunded = 1
+                          ORDER BY COALESCE(dp.refundDate, dp.createdAt) DESC";
+
+                $this->db->query($query);
+                $this->db->bind(':driverId', $driverId);
+                return $this->db->resultSet();
+            }
+
+            return [];
+        } catch (Exception $e) {
+            error_log("Error getting earnings by status ({$status}): " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getMonthlyEarnings($driverId) {
+        try {
+            $acceptedTable = $this->getAcceptedTripsTableName();
+            $months = [];
+
+            for ($i = 5; $i >= 0; $i--) {
+                $monthKey = date('Y-m', strtotime("-{$i} months"));
+                $months[$monthKey] = [
+                    'monthKey' => $monthKey,
+                    'monthLabel' => date('M Y', strtotime($monthKey . '-01')),
+                    'paid' => 0,
+                    'pending' => 0,
+                    'refunded' => 0
+                ];
+            }
+
+            $pendingQuery = "SELECT DATE_FORMAT(createdAt, '%Y-%m') AS monthKey,
+                                    COALESCE(SUM(totalAmount), 0) AS amount
+                             FROM {$acceptedTable}
+                             WHERE driverId = :driverId
+                               AND paymentStatus = 'pending'
+                               AND createdAt >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                             GROUP BY DATE_FORMAT(createdAt, '%Y-%m')";
+            $this->db->query($pendingQuery);
+            $this->db->bind(':driverId', $driverId);
+            $pendingRows = $this->db->resultSet();
+
+            foreach ($pendingRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['pending'] = (float)$row->amount;
+                }
+            }
+
+            $paidQuery = "SELECT DATE_FORMAT(COALESCE(pDateTraveller, createdAt), '%Y-%m') AS monthKey,
+                                 COALESCE(SUM(driverCharge), 0) AS amount
+                          FROM driver_payments
+                          WHERE driverId = :driverId
+                            AND pDoneTraveller = 1
+                            AND refunded = 0
+                            AND COALESCE(pDateTraveller, createdAt) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                          GROUP BY DATE_FORMAT(COALESCE(pDateTraveller, createdAt), '%Y-%m')";
+            $this->db->query($paidQuery);
+            $this->db->bind(':driverId', $driverId);
+            $paidRows = $this->db->resultSet();
+
+            foreach ($paidRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['paid'] = (float)$row->amount;
+                }
+            }
+
+            $refundedQuery = "SELECT DATE_FORMAT(COALESCE(refundDate, createdAt), '%Y-%m') AS monthKey,
+                                     COALESCE(SUM(COALESCE(refundAmount, driverCharge)), 0) AS amount
+                              FROM driver_payments
+                              WHERE driverId = :driverId
+                                AND refunded = 1
+                                AND COALESCE(refundDate, createdAt) >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                              GROUP BY DATE_FORMAT(COALESCE(refundDate, createdAt), '%Y-%m')";
+            $this->db->query($refundedQuery);
+            $this->db->bind(':driverId', $driverId);
+            $refundedRows = $this->db->resultSet();
+
+            foreach ($refundedRows as $row) {
+                if (isset($months[$row->monthKey])) {
+                    $months[$row->monthKey]['refunded'] = (float)$row->amount;
+                }
+            }
+
+            return array_values($months);
+        } catch (Exception $e) {
+            error_log("Error getting monthly earnings: " . $e->getMessage());
             return [];
         }
     }

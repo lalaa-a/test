@@ -88,3 +88,49 @@ CREATE TABLE guide_side_g_requests (
     INDEX idx_user_status (userId, status),
     INDEX idx_event_guide (eventId, guideId)
 ) ENGINE=InnoDB;
+
+CREATE TABLE guide_accepted_trips (
+    acceptId INT PRIMARY KEY AUTO_INCREMENT,
+    eventId INT NOT NULL,
+    tripId INT NOT NULL,
+    travelSpotId INT NOT NULL,
+    guideId INT NOT NULL,
+    
+    -- Guide information (denormalized for quick access)
+    guideFullName VARCHAR(255) NOT NULL,
+    guideProfilePhoto VARCHAR(500),
+    guideAverageRating DECIMAL(3,2) DEFAULT 0.00,
+    guideBio TEXT,
+    
+    -- Pricing information
+    chargeType ENUM('per_person', 'whole_trip') NOT NULL,
+    numberOfPeople INT NOT NULL DEFAULT 1,
+    totalCharge DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    
+    -- Status tracking
+    doneStatus BOOLEAN DEFAULT FALSE COMMENT 'Trip completed or not',
+    paymentStatus ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending',
+    
+    -- Timestamps
+    completedAt TIMESTAMP NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraints
+    FOREIGN KEY (eventId) REFERENCES trip_events(eventId) ON DELETE CASCADE,
+    FOREIGN KEY (tripId) REFERENCES created_trips(tripId) ON DELETE CASCADE,
+    FOREIGN KEY (travelSpotId) REFERENCES travel_spots(spotId) ON DELETE CASCADE,
+    FOREIGN KEY (guideId) REFERENCES users(id) ON DELETE CASCADE,
+    
+  
+    INDEX idx_event (eventId),
+    INDEX idx_travel_spot (travelSpotId),
+    INDEX idx_guide (guideId),
+    INDEX idx_done_status (doneStatus),
+    INDEX idx_payment_status (paymentStatus),
+    INDEX idx_charge_type (chargeType),
+    INDEX idx_created_at (createdAt DESC),
+    INDEX idx_completed_at (completedAt),
+    INDEX idx_guide_status (guideId, doneStatus, paymentStatus)
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

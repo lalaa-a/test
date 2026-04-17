@@ -22,7 +22,6 @@
             this.coverPhotos = [];
             this.vehicles = [];
             this.reviews = [];
-            this.ratings = [];
             this.pricing = [];
 
             this.init();
@@ -154,22 +153,20 @@
                 console.log('Loading driver profile data...');
 
                 // Load all data in parallel
-                const [profileResponse, coverResponse, vehiclesResponse, reviewsResponse, pricingResponse, ratingsResponse] = await Promise.all([
+                const [profileResponse, coverResponse, vehiclesResponse, reviewsResponse, pricingResponse] = await Promise.all([
                     fetch(`${this.URL_ROOT}/Driver/getDriverProfile/${this.driverId}`),
                     fetch(`${this.URL_ROOT}/RegUser/getDriverCoverPhotos/${this.driverId}`),
                     fetch(`${this.URL_ROOT}/Driver/getDriverVehicles/${this.driverId}`),
                     fetch(`${this.URL_ROOT}/RegUser/getDriverReviews/${this.driverId}`),
-                    fetch(`${this.URL_ROOT}/Driver/getDriverPricing/${this.driverId}`),
-                    fetch(`${this.URL_ROOT}/RegUser/getDriverRatings/${this.driverId}`)
+                    fetch(`${this.URL_ROOT}/Driver/getDriverPricing/${this.driverId}`)
                 ]);
 
-                const [profileData, coverData, vehiclesData, reviewsData, pricingData, ratingsData] = await Promise.all([
+                const [profileData, coverData, vehiclesData, reviewsData, pricingData] = await Promise.all([
                     profileResponse.json(),
                     coverResponse.json(),
                     vehiclesResponse.json(),
                     reviewsResponse.json(),
-                    pricingResponse.json(),
-                    ratingsResponse.json()
+                    pricingResponse.json()
                 ]);
 
                 if (profileData.success) {
@@ -197,8 +194,9 @@
                     this.renderVehicles(); // Re-render vehicles to include pricing
                 }
 
-                if (ratingsData.success) {
-                    this.ratings = ratingsData.ratings;
+                // Note: Reviews now include ratings from the unified table
+                // Update rating summary based on reviews data
+                if (reviewsData.success) {
                     this.updateRatingSummary();
                 }
 
@@ -487,7 +485,10 @@
         }
 
         updateRatingSummary() {
-            if (!this.ratings || this.ratings.length === 0) {
+            // Filter reviews that have ratings (ratings are now included in reviews)
+            const ratingsArray = this.reviews.filter(review => review.rating);
+            
+            if (!ratingsArray || ratingsArray.length === 0) {
                 // Show default values when no ratings
                 const overallRatingElement = document.getElementById('overallRating');
                 if (overallRatingElement) {
@@ -509,8 +510,8 @@
             }
 
             // Calculate average rating
-            const totalRating = this.ratings.reduce((sum, rating) => sum + parseFloat(rating.rating), 0);
-            const averageRating = totalRating / this.ratings.length;
+            const totalRating = ratingsArray.reduce((sum, rating) => sum + parseFloat(rating.rating), 0);
+            const averageRating = totalRating / ratingsArray.length;
 
             // Update overall rating display
             const overallRatingElement = document.getElementById('overallRating');
@@ -527,7 +528,7 @@
             // Update total ratings text
             const totalElement = document.getElementById('totalReviews');
             if (totalElement) {
-                totalElement.textContent = `${this.ratings.length} rating${this.ratings.length !== 1 ? 's' : ''}`;
+                totalElement.textContent = `${ratingsArray.length} rating${ratingsArray.length !== 1 ? 's' : ''}`;
             }
 
             // Update rating breakdown
@@ -538,7 +539,10 @@
             const breakdownElement = document.getElementById('ratingBreakdown');
             if (!breakdownElement) return;
 
-            if (!this.ratings || this.ratings.length === 0) {
+            // Filter reviews that have ratings
+            const ratingsArray = this.reviews.filter(review => review.rating);
+
+            if (!ratingsArray || ratingsArray.length === 0) {
                 // Show empty breakdown when no ratings
                 breakdownElement.innerHTML = `
                     <div class="bar-row">
@@ -582,8 +586,8 @@
 
             // Count ratings by value
             const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-            this.ratings.forEach(rating => {
-                const ratingValue = Math.floor(parseFloat(rating.rating));
+            ratingsArray.forEach(review => {
+                const ratingValue = Math.floor(parseFloat(review.rating));
                 if (ratingCounts.hasOwnProperty(ratingValue)) {
                     ratingCounts[ratingValue]++;
                 }
@@ -592,7 +596,7 @@
             // Create breakdown HTML
             const breakdownHtml = [5, 4, 3, 2, 1].map(ratingValue => {
                 const count = ratingCounts[ratingValue];
-                const percentage = this.ratings.length > 0 ? (count / this.ratings.length) * 100 : 0;
+                const percentage = ratingsArray.length > 0 ? (count / ratingsArray.length) * 100 : 0;
 
                 return `
                     <div class="bar-row">
@@ -792,41 +796,26 @@
             }
 
             try {
-                // Submit both review and rating
-                const [reviewResponse, ratingResponse] = await Promise.all([
-                    fetch(`${this.URL_ROOT}/RegUser/submitReview`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            driverId: this.driverId,
-                            comment: comment
-                        })
-                    }),
-                    fetch(`${this.URL_ROOT}/RegUser/submitRating`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            driverId: this.driverId,
-                            rating: rating
-                        })
+                // Submit review and rating together in a single API call
+                const response = await fetch(`${this.URL_ROOT}/RegUser/submitReview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        driverId: this.driverId,
+                        comment: comment,
+                        rating: rating
                     })
-                ]);
+                });
 
-                const [reviewData, ratingData] = await Promise.all([
-                    reviewResponse.json(),
-                    ratingResponse.json()
-                ]);
+                const data = await response.json();
 
-                if (reviewData.success && ratingData.success) {
+                if (data.success) {
                     this.showNotification('Review and rating submitted successfully!', 'success');
                     this.closeReviewModal();
-                    // Reload both reviews and ratings
+                    // Reload reviews (which now includes ratings)
                     this.loadReviews();
-                    this.loadRatings();
                 } else {
                     this.showNotification('Error submitting review or rating', 'error');
                 }
@@ -851,17 +840,9 @@
         }
 
         async loadRatings() {
-            try {
-                const response = await fetch(`${this.URL_ROOT}/RegUser/getDriverRatings/${this.driverId}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    this.ratings = data.ratings;
-                    this.updateRatingSummary();
-                }
-            } catch (error) {
-                console.error('Error loading ratings:', error);
-            }
+            // DEPRECATED: Ratings are now loaded with reviews using loadReviews()
+            // This method is kept for backward compatibility but is no longer needed
+            this.updateRatingSummary();
         }
 
         showVehicleDetails(vehicleId) {

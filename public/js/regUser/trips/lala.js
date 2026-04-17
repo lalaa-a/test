@@ -1805,6 +1805,43 @@
 
             const currentType = typeConfig[selectedType] || typeConfig['travelSpot'];
             const currentStatus = statusConfig[selectedStatus] || statusConfig['intermediate'];
+            const showStartTime = selectedStatus !== 'end';
+            const showEndTime = selectedStatus !== 'start';
+            const formattedStartTime = isPopup
+                ? (eventFormData.startTime || '')
+                : this.formatTimeToAMPM(eventFormData.startTime);
+            const formattedEndTime = isPopup
+                ? (eventFormData.endTime || '')
+                : this.formatTimeToAMPM(eventFormData.endTime);
+            const addBelowBoundaryTime = selectedStatus === 'start'
+                ? (eventFormData.startTime || '')
+                : (eventFormData.endTime || '');
+
+            let eventLocationMarkup = `<span>${this.escapeHtml(spot.spotName || 'Location not specified')}</span>`;
+            if (selectedType === 'location') {
+                const latitudeRaw = (eventFormData && eventFormData.latitude !== undefined && eventFormData.latitude !== null)
+                    ? eventFormData.latitude
+                    : (spot && spot.itinerary && spot.itinerary[0] ? spot.itinerary[0].latitude : null);
+                const longitudeRaw = (eventFormData && eventFormData.longitude !== undefined && eventFormData.longitude !== null)
+                    ? eventFormData.longitude
+                    : (spot && spot.itinerary && spot.itinerary[0] ? spot.itinerary[0].longitude : null);
+
+                const latitude = Number(latitudeRaw);
+                const longitude = Number(longitudeRaw);
+
+                if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+                    eventLocationMarkup = `<span>${this.escapeHtml(`Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`)}</span>`;
+                }
+            } else if (selectedType === 'travelSpot') {
+                const travelSpotId = (eventFormData && eventFormData.travelSpotId)
+                    ? eventFormData.travelSpotId
+                    : (spot ? spot.spotId : null);
+
+                if (travelSpotId) {
+                    const destinationUrl = `${this.URL_ROOT}/destinations/${travelSpotId}`;
+                    eventLocationMarkup = `<a href="${this.escapeHtml(destinationUrl)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(destinationUrl)}</a>`;
+                }
+            }
 
             const wrapper = document.createElement('div');
             wrapper.className = 'event-card-wrapper';
@@ -1815,11 +1852,8 @@
             card.dataset.status = selectedStatus;
             card.innerHTML = `
                                 <div class="event-time-section">
-                                    <div class="time-label">START</div>
-
-                                    <div class="event-start-time">${this.escapeHtml(isPopup ? eventFormData.startTime : this.formatTimeToAMPM(eventFormData.startTime))}</div>
-                                    <div class="time-label">END</div>
-                                    <div class="event-end-time">${this.escapeHtml(isPopup ? eventFormData.endTime : this.formatTimeToAMPM(eventFormData.endTime))}</div>
+                                    ${showStartTime ? `<div class="time-label">START</div><div class="event-start-time">${this.escapeHtml(formattedStartTime)}</div>` : ''}
+                                    ${showEndTime ? `<div class="time-label">END</div><div class="event-end-time">${this.escapeHtml(formattedEndTime)}</div>` : ''}
                                 </div>
                                 <div class="event-image">
                                     <i class="${currentType.icon}"></i>
@@ -1844,7 +1878,7 @@
                                                         <button class="dot-menu-item edit" onclick="tripEventListManager.addEventAbove(${this.tripId.textContent},${eventFormData.eventId},'${eventFormData.startTime}')">
                                                             <i class="fa-solid fa-arrow-up"></i> Add event above
                                                         </button>
-                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventBelow(${this.tripId.textContent},${eventFormData.eventId},'${eventFormData.endTime}')">
+                                                        <button class="dot-menu-item edit" onclick="tripEventListManager.addEventBelow(${this.tripId.textContent},${eventFormData.eventId},'${addBelowBoundaryTime}')">
                                                             <i class="fa-solid fa-arrow-down"></i> Add event below
                                                         </button>
                                                         <button class="dot-menu-item edit" onclick="tripEventListManager.editEvent(${this.tripId.textContent},${eventFormData.eventId})">
@@ -1864,7 +1898,7 @@
                                     <div class="event-details">
                                         <div class="event-detail">
                                             <i class="fas fa-map-marker-alt"></i>
-                                            <span>${this.escapeHtml( 'Location not specified')}</span>
+                                            ${eventLocationMarkup}
                                         </div>
                                         <div class="event-detail">
                                             <i class="fas fa-star"></i>

@@ -134,7 +134,7 @@ CREATE TABLE traveller_reviews (
     travellerId INT NOT NULL,
     guideDriverId INT,
     reviewText TEXT NOT NULL,
-
+    rating DECIMAL(2,1) NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -144,15 +144,6 @@ CREATE TABLE traveller_reviews (
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE serviceProvider_ratings (
-    ratingId INT PRIMARY KEY AUTO_INCREMENT,
-    serviceProviderId INT NOT NULL,
-    travellerId INT NOT NULL,
-    rating DECIMAL(2,1) NOT NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (serviceProviderId) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (travellerId) REFERENCES users(id) ON DELETE CASCADE
-   
-) ENGINE=InnoDB;
+ALTER TABLE traveller_reviews 
+ADD COLUMN rating DECIMAL(2,1) NOT NULL 
+AFTER reviewText;

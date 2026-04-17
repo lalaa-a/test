@@ -400,6 +400,7 @@
             SELECT 
                 tr.reviewId,
                 tr.reviewText,
+                tr.rating,
                 tr.createdAt,
                 u.fullname as travellerName,
                 u.profile_photo as travellerPhoto
@@ -413,65 +414,26 @@
         return $results ? $results : [];
     }
 
-    public function submitReview($travellerId, $driverId, $reviewText) {
+    public function submitReview($travellerId, $driverId, $reviewText, $rating = null) {
         $this->db->query("
-            INSERT INTO traveller_reviews (travellerId, guideDriverId, reviewText, createdAt, updatedAt) 
-            VALUES (:travellerId, :driverId, :reviewText, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO traveller_reviews (travellerId, guideDriverId, reviewText, rating, createdAt, updatedAt) 
+            VALUES (:travellerId, :driverId, :reviewText, :rating, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ");
         $this->db->bind(':travellerId', $travellerId);
         $this->db->bind(':driverId', $driverId);
         $this->db->bind(':reviewText', $reviewText);
+        $this->db->bind(':rating', $rating);
         return $this->db->execute();
     }
 
     public function getDriverRatings($driverId) {
-        $this->db->query("
-            SELECT 
-                spr.ratingId,
-                spr.rating,
-                spr.createdAt,
-                u.fullname as travellerName,
-                u.profile_photo as travellerPhoto
-            FROM serviceProvider_ratings spr
-            JOIN users u ON spr.travellerId = u.id
-            WHERE spr.serviceProviderId = :driverId
-            ORDER BY spr.createdAt DESC
-        ");
-        $this->db->bind(':driverId', $driverId);
-        $results = $this->db->resultSet();
-        return $results ? $results : [];
+        // DEPRECATED: use getDriverReviews() instead which now includes ratings from unified table
+        return $this->getDriverReviews($driverId);
     }
 
     public function submitRating($travellerId, $driverId, $rating) {
-        // Check if rating already exists for this traveller-driver pair
-        $this->db->query("
-            SELECT ratingId FROM serviceProvider_ratings 
-            WHERE travellerId = :travellerId AND serviceProviderId = :driverId
-        ");
-        $this->db->bind(':travellerId', $travellerId);
-        $this->db->bind(':driverId', $driverId);
-        $existingRating = $this->db->single();
-
-        if ($existingRating) {
-            // Update existing rating
-            $this->db->query("
-                UPDATE serviceProvider_ratings 
-                SET rating = :rating, updatedAt = CURRENT_TIMESTAMP 
-                WHERE ratingId = :ratingId
-            ");
-            $this->db->bind(':rating', $rating);
-            $this->db->bind(':ratingId', $existingRating->ratingId);
-        } else {
-            // Insert new rating
-            $this->db->query("
-                INSERT INTO serviceProvider_ratings (serviceProviderId, travellerId, rating, createdAt, updatedAt) 
-                VALUES (:driverId, :travellerId, :rating, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ");
-            $this->db->bind(':driverId', $driverId);
-            $this->db->bind(':travellerId', $travellerId);
-            $this->db->bind(':rating', $rating);
-        }
-        
-        return $this->db->execute();
+        // DEPRECATED: use submitReview() with rating parameter instead
+        // Kept for backward compatibility - submits a rating without review text
+        return $this->submitReview($travellerId, $driverId, '', $rating);
     }
 }

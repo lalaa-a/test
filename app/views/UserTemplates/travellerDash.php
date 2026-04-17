@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&libraries=places&v=weekly" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUc91mpWQzeFwZB8byhyY0GBGSS35XjW0&libraries=places&v=weekly" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
@@ -1161,6 +1161,95 @@
 
 
     </script>
+    <?php
+
+if (!isset($helpRoute)) {
+    $helpRoute = 'helpc';
+}
+?>
+
+<!-- Help Widget CSS -->
+<link rel="stylesheet" href="<?php echo URL_ROOT . '/public/css/helper/helpWidget.css' ?>">
+
+<!-- Help Widget Container -->
+<div class="help-widget-container">
+    <!-- Help Options Popup -->
+    <div class="help-options-popup" id="helpOptionsPopup">
+        <div class="help-popup-header">
+            <h4><i class="fas fa-hands-helping"></i> How can we help?</h4>
+        </div>
+        <div class="help-option-item" id="openChatBtn">
+            <div class="help-option-icon chat-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="help-option-text">
+                <h5>Chat with Us</h5>
+                <p>Chat with our support team</p>
+            </div>
+        </div>
+        <a href="<?php echo URL_ROOT . '/' . $helpRoute ?>" class="help-option-item">
+            <div class="help-option-icon center-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="help-option-text">
+                <h5>Help Center</h5>
+                <p>Browse FAQs & guides</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Floating Help Button -->
+    <button class="floating-help-btn" id="helpBtn" title="Need Help?">
+        <img src="<?php echo IMG_ROOT . '/help/support.png' ?>" alt="Help">
+    </button>
+
+    
+
+<!-- Chat Widget -->
+<div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <div class="agent-avatar">
+                <i class="fas fa-headset"></i>
+                <span class="status-dot"></span>
+            </div>
+            <div class="agent-details">
+                <h3>Travel Support</h3>
+                <p>Online | Typically replies in minutes</p>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <i class="fas fa-times" id="closeChatBtn"></i>
+        </div>
+    </div>
+    <div class="chat-body">
+        <div class="chat-messages" id="chatMessages">
+            <div class="date-divider"><span>Today</span></div>
+            <div class="message support-message">
+                <div class="message-content">
+                    <p>Hello there! 👋 Welcome to Tripingoo Travel Support. How can we help you today?</p>
+                </div>
+                <span class="message-time">Just now</span>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <input type="text" id="chatInput" placeholder="Type your message...">
+                <button class="send-btn" id="chatSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help & Chat Widget JS -->
+<script>
+    window.CURRENT_USER_ID = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
+</script>
+<script src="<?php echo URL_ROOT . '/public/js/helper/helpWidget.js?v=' . time(); ?>"></script>
+
+</div>
 </body>
 </html>
 
