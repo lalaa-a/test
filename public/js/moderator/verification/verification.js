@@ -1,18 +1,18 @@
-(function() {
+(function () {
 
     const URL_ROOT = 'http://localhost/test';
     const navLinks = document.querySelectorAll('.nav-tab-link');
 
     navLinks.forEach(link => {
-            
-        link.addEventListener('click', async function(e) {
+
+        link.addEventListener('click', async function (e) {
 
             e.preventDefault();
 
             // Remove active class from all links
             navLinks.forEach(l => l.classList.remove('active'));
 
-            console.log(link.dataset.tab); 
+            console.log(link.dataset.tab);
 
             // Add active class to clicked link
             this.classList.add('active');
@@ -30,10 +30,10 @@
     }, 100);
 
 
-    async function loadSubtabContent(subtabId){
+    async function loadSubtabContent(subtabId) {
 
         const tabElement = document.getElementById('content-subtab-loader');
-        
+
         // Show loading state
         tabElement.innerHTML = `
             <div style="text-align: center; padding: 40px; color: var(--primary);">
@@ -42,24 +42,24 @@
             </div>
         `;
 
-        try{     
+        try {
 
-            const {ok,loadingContent} = await fetch(URL_ROOT+'/Moderator/'+`${subtabId}`).then(r=>r.json());
+            const { ok, loadingContent } = await fetch(URL_ROOT + '/Moderator/' + `${subtabId}`).then(r => r.json());
 
             if (!ok) {
                 throw new Error(`Failed to load ${subtabId}: status ${ok}`);
             }
 
             cleanupPreviousAssets(subtabId);
-                    
-            tabElement.innerHTML =  loadingContent.html;
-                    
-            if(loadingContent.css){
-                appendCSS(loadingContent.css,subtabId)
+
+            tabElement.innerHTML = loadingContent.html;
+
+            if (loadingContent.css) {
+                appendCSS(loadingContent.css, subtabId)
             }
 
-            if(loadingContent.js){
-                appendJS(loadingContent.js,subtabId);
+            if (loadingContent.js) {
+                appendJS(loadingContent.js, subtabId);
             }
 
         }

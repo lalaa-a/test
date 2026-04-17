@@ -22,5 +22,5 @@
     </ul>
 </nav>
 
-<div id="content-subtab-loader" class="content-subtab-loader"><div>
-
+<div id="content-subtab-loader" class="content-subtab-loader">
+    <div>

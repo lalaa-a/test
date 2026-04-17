@@ -28,13 +28,9 @@
                 header('Location: ' . URL_ROOT . '/dashboard');
                 exit();
             }
-            
-            $data = [
-                'title' => 'Admin Dashboard',
-                'user' => $user
-            ];
-            
-            $this->view('Admin/adminDash', $data);
+
+            header('Location: ' . URL_ROOT . '/admin');
+            exit();
         }
 
         // SiteModerator specific dashboard
