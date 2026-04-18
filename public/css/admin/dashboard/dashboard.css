@@ -11,9 +11,7 @@
     gap: 24px;
     padding: 28px 30px;
     border-radius: 24px;
-    background:
-        radial-gradient(circle at top right, rgba(154, 203, 208, 0.95), transparent 32%),
-        linear-gradient(135deg, #005e64 0%, #0d767f 46%, #103744 100%);
+    background: #0d767f;
     color: #ffffff;
     box-shadow: 0 22px 48px rgba(0, 106, 113, 0.18);
 }
@@ -24,12 +22,6 @@
     font-size: 0.78rem;
     font-weight: 700;
     opacity: 0.82;
-}
-
-.dashboard-overview h2 {
-    margin-top: 8px;
-    font-size: clamp(2rem, 4vw, 2.7rem);
-    line-height: 1.08;
 }
 
 .dashboard-description {
@@ -172,9 +164,7 @@
     padding: 24px 26px 26px;
     border-radius: 24px;
     border: 1px solid #e6edf1;
-    background:
-        radial-gradient(circle at top left, rgba(210, 240, 243, 0.95), transparent 32%),
-        linear-gradient(180deg, #ffffff 0%, #f9fcfd 100%);
+    background: #ffffff;
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
 }
 

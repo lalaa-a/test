@@ -768,8 +768,8 @@
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            background: rgba(15, 23, 42, 0.45);
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.35);
             z-index: 10002;
         }
 
@@ -778,74 +778,74 @@
         }
 
         .profile-settings-panel {
-            width: min(960px, 100%);
-            max-height: 92vh;
+            width: min(760px, 100%);
+            max-height: 88vh;
             overflow-y: auto;
             background: white;
-            border-radius: 20px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+            border-radius: 14px;
+            border: 1px solid #dde5eb;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
         }
 
         .profile-settings-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 20px;
-            padding: 26px 30px 20px;
+            gap: 16px;
+            padding: 20px 22px 16px;
             border-bottom: 1px solid #e9ecef;
         }
 
         .profile-settings-header h2 {
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin-bottom: 6px;
+            color: #0f172a;
+            font-size: 1.2rem;
+            margin-bottom: 4px;
         }
 
         .profile-settings-header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
+            color: #64748b;
+            font-size: 0.9rem;
         }
 
         .profile-settings-close {
-            width: 42px;
-            height: 42px;
-            border: 1px solid #dbe4ea;
+            width: 36px;
+            height: 36px;
+            border: 1px solid #d6dee5;
             background: white;
-            color: var(--primary);
-            border-radius: 50%;
+            color: #475569;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1.05rem;
-            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
 
         .profile-settings-close:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #cbd5e1;
         }
 
         .profile-settings-top {
             display: flex;
             align-items: center;
-            gap: 24px;
-            padding: 26px 30px;
-            background: linear-gradient(135deg, #006A71 0%, #0b8a92 100%);
-            color: white;
+            gap: 16px;
+            padding: 18px 22px;
+            background: #f8fafc;
+            color: #0f172a;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .profile-settings-avatar {
-            width: 108px;
-            height: 108px;
+            width: 78px;
+            height: 78px;
             border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid #d6dee5;
+            background: #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             flex-shrink: 0;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
         }
 
         .profile-settings-avatar img {
@@ -856,54 +856,33 @@
         }
 
         .profile-settings-avatar span {
-            font-size: 2.6rem;
+            font-size: 1.9rem;
             font-weight: 700;
             letter-spacing: 0.04em;
+            color: #475569;
         }
 
         .profile-settings-top h3 {
-            font-size: 1.6rem;
-            margin-bottom: 6px;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
         }
 
         .profile-settings-role {
-            opacity: 0.92;
-            margin-bottom: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
             text-transform: capitalize;
         }
 
-        .profile-settings-photo-input {
-            display: none;
-        }
-
-        .profile-settings-photo-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            background: rgba(255, 255, 255, 0.14);
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .profile-settings-photo-btn:hover {
-            background: rgba(255, 255, 255, 0.22);
-        }
-
         .profile-settings-form {
-            padding: 28px 30px 32px;
+            padding: 20px 22px 24px;
         }
 
         .profile-settings-feedback {
             display: none;
-            margin-bottom: 20px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 0.95rem;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.92rem;
             border: 1px solid transparent;
         }
 
@@ -926,18 +905,38 @@
         .profile-settings-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px 20px;
+            gap: 14px 16px;
         }
 
         .profile-settings-group.full {
             grid-column: 1 / -1;
         }
 
+        .profile-settings-section {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .profile-settings-section-title {
+            margin-bottom: 6px;
+            color: #0f172a;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .profile-settings-section-note {
+            margin-bottom: 14px;
+            color: #64748b;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
         .profile-settings-group label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--primary);
-            font-size: 0.92rem;
+            margin-bottom: 6px;
+            color: #334155;
+            font-size: 0.9rem;
             font-weight: 600;
         }
 
@@ -945,13 +944,13 @@
         .profile-settings-group select,
         .profile-settings-group textarea {
             width: 100%;
-            padding: 13px 14px;
+            padding: 11px 12px;
             border: 1px solid #d7e0e6;
-            border-radius: 12px;
-            background: #fbfdfe;
+            border-radius: 10px;
+            background: #ffffff;
             color: var(--text-color);
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            font-size: 0.94rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .profile-settings-group input:focus,
@@ -964,7 +963,7 @@
         }
 
         .profile-settings-group textarea {
-            min-height: 110px;
+            min-height: 92px;
             resize: vertical;
         }
 
@@ -972,16 +971,17 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            margin-top: 28px;
+            margin-top: 22px;
         }
 
         .btn-secondary {
-            background: #e8eef1;
-            color: var(--primary);
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #d6dee5;
         }
 
         .btn-secondary:hover {
-            background: #d9e5e9;
+            background: #e2e8f0;
         }
 
         /* Responsive - Modern Mobile Design */
@@ -1075,8 +1075,8 @@
             .profile-settings-header,
             .profile-settings-top,
             .profile-settings-form {
-                padding-left: 20px;
-                padding-right: 20px;
+                padding-left: 18px;
+                padding-right: 18px;
             }
 
             .profile-settings-top {
@@ -1128,11 +1128,10 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="<?php echo URL_ROOT . '/admin/dashboard' ?>" class="active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
-            <li><a href="<?php echo URL_ROOT . '/admin/moderator' ?>" data-tab="moderator"><i class="fa-solid fa-user-tie"></i><span>Moderator Info</span></a></li>
+            <li><a href="<?php echo URL_ROOT . '/admin/moderator' ?>" data-tab="moderator"><i class="fa-solid fa-user-tie"></i><span>Moderator Accounts</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/userInfo' ?>" data-tab="userInfo"><i class="fa-solid fa-users"></i><span>User Info</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/tripInfo' ?>" data-tab="tripInfo"><i class="fa-solid fa-suitcase-rolling"></i></i><span>Trip Info</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/verification' ?>" data-tab="verification"><i class="fa-solid fa-circle-check"></i> <span>Verification</span></a></li>
-            <li><a href="<?php echo URL_ROOT . '/admin/content' ?>" data-tab="content"><i class="fa-solid fa-folder-plus"></i> <span>Content</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/oversight' ?>" data-tab="oversight"><i class="fa-solid fa-eye"></i> <span>Oversight</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/transaction' ?>" data-tab="transaction"><i class="fas fa-money-bill-transfer"></i> <span>Transaction</span></a></li>
             <li><a href="<?php echo URL_ROOT . '/admin/analytics' ?>" data-tab="analytics"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a></li>
@@ -1215,11 +1214,6 @@
                     <div>
                         <h3 id="profileSettingsDisplayName"><?php echo htmlspecialchars($adminDisplayName); ?></h3>
                         <p class="profile-settings-role"><?php echo htmlspecialchars($adminUser['account_type'] ?? 'admin'); ?></p>
-                        <label for="profileSettingsPhotoInput" class="profile-settings-photo-btn">
-                            <i class="fas fa-camera"></i>
-                            Change Photo
-                        </label>
-                        <input type="file" id="profileSettingsPhotoInput" class="profile-settings-photo-input" accept="image/png,image/jpeg,image/jpg">
                     </div>
                 </div>
 
@@ -1236,47 +1230,27 @@
                             <label for="adminProfileEmail">Email Address</label>
                             <input type="email" id="adminProfileEmail" name="email" value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
                         </div>
+                    </div>
 
-                        <div class="profile-settings-group">
-                            <label for="adminProfilePhone">Phone Number</label>
-                            <input type="text" id="adminProfilePhone" name="phone" value="<?php echo htmlspecialchars($adminUser['phone'] ?? ''); ?>" required>
-                        </div>
+                    <div class="profile-settings-section">
+                        <h3 class="profile-settings-section-title">Password Change</h3>
+                        <p class="profile-settings-section-note">This section is available in the UI for now. Password saving will be connected later.</p>
 
-                        <div class="profile-settings-group">
-                            <label for="adminProfileSecondaryPhone">Secondary Phone</label>
-                            <input type="text" id="adminProfileSecondaryPhone" name="secondary_phone" value="<?php echo htmlspecialchars($adminUser['secondary_phone'] ?? ''); ?>">
-                        </div>
+                        <div class="profile-settings-grid">
+                            <div class="profile-settings-group">
+                                <label for="adminProfileCurrentPassword">Current Password</label>
+                                <input type="password" id="adminProfileCurrentPassword" autocomplete="current-password">
+                            </div>
 
-                        <div class="profile-settings-group">
-                            <label for="adminProfileLanguage">Language</label>
-                            <select id="adminProfileLanguage" name="language" required>
-                                <option value="">Select language</option>
-                                <option value="English" <?php echo (($adminUser['language'] ?? '') === 'English') ? 'selected' : ''; ?>>English</option>
-                                <option value="Sinhala" <?php echo (($adminUser['language'] ?? '') === 'Sinhala') ? 'selected' : ''; ?>>Sinhala</option>
-                                <option value="Tamil" <?php echo (($adminUser['language'] ?? '') === 'Tamil') ? 'selected' : ''; ?>>Tamil</option>
-                                <option value="Other" <?php echo (($adminUser['language'] ?? '') === 'Other') ? 'selected' : ''; ?>>Other</option>
-                            </select>
-                        </div>
+                            <div class="profile-settings-group">
+                                <label for="adminProfileNewPassword">New Password</label>
+                                <input type="password" id="adminProfileNewPassword" autocomplete="new-password">
+                            </div>
 
-                        <div class="profile-settings-group">
-                            <label for="adminProfileGender">Gender</label>
-                            <select id="adminProfileGender" name="gender" required>
-                                <option value="">Select gender</option>
-                                <option value="Male" <?php echo (($adminUser['gender'] ?? '') === 'Male') ? 'selected' : ''; ?>>Male</option>
-                                <option value="Female" <?php echo (($adminUser['gender'] ?? '') === 'Female') ? 'selected' : ''; ?>>Female</option>
-                                <option value="Other" <?php echo (($adminUser['gender'] ?? '') === 'Other') ? 'selected' : ''; ?>>Other</option>
-                                <option value="Prefer not to say" <?php echo (($adminUser['gender'] ?? '') === 'Prefer not to say') ? 'selected' : ''; ?>>Prefer not to say</option>
-                            </select>
-                        </div>
-
-                        <div class="profile-settings-group">
-                            <label for="adminProfileDob">Date of Birth</label>
-                            <input type="date" id="adminProfileDob" name="dob" value="<?php echo htmlspecialchars($adminUser['dob'] ?? ''); ?>" required>
-                        </div>
-
-                        <div class="profile-settings-group full">
-                            <label for="adminProfileAddress">Address</label>
-                            <textarea id="adminProfileAddress" name="address" required><?php echo htmlspecialchars($adminUser['address'] ?? ''); ?></textarea>
+                            <div class="profile-settings-group full">
+                                <label for="adminProfileConfirmPassword">Confirm New Password</label>
+                                <input type="password" id="adminProfileConfirmPassword" autocomplete="new-password">
+                            </div>
                         </div>
                     </div>
 
@@ -1311,7 +1285,6 @@
             const adminProfileSettingsFeedback = document.getElementById('adminProfileSettingsFeedback');
             const saveAdminProfileSettingsBtn = document.getElementById('saveAdminProfileSettingsBtn');
             const profileSettingsDisplayName = document.getElementById('profileSettingsDisplayName');
-            const profileSettingsPhotoInput = document.getElementById('profileSettingsPhotoInput');
             const profileSettingsPhotoPreview = document.getElementById('profileSettingsPhotoPreview');
             const profileSettingsPhotoInitial = document.getElementById('profileSettingsPhotoInitial');
 
@@ -1655,9 +1628,6 @@
                 adminProfileSettingsModal.classList.remove('show');
                 adminProfileSettingsModal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
-                if (profileSettingsPhotoInput) {
-                    profileSettingsPhotoInput.value = '';
-                }
             }
 
             closeAdminProfileSettingsBtn.addEventListener('click', closeAdminProfileSettingsModal);
@@ -1672,49 +1642,6 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && adminProfileSettingsModal.classList.contains('show')) {
                     closeAdminProfileSettingsModal();
-                }
-            });
-
-            profileSettingsPhotoInput.addEventListener('change', async function(e) {
-                const file = e.target.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                if (!allowedTypes.includes(file.type)) {
-                    setProfileSettingsFeedback('Please select a JPG or PNG image.', 'error');
-                    return;
-                }
-
-                if (file.size > 5 * 1024 * 1024) {
-                    setProfileSettingsFeedback('Image size must be less than 5MB.', 'error');
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('profile_photo', file);
-
-                try {
-                    const response = await fetch('<?php echo URL_ROOT ?>/User/updateProfilePhoto', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-
-                    if (data.success) {
-                        userProfilePhoto = data.new_photo_url || userProfilePhoto;
-                        renderProfileSettingsAvatar();
-                        updateUI();
-                        setProfileSettingsFeedback('Profile photo updated successfully.', 'success');
-                        showNotification('Profile photo updated successfully.', 'success');
-                    } else {
-                        setProfileSettingsFeedback(data.message || 'Failed to update profile photo.', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error updating profile photo:', error);
-                    setProfileSettingsFeedback('An error occurred while updating the profile photo.', 'error');
                 }
             });
 

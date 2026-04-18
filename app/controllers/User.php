@@ -536,7 +536,7 @@
                 $userId = getSession('user_id');
                 
                 // Validate required fields
-                $required_fields = ['fullname', 'email', 'phone', 'language', 'gender', 'dob', 'address'];
+                $required_fields = ['fullname', 'email'];
                 foreach ($required_fields as $field) {
                     if (empty($input[$field])) {
                         echo json_encode(['success' => false, 'message' => "Field $field is required"]);
@@ -557,17 +557,23 @@
                     return;
                 }
 
+                $currentUser = $this->userModel->findById($userId);
+                if (!$currentUser) {
+                    echo json_encode(['success' => false, 'message' => 'User not found']);
+                    return;
+                }
+
                 // Prepare update data
                 $updateData = [
                     'id' => $userId,
                     'fullname' => htmlspecialchars(trim($input['fullname']), ENT_QUOTES, 'UTF-8'),
                     'email' => trim($input['email']),
-                    'phone' => trim($input['phone']),
-                    'secondary_phone' => trim($input['secondary_phone'] ?? ''),
-                    'language' => $input['language'],
-                    'gender' => $input['gender'],
-                    'dob' => $input['dob'],
-                    'address' => htmlspecialchars(trim($input['address']), ENT_QUOTES, 'UTF-8')
+                    'phone' => trim($input['phone'] ?? ($currentUser->phone ?? '')),
+                    'secondary_phone' => trim($input['secondary_phone'] ?? ($currentUser->secondary_phone ?? '')),
+                    'language' => $input['language'] ?? ($currentUser->language ?? ''),
+                    'gender' => $input['gender'] ?? ($currentUser->gender ?? ''),
+                    'dob' => $input['dob'] ?? ($currentUser->dob ?? ''),
+                    'address' => htmlspecialchars(trim($input['address'] ?? ($currentUser->address ?? '')), ENT_QUOTES, 'UTF-8')
                 ];
 
                 try {

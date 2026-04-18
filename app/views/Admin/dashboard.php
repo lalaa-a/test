@@ -1,18 +1,11 @@
 <section class="admin-dashboard-home">
     <div class="dashboard-overview">
-        <div>
+        <div class="dashboard-overview-copy">
             <p class="dashboard-kicker">Admin Dashboard</p>
-            <h2>Top Summary Cards</h2>
             <p class="dashboard-description">
-                This first row gives you the fastest read on what needs attention across verification, support,
-                transactions, and trip operations.
+                Quick access to the latest activity across verification, support, transactions, and trip operations.
             </p>
         </div>
-
-        <button type="button" class="dashboard-refresh-btn" id="refreshDashboardSummaryBtn">
-            <i class="fas fa-rotate-right"></i>
-            Refresh Summary
-        </button>
     </div>
 
     <div class="summary-cards-grid">
@@ -68,10 +61,9 @@
     <section class="platform-overview-section">
         <div class="platform-overview-header">
             <div>
-                <p class="platform-overview-kicker">Charts / Platform Overview</p>
-                <h3>Platform Health At A Glance</h3>
+                <p class="platform-overview-kicker">Platform Overview</p>
                 <p class="platform-overview-description">
-                    A visual overview of user growth, verification balance, revenue movement, and the vehicle approval queue.
+                    User growth, verification, revenue, and vehicle status.
                 </p>
             </div>
 

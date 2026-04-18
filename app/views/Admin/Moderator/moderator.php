@@ -4,7 +4,7 @@
         <li class="nav-tab">
             <button class="nav-tab-link active" data-tab="subtabModeratorInfo">
                 <i class="fa-solid fa-user-shield"></i>
-                <span class="nav-tab-text">Moderator Info</span>
+                <span class="nav-tab-text">Moderator Accounts</span>
             </button>
         </li>
     </ul>
@@ -15,7 +15,7 @@
         <div class="page-header">
             <div class="page-header-content">
                 <div class="page-title-section">
-                    <h1 class="page-title">Moderator Info</h1>
+                    <h1 class="page-title">Moderator Accounts</h1>
                     <p class="page-subtitle" id="moderatorStatsStatus">Loading moderator records...</p>
                 </div>
                 <div class="header-actions">
