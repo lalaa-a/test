@@ -4089,6 +4089,184 @@ class Admin extends Controller
         }
     }
 
+    public function adminProfile()
+    {
+        ob_start();
+        $this->view('Admin/adminProfile/adminProfile');
+        $html = ob_get_clean();
+
+        $loadingContent = [
+            'html' => $html,
+            'css'  => URL_ROOT . '/public/css/admin/adminProfile/adminProfile.css',
+            'js'   => URL_ROOT . '/public/js/admin/adminProfile/adminProfile.js'
+        ];
+
+        $unEncodedResponse = [
+            'tabId' => 'adminProfile',
+            'loadingContent' => $loadingContent
+        ];
+
+        $this->view('UserTemplates/adminDash', $unEncodedResponse);
+    }
+
+    public function sendEmailChangeOTP()
+    {
+        header('Content-Type: application/json');
+
+        if (!isLoggedIn() || getSession('user_account_type') !== 'admin') {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $newEmail = trim($input['newEmail'] ?? '');
+        $confirmNewEmail = trim($input['confirmNewEmail'] ?? '');
+        $currentEmail = trim($input['currentEmail'] ?? '');
+        $password = $input['password'] ?? '';
+
+        if (empty($newEmail) || empty($confirmNewEmail) || empty($currentEmail) || empty($password)) {
+            echo json_encode(['success' => false, 'message' => 'All fields are required']);
+            return;
+        }
+
+        if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid new email format']);
+            return;
+        }
+
+        if ($newEmail !== $confirmNewEmail) {
+            echo json_encode(['success' => false, 'message' => 'New email addresses do not match']);
+            return;
+        }
+
+        if ($newEmail === $currentEmail) {
+            echo json_encode(['success' => false, 'message' => 'New email must be different from current email']);
+            return;
+        }
+
+        $userId = getSession('user_id');
+        $user = $this->userModel->findById($userId);
+
+        if (!$user || $user->account_type !== 'admin') {
+            echo json_encode(['success' => false, 'message' => 'Admin account not found']);
+            return;
+        }
+
+        if ($user->email !== $currentEmail) {
+            echo json_encode(['success' => false, 'message' => 'Current email does not match']);
+            return;
+        }
+
+        if (!password_verify($password, $user->password)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid password']);
+            return;
+        }
+
+        $existingUser = $this->userModel->findByEmail($newEmail);
+        if ($existingUser && (int) $existingUser->id !== (int) $userId) {
+            echo json_encode(['success' => false, 'message' => 'This email is already registered']);
+            return;
+        }
+
+        $otp = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $_SESSION['admin_email_change_otp'] = [
+            'code' => $otp,
+            'new_email' => $newEmail,
+            'user_id' => $userId,
+            'expires' => time() + (10 * 60)
+        ];
+
+        $result = sendOTPEmail($newEmail, $otp);
+        echo json_encode($result);
+    }
+
+    public function verifyEmailChangeOTP()
+    {
+        header('Content-Type: application/json');
+
+        if (!isLoggedIn() || getSession('user_account_type') !== 'admin') {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $otp = trim($input['otp'] ?? '');
+
+        if (empty($otp)) {
+            echo json_encode(['success' => false, 'message' => 'OTP is required']);
+            return;
+        }
+
+        if (!isset($_SESSION['admin_email_change_otp'])) {
+            echo json_encode(['success' => false, 'message' => 'No email change request found']);
+            return;
+        }
+
+        $otpData = $_SESSION['admin_email_change_otp'];
+
+        if ($otpData['code'] !== $otp) {
+            echo json_encode(['success' => false, 'message' => 'Invalid OTP']);
+            return;
+        }
+
+        if (time() > $otpData['expires']) {
+            unset($_SESSION['admin_email_change_otp']);
+            echo json_encode(['success' => false, 'message' => 'OTP has expired. Please request a new one.']);
+            return;
+        }
+
+        $currentUser = $this->userModel->findById($otpData['user_id']);
+        if (!$currentUser || $currentUser->account_type !== 'admin') {
+            unset($_SESSION['admin_email_change_otp']);
+            echo json_encode(['success' => false, 'message' => 'Admin account not found']);
+            return;
+        }
+
+        $updateData = [
+            'id' => $otpData['user_id'],
+            'fullname' => $currentUser->fullname,
+            'email' => $otpData['new_email'],
+            'phone' => $currentUser->phone ?? '',
+            'secondary_phone' => $currentUser->secondary_phone ?? '',
+            'language' => $currentUser->language ?? '',
+            'gender' => $currentUser->gender ?? '',
+            'dob' => $currentUser->dob ?? '',
+            'address' => $currentUser->address ?? ''
+        ];
+
+        try {
+            $result = $this->userModel->updateUser($updateData);
+
+            if (!$result) {
+                echo json_encode(['success' => false, 'message' => 'Failed to update email']);
+                return;
+            }
+
+            setSession('user_email', $otpData['new_email']);
+            unset($_SESSION['admin_email_change_otp']);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Email updated successfully',
+                'new_email' => $otpData['new_email']
+            ]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'An error occurred while updating the email']);
+        }
+    }
+
+
     public function getItinerary()
     {
         // Check if user is admin

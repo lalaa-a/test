@@ -15,7 +15,8 @@ use PHPMailer\PHPMailer\Exception;
  * @param string $fromName Sender name (optional, uses FROM_NAME constant by default)
  * @return array ['success' => bool, 'message' => string]
  */
-function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $fromName = null) {
+function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $fromName = null)
+{
     $mail = new PHPMailer(true);
 
     try {
@@ -27,12 +28,12 @@ function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $
         $mail->Password   = SMTP_PASSWORD;
         $mail->SMTPSecure = SMTP_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = SMTP_PORT;
-        
+
         // Enable debugging if configured
         if (defined('SMTP_DEBUG')) {
             $mail->SMTPDebug = SMTP_DEBUG;
         }
-        
+
         // Additional Gmail-specific settings
         $mail->SMTPOptions = array(
             'ssl' => array(
@@ -50,26 +51,25 @@ function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $
         $mail->isHTML(true);
         $mail->Subject = $subject;
         $mail->Body    = $htmlBody;
-        
+
         if (!empty($altBody)) {
             $mail->AltBody = $altBody;
         }
 
         $mail->send();
-        
+
         // Log successful send
         error_log("OTP Email sent successfully to: " . $to);
-        
+
         return [
             'success' => true,
             'message' => 'Email sent successfully'
         ];
-
     } catch (Exception $e) {
         // Log detailed error
         $errorMsg = 'PHPMailer Error: ' . $e->getMessage() . ' | SMTP Error: ' . $mail->ErrorInfo;
         error_log("Failed to send OTP email to " . $to . ". Error: " . $errorMsg);
-        
+
         return [
             'success' => false,
             'message' => 'Failed to send email. Please try again later.',
@@ -85,9 +85,10 @@ function sendEmail($to, $subject, $htmlBody, $altBody = '', $fromEmail = null, $
  * @param string $otp The OTP code to send
  * @return array ['success' => bool, 'message' => string]
  */
-function sendOTPEmail($to, $otp) {
+function sendOTPEmail($to, $otp)
+{
     $subject = 'Email Verification - Tripingoo';
-    
+
     $htmlBody = "
     <html>
     <head>
@@ -120,8 +121,8 @@ function sendOTPEmail($to, $otp) {
     </body>
     </html>
     ";
-    
+
     $altBody = "Welcome to Tripingoo!\n\nYour verification code is: {$otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nTripingoo Team";
-    
+
     return sendEmail($to, $subject, $htmlBody, $altBody);
 }

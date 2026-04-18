@@ -761,219 +761,6 @@
             gap: 10px;
         }
 
-        /* Admin Profile Settings */
-        .profile-settings-modal {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.35);
-            z-index: 10002;
-        }
-
-        .profile-settings-modal.show {
-            display: flex;
-        }
-
-        .profile-settings-panel {
-            width: min(760px, 100%);
-            max-height: 88vh;
-            overflow-y: auto;
-            background: white;
-            border-radius: 14px;
-            border: 1px solid #dde5eb;
-            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
-        }
-
-        .profile-settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 20px 22px 16px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .profile-settings-header h2 {
-            color: #0f172a;
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-
-        .profile-settings-header p {
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .profile-settings-close {
-            width: 36px;
-            height: 36px;
-            border: 1px solid #d6dee5;
-            background: white;
-            color: #475569;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-        }
-
-        .profile-settings-close:hover {
-            background: #f8fafc;
-            color: #0f172a;
-            border-color: #cbd5e1;
-        }
-
-        .profile-settings-top {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 18px 22px;
-            background: #f8fafc;
-            color: #0f172a;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .profile-settings-avatar {
-            width: 78px;
-            height: 78px;
-            border-radius: 50%;
-            border: 1px solid #d6dee5;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .profile-settings-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .profile-settings-avatar span {
-            font-size: 1.9rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            color: #475569;
-        }
-
-        .profile-settings-top h3 {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-
-        .profile-settings-role {
-            color: #64748b;
-            margin-bottom: 12px;
-            text-transform: capitalize;
-        }
-
-        .profile-settings-form {
-            padding: 20px 22px 24px;
-        }
-
-        .profile-settings-feedback {
-            display: none;
-            margin-bottom: 18px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            font-size: 0.92rem;
-            border: 1px solid transparent;
-        }
-
-        .profile-settings-feedback.show {
-            display: block;
-        }
-
-        .profile-settings-feedback.success {
-            background: #e8f8ef;
-            color: #176b3a;
-            border-color: #b8e2c7;
-        }
-
-        .profile-settings-feedback.error {
-            background: #fff1f2;
-            color: #b42318;
-            border-color: #fecdd3;
-        }
-
-        .profile-settings-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px 16px;
-        }
-
-        .profile-settings-group.full {
-            grid-column: 1 / -1;
-        }
-
-        .profile-settings-section {
-            margin-top: 20px;
-            padding-top: 18px;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .profile-settings-section-title {
-            margin-bottom: 6px;
-            color: #0f172a;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .profile-settings-section-note {
-            margin-bottom: 14px;
-            color: #64748b;
-            font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        .profile-settings-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: #334155;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .profile-settings-group input,
-        .profile-settings-group select,
-        .profile-settings-group textarea {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d7e0e6;
-            border-radius: 10px;
-            background: #ffffff;
-            color: var(--text-color);
-            font-size: 0.94rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .profile-settings-group input:focus,
-        .profile-settings-group select:focus,
-        .profile-settings-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 106, 113, 0.12);
-            background: white;
-        }
-
-        .profile-settings-group textarea {
-            min-height: 92px;
-            resize: vertical;
-        }
-
-        .profile-settings-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 22px;
-        }
-
         .btn-secondary {
             background: #f1f5f9;
             color: #334155;
@@ -1068,37 +855,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .profile-settings-modal {
-                padding: 16px;
-            }
-
-            .profile-settings-header,
-            .profile-settings-top,
-            .profile-settings-form {
-                padding-left: 18px;
-                padding-right: 18px;
-            }
-
-            .profile-settings-top {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .profile-settings-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .profile-settings-group.full {
-                grid-column: auto;
-            }
-
-            .profile-settings-actions {
-                flex-direction: column-reverse;
-            }
-
-            .profile-settings-actions .btn {
-                width: 100%;
-            }
         }
     </style>
 
@@ -1115,9 +871,7 @@
     ?>
     <?php
     $adminUser = getLoggedInUser();
-    $adminProfilePhoto = !empty($adminUser['profile_photo']) ? URL_ROOT . '/public/uploads/' . $adminUser['profile_photo'] : '';
     $adminDisplayName = $adminUser['fullname'] ?? 'Admin';
-    $adminInitial = strtoupper(substr($adminDisplayName, 0, 1));
     ?>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -1154,12 +908,10 @@
                 </div>
                 <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
                 <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">
-                    <a href="#" class="sidebar-dropdown-item" id="sidebarProfileSettingsBtn">
-                        <i class="fas fa-cog"></i> Profile Settings
+                    <a href="<?php echo URL_ROOT . '/admin/adminProfile' ?>" class="sidebar-dropdown-item">
+                        <i class="fas fa-cog"></i> My Profile
                     </a>
-                    <a href="<?php echo URL_ROOT . '/admin' ?>" class="sidebar-dropdown-item">
-                        <i class="fas fa-house"></i> Dashboard Home
-                    </a>
+
                     <div class="sidebar-dropdown-divider"></div>
                     <a href="#" class="sidebar-dropdown-item sidebar-logout-item" id="sidebarLogoutBtn">
                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -1191,77 +943,6 @@
         <!-- Dashboard Content -->
         <div class="dashboard-content active" id="dashboard"></div>
 
-        <div id="adminProfileSettingsModal" class="profile-settings-modal" aria-hidden="true">
-            <div class="profile-settings-panel" role="dialog" aria-modal="true" aria-labelledby="adminProfileSettingsTitle">
-                <div class="profile-settings-header">
-                    <div>
-                        <h2 id="adminProfileSettingsTitle">Profile Settings</h2>
-                        <p>Update your admin account details using the same dashboard style.</p>
-                    </div>
-                    <button type="button" class="profile-settings-close" id="closeAdminProfileSettingsBtn" aria-label="Close profile settings">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="profile-settings-top">
-                    <div class="profile-settings-avatar">
-                        <img
-                            id="profileSettingsPhotoPreview"
-                            src="<?php echo htmlspecialchars($adminProfilePhoto ?: URL_ROOT . '/public/img/default-avatar.png'); ?>"
-                            alt="Admin profile photo">
-                        <span id="profileSettingsPhotoInitial"><?php echo htmlspecialchars($adminInitial); ?></span>
-                    </div>
-                    <div>
-                        <h3 id="profileSettingsDisplayName"><?php echo htmlspecialchars($adminDisplayName); ?></h3>
-                        <p class="profile-settings-role"><?php echo htmlspecialchars($adminUser['account_type'] ?? 'admin'); ?></p>
-                    </div>
-                </div>
-
-                <form id="adminProfileSettingsForm" class="profile-settings-form">
-                    <div id="adminProfileSettingsFeedback" class="profile-settings-feedback" aria-live="polite"></div>
-
-                    <div class="profile-settings-grid">
-                        <div class="profile-settings-group">
-                            <label for="adminProfileFullname">Full Name</label>
-                            <input type="text" id="adminProfileFullname" name="fullname" value="<?php echo htmlspecialchars($adminUser['fullname'] ?? ''); ?>" required>
-                        </div>
-
-                        <div class="profile-settings-group">
-                            <label for="adminProfileEmail">Email Address</label>
-                            <input type="email" id="adminProfileEmail" name="email" value="<?php echo htmlspecialchars($adminUser['email'] ?? ''); ?>" required>
-                        </div>
-                    </div>
-
-                    <div class="profile-settings-section">
-                        <h3 class="profile-settings-section-title">Password Change</h3>
-                        <p class="profile-settings-section-note">This section is available in the UI for now. Password saving will be connected later.</p>
-
-                        <div class="profile-settings-grid">
-                            <div class="profile-settings-group">
-                                <label for="adminProfileCurrentPassword">Current Password</label>
-                                <input type="password" id="adminProfileCurrentPassword" autocomplete="current-password">
-                            </div>
-
-                            <div class="profile-settings-group">
-                                <label for="adminProfileNewPassword">New Password</label>
-                                <input type="password" id="adminProfileNewPassword" autocomplete="new-password">
-                            </div>
-
-                            <div class="profile-settings-group full">
-                                <label for="adminProfileConfirmPassword">Confirm New Password</label>
-                                <input type="password" id="adminProfileConfirmPassword" autocomplete="new-password">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-settings-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelAdminProfileSettingsBtn">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="saveAdminProfileSettingsBtn">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
         <script>
             let isLoggedIn = false;
             let currentUserName = <?php echo json_encode($adminDisplayName) ?>;
@@ -1276,17 +957,7 @@
             const sidebarLoginBtn = document.getElementById('sidebarLoginBtn');
             const sidebarSignupBtn = document.getElementById('sidebarSignupBtn');
             const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
-            const sidebarProfileSettingsBtn = document.getElementById('sidebarProfileSettingsBtn');
             const adminWelcomeMessage = document.getElementById('adminWelcomeMessage');
-            const adminProfileSettingsModal = document.getElementById('adminProfileSettingsModal');
-            const closeAdminProfileSettingsBtn = document.getElementById('closeAdminProfileSettingsBtn');
-            const cancelAdminProfileSettingsBtn = document.getElementById('cancelAdminProfileSettingsBtn');
-            const adminProfileSettingsForm = document.getElementById('adminProfileSettingsForm');
-            const adminProfileSettingsFeedback = document.getElementById('adminProfileSettingsFeedback');
-            const saveAdminProfileSettingsBtn = document.getElementById('saveAdminProfileSettingsBtn');
-            const profileSettingsDisplayName = document.getElementById('profileSettingsDisplayName');
-            const profileSettingsPhotoPreview = document.getElementById('profileSettingsPhotoPreview');
-            const profileSettingsPhotoInitial = document.getElementById('profileSettingsPhotoInitial');
 
             let encodedData;
             let userProfilePhoto = '';
@@ -1497,13 +1168,6 @@
                 }
             });
 
-            sidebarProfileSettingsBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                openAdminProfileSettingsModal();
-            });
-
-
-
             // notification and messages logic with buttons 😅        
             // Notification button
             const notificationsBtn = document.getElementById('notificationsBtn');
@@ -1575,114 +1239,6 @@
                     closeDropdown();
                 }
             }
-
-            function setProfileSettingsFeedback(message, type) {
-                if (!adminProfileSettingsFeedback) {
-                    return;
-                }
-
-                adminProfileSettingsFeedback.textContent = message;
-                adminProfileSettingsFeedback.className = `profile-settings-feedback show ${type}`;
-            }
-
-            function clearProfileSettingsFeedback() {
-                if (!adminProfileSettingsFeedback) {
-                    return;
-                }
-
-                adminProfileSettingsFeedback.textContent = '';
-                adminProfileSettingsFeedback.className = 'profile-settings-feedback';
-            }
-
-            function renderProfileSettingsAvatar() {
-                const initial = (currentUserName || 'A').charAt(0).toUpperCase();
-
-                if (profileSettingsDisplayName) {
-                    profileSettingsDisplayName.textContent = currentUserName;
-                }
-
-                if (profileSettingsPhotoInitial) {
-                    profileSettingsPhotoInitial.textContent = initial;
-                }
-
-                if (userProfilePhoto && userProfilePhoto.trim() !== '') {
-                    profileSettingsPhotoPreview.src = userProfilePhoto;
-                    profileSettingsPhotoPreview.style.display = 'block';
-                    profileSettingsPhotoInitial.style.display = 'none';
-                } else {
-                    profileSettingsPhotoPreview.style.display = 'none';
-                    profileSettingsPhotoInitial.style.display = 'block';
-                }
-            }
-
-            function openAdminProfileSettingsModal() {
-                clearProfileSettingsFeedback();
-                renderProfileSettingsAvatar();
-                adminProfileSettingsModal.classList.add('show');
-                adminProfileSettingsModal.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-                closeDropdown();
-            }
-
-            function closeAdminProfileSettingsModal() {
-                adminProfileSettingsModal.classList.remove('show');
-                adminProfileSettingsModal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
-            }
-
-            closeAdminProfileSettingsBtn.addEventListener('click', closeAdminProfileSettingsModal);
-            cancelAdminProfileSettingsBtn.addEventListener('click', closeAdminProfileSettingsModal);
-
-            adminProfileSettingsModal.addEventListener('click', function(e) {
-                if (e.target === adminProfileSettingsModal) {
-                    closeAdminProfileSettingsModal();
-                }
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && adminProfileSettingsModal.classList.contains('show')) {
-                    closeAdminProfileSettingsModal();
-                }
-            });
-
-            adminProfileSettingsForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                clearProfileSettingsFeedback();
-
-                saveAdminProfileSettingsBtn.disabled = true;
-                saveAdminProfileSettingsBtn.textContent = 'Saving...';
-
-                const formData = new FormData(adminProfileSettingsForm);
-                const payload = Object.fromEntries(formData.entries());
-
-                try {
-                    const response = await fetch('<?php echo URL_ROOT ?>/User/updateAccount', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                    const data = await response.json();
-
-                    if (data.success) {
-                        currentUserName = payload.fullname;
-                        updateUI();
-                        renderProfileSettingsAvatar();
-                        setProfileSettingsFeedback('Profile settings updated successfully.', 'success');
-                        showNotification('Profile settings updated successfully.', 'success');
-                    } else {
-                        setProfileSettingsFeedback(data.message || 'Failed to update profile settings.', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error updating profile settings:', error);
-                    setProfileSettingsFeedback('An error occurred while saving your profile settings.', 'error');
-                } finally {
-                    saveAdminProfileSettingsBtn.disabled = false;
-                    saveAdminProfileSettingsBtn.textContent = 'Save Changes';
-                }
-            });
-
 
             // Global Notification System
             function showNotification(message, type = 'info') {

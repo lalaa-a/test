@@ -1,46 +1,75 @@
 <!-- Driver Profile Page -->
 <div class="profile-container">
-    <!-- Cover Photos Section -->
-    <div class="cover-photos-section">
-        <div class="cover-photos-slider" id="coverPhotosSlider">
-            <!-- Cover photos will be loaded here -->
-        </div>
-        <div class="cover-nav">
-            <button class="cover-nav-btn prev" id="coverPrevBtn">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="cover-indicators" id="coverIndicators"></div>
-            <button class="cover-nav-btn next" id="coverNextBtn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Profile Header -->
-    <div class="profile-header">
-        <div class="profile-avatar-section">
-            <div class="profile-avatar">
-                <img id="profilePhoto" src="/public/img/signup/profile.png" alt="Driver Profile">
-                <div class="online-status" id="onlineStatus"></div>
+    <!-- Profile Card (Cover + Header) -->
+    <div class="profile-card">
+        <!-- Cover Photos Section -->
+        <div class="cover-photos-section">
+            <div class="cover-photos-slider" id="coverPhotosSlider">
+                <!-- Cover photos will be loaded here -->
+            </div>
+            <div class="cover-nav">
+                <button class="cover-nav-btn prev" id="coverPrevBtn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="cover-indicators" id="coverIndicators"></div>
+                <button class="cover-nav-btn next" id="coverNextBtn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
 
-        <div class="profile-info">
-            <div class="profile-name-section">
-                <h1 id="driverName">Driver Name</h1>
-                <div class="rating-section">
-                    <div class="stars" id="ratingStars">
-                        <!-- Stars will be generated here -->
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-header-top">
+                <div class="profile-avatar">
+                    <img id="profilePhoto" src="/public/img/signup/profile.png" alt="Driver Profile">
+                </div>
+                <div class="social-links-section">
+                    <h3>Social Media</h3>
+                    <div class="social-links" id="socialLinks">
+                        <!-- Social links will be loaded here -->
                     </div>
-                    <span class="rating-text" id="ratingText">0.0 (0 reviews)</span>
                 </div>
             </div>
 
-            <div class="verification-badges" id="verificationBadges">
-                <!-- Verification badges will be loaded here -->
+            <div class="profile-info">
+                <div class="profile-info-content">
+                    <div class="profile-name-row">
+                        <h1 id="driverName">Driver Name</h1>
+                    </div>
+
+                    <!-- Add a placeholder location matching design -->
+                    <div class="profile-location-row" style="color: #666; font-size: 0.95rem; margin-bottom: 8px;">
+                        <span class="flag-icon">🇱🇰</span> 
+                        <span id="driverLocation">Sri Lanka</span>
+                    </div>
+
+                    <div class="profile-tagline" style="color: #444; font-size: 0.95rem; margin-bottom: 15px;">
+                        <span id="driverUsername">@driver</span>
+                        <span class="dot-sep" style="margin: 0 6px;">•</span>
+                        <span style="color: var(--primary, #006a71); font-weight: 500;">
+                            <i class="fas fa-steering-wheel"></i> Professional Driver
+                        </span>
+                        <span class="dot-sep" style="margin: 0 6px;">•</span>
+                        <span style="color: #666;">Available</span>
+                    </div>
+
+                    <!-- Keep these for data context but hide/restructure later -->
+                    <div class="verification-badges" id="verificationBadges" style="margin-bottom: 15px;">
+                        <!-- Verification badges will be loaded here -->
+                    </div>
+
+                    <div class="rating-section" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        <div class="stars" id="ratingStars">
+                            <!-- Stars will be generated here -->
+                        </div>
+                        <span class="rating-text" id="ratingText">0.0 (0 reviews)</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="profile-stats">
+            <!-- Original stats moved to bottom of header or about tab in CSS later -->
+            <div class="profile-stats hide-in-header">
                 <div class="stat-item">
                     <span class="stat-number" id="totalTrips">0</span>
                     <span class="stat-label">Total Trips</span>
@@ -54,21 +83,18 @@
                     <span class="stat-label">Response Rate</span>
                 </div>
             </div>
-
-            <div class="social-links" id="socialLinks">
-                <!-- Social links will be loaded here -->
-            </div>
         </div>
 
-        <div class="profile-actions">
-            <button class="btn btn-primary" id="saveDriverBtn">
-                <i class="fas fa-bookmark"></i>
-                <span id="saveText">Save Driver</span>
-            </button>
-            <button class="btn btn-outline" id="contactDriverBtn">
-                <i class="fas fa-phone"></i>
-                Contact
-            </button>
+        <!-- Actions - Bottom Right -->
+        <div class="profile-right-section">
+            <div class="profile-actions">
+                <button class="btn btn-outline" id="contactDriverBtn">
+                    Message
+                </button>
+                <button class="btn btn-primary" id="saveDriverBtn">
+                    <span id="saveText">Save Profile</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -144,33 +170,37 @@
 
         <!-- Reviews Tab -->
         <div class="tab-pane" id="reviews-tab">
-            <div class="reviews-section">
-                <div class="section-header">
-                    <h2>Reviews & Ratings</h2>
+            <div>
+                <h2 style="margin-bottom: 30px;">Reviews</h2>
+                <hr class="divider"> 
+            </div>
+
+            <div>
+                <div class="rating-summary">
+                    <div class="average-score">
+                        <h1 id="overallRating">0.0</h1>
+                        <div class="stars" id="overallStars">
+                            <!-- Stars will be generated here -->
+                        </div>
+                        <p class="total-ratings" id="totalReviews">0 ratings</p>
+                    </div>
+
+                    <div class="rating-bars" id="ratingBreakdown">
+                        <!-- Rating breakdown will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            <div class="reviews-container">
+
+                <div class="reviews-list" id="reviewsList">
+                    <!-- Reviews will be loaded here -->
+                </div>
+
+                <div class="write-review-section">
                     <button class="btn btn-primary" id="writeReviewBtn">
                         <i class="fas fa-pen"></i>
                         Write Review
                     </button>
-                </div>
-
-                <div class="reviews-summary">
-                    <div class="rating-overview">
-                        <div class="overall-rating">
-                            <div class="rating-number" id="overallRating">0.0</div>
-                            <div class="rating-stars" id="overallStars">
-                                <!-- Stars will be generated here -->
-                            </div>
-                            <div class="rating-count" id="totalReviews">0 reviews</div>
-                        </div>
-
-                        <div class="rating-breakdown" id="ratingBreakdown">
-                            <!-- Rating breakdown will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="reviews-list" id="reviewsList">
-                    <!-- Reviews will be loaded here -->
                 </div>
             </div>
         </div>
