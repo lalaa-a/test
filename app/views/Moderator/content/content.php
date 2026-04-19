@@ -13,6 +13,12 @@
                 <span class="nav-tab-text">Packages</span>
             </button>
         </li>
+        <li class="nav-tab">
+            <button class="nav-tab-link" data-tab="subtabFilters">
+                <i class="fas fa-filter nav-tab-icon"></i>
+                <span class="nav-tab-text">Filters</span>
+            </button>
+        </li>
     </ul>
 </nav>
 
