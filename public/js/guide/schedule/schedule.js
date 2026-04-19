@@ -2,6 +2,7 @@
 
     const URL_ROOT = 'http://localhost/test';
     const navLinks = document.querySelectorAll('.nav-tab-link');
+    loadSubtabContent("subtabVisits");
 
     navLinks.forEach(link => {
             

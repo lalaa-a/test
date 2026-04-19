@@ -16,6 +16,14 @@
             this.currentUser = null;
             this.currentAcceptId = null;
             this.currentTripId = null;
+            this.currentTripMeta = null;
+            this.tripFeatureFlags = {};
+
+            this.eventRouteMap = null;
+            this.eventMapReady = false;
+            this.eventRouteMarkers = [];
+            this.eventRoutePath = null;
+            this.eventRouteDirectionsService = null;
 
             this.tours = {
                 ongoing: [],
@@ -112,6 +120,7 @@
                 tripPinInput.addEventListener('input', (e) => {
                     // Only allow numbers
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    this.setPinStatus('', 'neutral');
                 });
             }
 
@@ -776,6 +785,7 @@
             const pinInput = document.getElementById('tripPin');
 
             pinInput.value = '';
+            this.setPinStatus('', 'neutral');
             modal.style.display = 'block';
             pinInput.focus();
         }
@@ -785,9 +795,12 @@
             const pin = pinInput.value.trim();
 
             if (!pin || pin.length !== 6) {
+                this.setPinStatus('Enter a valid 6-digit PIN.', 'error');
                 this.showNotification('Please enter a valid 6-digit PIN', 'error');
                 return;
             }
+
+            this.setPinStatus('Verifying PIN and starting trip...', 'pending');
 
             try {
                 // First get tour details to get the tripId
@@ -795,6 +808,7 @@
                 const tourData = await tourResponse.json();
 
                 if (!tourData.success) {
+                    this.setPinStatus('Unable to load trip details.', 'error');
                     this.showNotification('Failed to load tour details: ' + tourData.message, 'error');
                     return;
                 }
@@ -815,14 +829,17 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    this.setPinStatus(data.message || 'PIN matched. Trip started.', 'success');
                     this.showNotification('Trip started successfully!', 'success');
                     this.closeModal(document.getElementById('startTripModal'));
                     this.loadTours(); // Refresh the tours list
                 } else {
+                    this.setPinStatus(data.message || 'PIN verification failed.', 'error');
                     this.showNotification('Failed to start trip: ' + data.message, 'error');
                 }
             } catch (error) {
                 console.error('Error starting trip:', error);
+                this.setPinStatus('Could not verify PIN right now.', 'error');
                 this.showNotification('Error starting trip', 'error');
             }
         }
@@ -848,7 +865,12 @@
                 const eventsData = await eventsResponse.json();
 
                 if (eventsData.success) {
-                    this.showEventCompletionModal(eventsData.events, tourData.tour);
+                    this.showEventCompletionModal(
+                        eventsData.events,
+                        tourData.tour,
+                        eventsData.trip || null,
+                        eventsData.featureFlags || {}
+                    );
                 } else {
                     this.showNotification('Failed to load trip events: ' + eventsData.message, 'error');
                 }
@@ -858,10 +880,28 @@
             }
         }
 
-        showEventCompletionModal(events, tour) {
+        showEventCompletionModal(events, tour, tripMeta = null, featureFlags = {}) {
             const modal = document.getElementById('eventCompletionModal');
             const eventsList = document.getElementById('eventsList');
             const completeTripBtn = document.getElementById('completeTripBtn');
+            const pinGateNotice = document.getElementById('eventPinGateNotice');
+
+            this.currentTripMeta = tripMeta;
+            this.tripFeatureFlags = featureFlags || {};
+
+            const hasPinMatch = !!this.tripFeatureFlags.hasPinMatch;
+            const pinMatched = hasPinMatch ? !!(tripMeta && tripMeta.pinMatched) : true;
+            const tripStatus = String((tripMeta && tripMeta.status) || tour.tripStatus || '').toLowerCase();
+            const isOngoing = tripStatus === 'ongoing';
+
+            const canMarkEvents = pinMatched && isOngoing;
+
+            this.renderEventPinGateNotice(pinGateNotice, {
+                canMarkEvents,
+                hasPinMatch,
+                pinMatched,
+                isOngoing
+            });
 
             eventsList.innerHTML = events.map(event => `
                 <div class="event-item">
@@ -875,22 +915,28 @@
                                class="event-checkbox"
                                data-event-id="${event.eventId}"
                                ${event.dDone ? 'checked disabled' : ''}
+                               ${!event.dDone && !canMarkEvents ? 'disabled' : ''}
                                onchange="window.driverToursManager.markEventComplete(${event.eventId}, this.checked)">
-                        <span class="${event.dDone ? 'event-completed' : ''}">
-                            ${event.dDone ? 'Completed' : 'Mark Complete'}
+                        <span class="${event.dDone ? 'event-completed' : ''} ${!event.dDone && !canMarkEvents ? 'event-locked' : ''}">
+                            ${event.dDone ? 'Completed' : (canMarkEvents ? 'Mark Complete' : 'PIN / Start Required')}
                         </span>
                     </div>
                 </div>
             `).join('');
 
             // Show complete trip button if all events are completed
-            const allCompleted = events.every(event => event.dDone);
+            const allCompleted = events.length > 0 && events.every(event => event.dDone);
             completeTripBtn.style.display = allCompleted ? 'block' : 'none';
 
             modal.style.display = 'block';
+            this.renderEventRouteMap(events);
         }
 
         async markEventComplete(eventId, completed) {
+            if (!completed) {
+                return;
+            }
+
             try {
                 const response = await fetch(`${this.URL_ROOT}/Driver/markEventComplete`, {
                     method: 'POST',
@@ -910,10 +956,12 @@
                     this.showEventCompletion(this.currentAcceptId);
                 } else {
                     this.showNotification('Failed to mark event complete: ' + data.message, 'error');
+                    this.showEventCompletion(this.currentAcceptId);
                 }
             } catch (error) {
                 console.error('Error marking event complete:', error);
                 this.showNotification('Error marking event complete', 'error');
+                this.showEventCompletion(this.currentAcceptId);
             }
         }
 
@@ -952,6 +1000,378 @@
             if (modal) {
                 modal.style.display = 'none';
             }
+
+            if (modal && modal.id === 'eventCompletionModal') {
+                this.currentTripMeta = null;
+                this.tripFeatureFlags = {};
+                this.clearEventMapOverlays();
+                this.setEventMapEmptyState('Map points are not available for this trip.');
+            }
+
+            if (modal && modal.id === 'startTripModal') {
+                this.setPinStatus('', 'neutral');
+            }
+        }
+
+        setPinStatus(message, tone = 'neutral') {
+            const statusElement = document.getElementById('tripPinStatus');
+            if (!statusElement) {
+                return;
+            }
+
+            const text = String(message || '').trim();
+            statusElement.textContent = text;
+            statusElement.style.display = text ? 'block' : 'none';
+            statusElement.className = 'pin-status';
+
+            if (!text) {
+                return;
+            }
+
+            if (tone === 'success') {
+                statusElement.classList.add('success');
+            } else if (tone === 'error') {
+                statusElement.classList.add('error');
+            } else if (tone === 'pending') {
+                statusElement.classList.add('pending');
+            }
+        }
+
+        renderEventPinGateNotice(container, state) {
+            if (!container) {
+                return;
+            }
+
+            let message = '';
+            let className = 'event-pin-gate-notice';
+
+            if (!state.isOngoing) {
+                message = 'Trip is not ongoing yet. Enter the traveller PIN and start the trip to mark events.';
+                className += ' locked';
+            } else if (state.hasPinMatch && !state.pinMatched) {
+                message = 'PIN is not matched yet. Ask traveller PIN and start trip before marking events.';
+                className += ' locked';
+            } else {
+                message = 'PIN matched and trip is ongoing. You can now mark events as completed.';
+                className += ' ready';
+            }
+
+            container.textContent = message;
+            container.className = className;
+            container.style.display = 'block';
+        }
+
+        getEventMapElements() {
+            return {
+                mapElement: document.getElementById('driver-events-route-map'),
+                emptyStateElement: document.getElementById('driver-events-map-empty-state')
+            };
+        }
+
+        async ensureEventMapReady() {
+            if (this.eventMapReady && this.eventRouteMap) {
+                return true;
+            }
+
+            const { mapElement } = this.getEventMapElements();
+            if (!mapElement) {
+                return false;
+            }
+
+            try {
+                await this.waitForGoogleMaps();
+
+                this.eventRouteMap = new google.maps.Map(mapElement, {
+                    center: { lat: 7.8731, lng: 80.7718 },
+                    zoom: 8,
+                    mapTypeControl: false,
+                    streetViewControl: false
+                });
+
+                if (!this.eventRouteDirectionsService) {
+                    this.eventRouteDirectionsService = new google.maps.DirectionsService();
+                }
+
+                this.eventMapReady = true;
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize event route map:', error);
+                this.eventMapReady = false;
+                return false;
+            }
+        }
+
+        async renderEventRouteMap(events) {
+            const ready = await this.ensureEventMapReady();
+            if (!ready) {
+                this.setEventMapEmptyState('Google Maps is not available at the moment.');
+                return;
+            }
+
+            this.clearEventMapOverlays();
+
+            const points = Array.isArray(events)
+                ? events.map((event) => {
+                    const lat = Number(event.latitude);
+                    const lng = Number(event.longitude);
+                    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                        return null;
+                    }
+
+                    return {
+                        lat,
+                        lng,
+                        name: event.locationName || event.spotName || event.eventType || 'Trip Event'
+                    };
+                }).filter(Boolean)
+                : [];
+
+            if (points.length === 0) {
+                this.setEventMapEmptyState('Map points are not available for these events.');
+                return;
+            }
+
+            this.setEventMapEmptyState('', true);
+
+            const routePath = [];
+
+            points.forEach((point, index) => {
+                const position = { lat: point.lat, lng: point.lng };
+                routePath.push(position);
+
+                const marker = new google.maps.Marker({
+                    map: this.eventRouteMap,
+                    position,
+                    title: point.name,
+                    label: {
+                        text: String(index + 1),
+                        color: '#ffffff'
+                    },
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 11,
+                        fillColor: '#006a71',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    }
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<div style="padding:4px 6px; font-size:12px;">${this.escapeHtml(point.name)}</div>`
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(this.eventRouteMap, marker);
+                });
+
+                this.eventRouteMarkers.push(marker);
+            });
+
+            let displayPath = routePath;
+
+            if (routePath.length >= 2) {
+                const roadPath = await this.buildRoadPath(routePath);
+                const pathToRender = roadPath.length >= 2 ? roadPath : routePath;
+
+                displayPath = pathToRender;
+
+                this.eventRoutePath = new google.maps.Polyline({
+                    path: pathToRender,
+                    geodesic: true,
+                    strokeColor: '#006a71',
+                    strokeOpacity: 0.82,
+                    strokeWeight: 4,
+                    map: this.eventRouteMap
+                });
+            }
+
+            if (routePath.length === 1) {
+                this.eventRouteMap.setCenter(routePath[0]);
+                this.eventRouteMap.setZoom(12);
+            } else if (displayPath.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                displayPath.forEach((point) => bounds.extend(point));
+                if (!bounds.isEmpty()) {
+                    this.eventRouteMap.fitBounds(bounds, 60);
+                }
+            }
+
+            window.setTimeout(() => {
+                if (this.eventRouteMap && window.google && window.google.maps) {
+                    google.maps.event.trigger(this.eventRouteMap, 'resize');
+                }
+            }, 50);
+        }
+
+        async buildRoadPath(points) {
+            if (!Array.isArray(points) || points.length < 2 || !this.eventRouteDirectionsService) {
+                return [];
+            }
+
+            const maxPointsPerRequest = 25; // origin + destination + 23 waypoints
+            const fullRoadPath = [];
+            let cursor = 0;
+
+            while (cursor < points.length - 1) {
+                const segment = points.slice(cursor, Math.min(cursor + maxPointsPerRequest, points.length));
+                if (segment.length < 2) {
+                    break;
+                }
+
+                try {
+                    const route = await this.requestRoadRoute(segment);
+                    const segmentPath = this.extractRoadPolyline(route);
+
+                    if (segmentPath.length === 0) {
+                        return [];
+                    }
+
+                    if (
+                        fullRoadPath.length > 0 &&
+                        segmentPath.length > 0 &&
+                        this.sameCoordinate(fullRoadPath[fullRoadPath.length - 1], segmentPath[0])
+                    ) {
+                        segmentPath.shift();
+                    }
+
+                    fullRoadPath.push(...segmentPath);
+                } catch (error) {
+                    console.warn('Road path request failed for segment:', error);
+                    return [];
+                }
+
+                cursor += segment.length - 1; // overlap at segment edge for continuity
+            }
+
+            return fullRoadPath;
+        }
+
+        requestRoadRoute(segmentPoints) {
+            return new Promise((resolve, reject) => {
+                if (!this.eventRouteDirectionsService || segmentPoints.length < 2) {
+                    reject(new Error('Directions service is not ready.'));
+                    return;
+                }
+
+                const origin = segmentPoints[0];
+                const destination = segmentPoints[segmentPoints.length - 1];
+                const waypoints = segmentPoints.slice(1, -1).map((point) => ({
+                    location: point,
+                    stopover: true
+                }));
+
+                this.eventRouteDirectionsService.route(
+                    {
+                        origin,
+                        destination,
+                        waypoints,
+                        optimizeWaypoints: false,
+                        travelMode: google.maps.TravelMode.DRIVING
+                    },
+                    (result, status) => {
+                        if (status === 'OK' && result) {
+                            resolve(result);
+                            return;
+                        }
+
+                        reject(new Error(`Directions request failed: ${status}`));
+                    }
+                );
+            });
+        }
+
+        extractRoadPolyline(routeResult) {
+            const path = [];
+            const route = routeResult && routeResult.routes && routeResult.routes[0]
+                ? routeResult.routes[0]
+                : null;
+
+            if (!route) {
+                return path;
+            }
+
+            const legs = Array.isArray(route.legs) ? route.legs : [];
+            legs.forEach((leg) => {
+                const steps = Array.isArray(leg.steps) ? leg.steps : [];
+                steps.forEach((step) => {
+                    const stepPath = Array.isArray(step.path) ? step.path : [];
+                    stepPath.forEach((latLng) => {
+                        if (latLng && typeof latLng.lat === 'function' && typeof latLng.lng === 'function') {
+                            path.push({ lat: latLng.lat(), lng: latLng.lng() });
+                        }
+                    });
+                });
+            });
+
+            if (path.length === 0 && Array.isArray(route.overview_path)) {
+                route.overview_path.forEach((latLng) => {
+                    if (latLng && typeof latLng.lat === 'function' && typeof latLng.lng === 'function') {
+                        path.push({ lat: latLng.lat(), lng: latLng.lng() });
+                    }
+                });
+            }
+
+            return path;
+        }
+
+        sameCoordinate(a, b) {
+            if (!a || !b) {
+                return false;
+            }
+
+            const deltaLat = Math.abs(Number(a.lat) - Number(b.lat));
+            const deltaLng = Math.abs(Number(a.lng) - Number(b.lng));
+
+            return deltaLat < 0.000001 && deltaLng < 0.000001;
+        }
+
+        clearEventMapOverlays() {
+            this.eventRouteMarkers.forEach((marker) => marker.setMap(null));
+            this.eventRouteMarkers = [];
+
+            if (this.eventRoutePath) {
+                this.eventRoutePath.setMap(null);
+                this.eventRoutePath = null;
+            }
+        }
+
+        setEventMapEmptyState(message, hide = false) {
+            const { emptyStateElement } = this.getEventMapElements();
+            if (!emptyStateElement) {
+                return;
+            }
+
+            if (hide) {
+                emptyStateElement.style.display = 'none';
+                emptyStateElement.textContent = '';
+                return;
+            }
+
+            emptyStateElement.style.display = 'block';
+            emptyStateElement.textContent = message || 'Map points are not available for this trip.';
+        }
+
+        waitForGoogleMaps(timeoutMs = 12000) {
+            return new Promise((resolve, reject) => {
+                const startedAt = Date.now();
+
+                const check = () => {
+                    if (window.google && window.google.maps) {
+                        resolve();
+                        return;
+                    }
+
+                    if (Date.now() - startedAt > timeoutMs) {
+                        reject(new Error('Google Maps API did not load in time.'));
+                        return;
+                    }
+
+                    window.setTimeout(check, 120);
+                };
+
+                check();
+            });
         }
 
         formatDate(dateString) {

@@ -1158,6 +1158,390 @@
             }
         }
 
+        public function searchTravelSpotsForPackage(){
+
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode([
+                    'success' => false,
+                    'travelSpots' => [],
+                    'message' => 'invalid method'
+                ]);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $searchName = isset($input['name']) ? trim((string) $input['name']) : '';
+
+            if ($searchName === '') {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'travelSpots' => [],
+                    'message' => 'no searching name'
+                ]);
+                return;
+            }
+
+            try {
+                $matchingSpots = $this->moderatorModel->searchTravelSpotsForPackages($searchName);
+                echo json_encode([
+                    'success' => true,
+                    'travelSpots' => $matchingSpots,
+                    'message' => 'searched successfully'
+                ]);
+                return;
+
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'travelSpots' => [],
+                    'message' => 'Database error occurred while searching travel spots: ' . $e->getMessage()
+                ]);
+                return;
+            }
+        }
+
+        public function addTravelPackage(){
+
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'invalid method']);
+                return;
+            }
+
+            $moderatorId = getSession('user_id');
+
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            $input = $_POST;
+            if (empty($input)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'No form data received']);
+                return;
+            }
+
+            $selectedSpots = !empty($input['selectedSpots'])
+                ? json_decode($input['selectedSpots'], true)
+                : [];
+
+            if (!is_array($selectedSpots) || count($selectedSpots) === 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'At least one travel spot is required']);
+                return;
+            }
+
+            $normalizedSpots = [];
+            $seenSpotIds = [];
+            $seenDayOrder = [];
+
+            foreach ($selectedSpots as $index => $spot) {
+                if (!is_array($spot) || !isset($spot['spotId']) || !is_numeric($spot['spotId'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Invalid selected spot data']);
+                    return;
+                }
+
+                $spotId = (int) $spot['spotId'];
+                if ($spotId <= 0) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Invalid selected spot id']);
+                    return;
+                }
+
+                if (isset($seenSpotIds[$spotId])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Duplicate travel spot selected']);
+                    return;
+                }
+                $seenSpotIds[$spotId] = true;
+
+                $dayNumber = isset($spot['dayNumber']) && is_numeric($spot['dayNumber'])
+                    ? (int) $spot['dayNumber']
+                    : 1;
+
+                $visitOrder = isset($spot['visitOrder']) && is_numeric($spot['visitOrder'])
+                    ? (int) $spot['visitOrder']
+                    : ($index + 1);
+
+                if ($dayNumber < 1 || $visitOrder < 1) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Day and order must be positive numbers']);
+                    return;
+                }
+
+                $dayOrderKey = $dayNumber . '-' . $visitOrder;
+                if (isset($seenDayOrder[$dayOrderKey])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Each day/order combination must be unique']);
+                    return;
+                }
+                $seenDayOrder[$dayOrderKey] = true;
+
+                $spotNote = isset($spot['spotNote']) ? trim((string) $spot['spotNote']) : '';
+
+                $normalizedSpots[] = [
+                    'spotId' => $spotId,
+                    'dayNumber' => $dayNumber,
+                    'visitOrder' => $visitOrder,
+                    'spotNote' => $spotNote !== '' ? $spotNote : null
+                ];
+            }
+
+            $requiredFields = ['packageName', 'packageOverview', 'durationDays', 'packageStatus'];
+            foreach ($requiredFields as $field) {
+                if (!isset($input[$field]) || trim((string) $input[$field]) === '') {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => ucfirst(str_replace('_', ' ', $field)) . ' is required'
+                    ]);
+                    return;
+                }
+            }
+
+            $durationDays = (int) $input['durationDays'];
+            if ($durationDays < 1) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Duration must be at least one day']);
+                return;
+            }
+
+            $estimatedPrice = null;
+            if (isset($input['estimatedPriceLkr']) && trim((string) $input['estimatedPriceLkr']) !== '') {
+                if (!is_numeric($input['estimatedPriceLkr'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Estimated price must be a valid number']);
+                    return;
+                }
+
+                $estimatedPrice = (float) $input['estimatedPriceLkr'];
+                if ($estimatedPrice < 0) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Estimated price cannot be negative']);
+                    return;
+                }
+            }
+
+            $packageStatus = strtolower(trim((string) $input['packageStatus']));
+            if (!in_array($packageStatus, ['active', 'inactive'], true)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid package status']);
+                return;
+            }
+
+            $photoKeys = ['packagePhoto1', 'packagePhoto2', 'packagePhoto3', 'packagePhoto4', 'packagePhoto5', 'packagePhoto6'];
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+            $uploadedPhotoKeys = [];
+
+            if (!isset($_FILES['packagePhoto1']) || $_FILES['packagePhoto1']['error'] === UPLOAD_ERR_NO_FILE) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Cover photo is required']);
+                return;
+            }
+
+            foreach ($photoKeys as $photoKey) {
+                if (!isset($_FILES[$photoKey]) || $_FILES[$photoKey]['error'] === UPLOAD_ERR_NO_FILE) {
+                    continue;
+                }
+
+                $file = $_FILES[$photoKey];
+
+                if ($file['error'] !== UPLOAD_ERR_OK) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to upload ' . $photoKey]);
+                    return;
+                }
+
+                if ($file['size'] > 5 * 1024 * 1024) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'File size exceeded 5MB for ' . $photoKey]);
+                    return;
+                }
+
+                $mimeType = mime_content_type($file['tmp_name']);
+                if (!in_array($mimeType, $allowedTypes, true)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'File type is not matching for ' . $photoKey]);
+                    return;
+                }
+
+                $uploadedPhotoKeys[] = $photoKey;
+            }
+
+            $packageData = [
+                'packageName' => trim((string) $input['packageName']),
+                'overview' => trim((string) $input['packageOverview']),
+                'packageDetails' => isset($input['packageDetails']) && trim((string) $input['packageDetails']) !== ''
+                    ? trim((string) $input['packageDetails'])
+                    : null,
+                'durationDays' => $durationDays,
+                'estimatedPriceLkr' => $estimatedPrice,
+                'status' => $packageStatus,
+                'moderatorId' => (int) $moderatorId
+            ];
+
+            $packageId = null;
+            $uploadDir = '';
+            $movedFiles = [];
+
+            try {
+                $packageId = $this->moderatorModel->createTravelPackageWithRelations($packageData, $normalizedSpots, []);
+
+                if (!$packageId) {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to create package']);
+                    return;
+                }
+
+                $uploadDir = ROOT_PATH . '/public/uploads/travelPackages/' . $packageId . '/';
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
+                    throw new Exception('Failed to create package upload directory');
+                }
+
+                $photoOrder = 1;
+                foreach ($uploadedPhotoKeys as $photoKey) {
+                    $extension = strtolower(pathinfo($_FILES[$photoKey]['name'], PATHINFO_EXTENSION));
+                    if ($extension === '') {
+                        $extension = 'jpg';
+                    }
+
+                    $extension = preg_replace('/[^a-z0-9]/', '', $extension);
+                    if ($extension === '') {
+                        $extension = 'jpg';
+                    }
+
+                    $newName = $photoKey . '_' . uniqid('pkg_', true) . '.' . $extension;
+                    $databasePath = '/travelPackages/' . $packageId . '/' . $newName;
+                    $fullFilePath = $uploadDir . $newName;
+
+                    if (!move_uploaded_file($_FILES[$photoKey]['tmp_name'], $fullFilePath)) {
+                        throw new Exception('Failed to save uploaded photo ' . $photoKey);
+                    }
+
+                    $movedFiles[] = $fullFilePath;
+
+                    $insertedPhoto = $this->moderatorModel->addTravelPackagePhoto($packageId, $databasePath, $photoOrder);
+                    if (!$insertedPhoto) {
+                        throw new Exception('Failed to save photo metadata for ' . $photoKey);
+                    }
+
+                    $photoOrder++;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Travel package added successfully',
+                    'packageId' => $packageId
+                ]);
+                return;
+
+            } catch (Exception $e) {
+                foreach ($movedFiles as $movedFilePath) {
+                    if (is_file($movedFilePath)) {
+                        @unlink($movedFilePath);
+                    }
+                }
+
+                if ($uploadDir !== '' && is_dir($uploadDir)) {
+                    $remainingFiles = @glob($uploadDir . '*');
+                    if (is_array($remainingFiles) && count($remainingFiles) === 0) {
+                        @rmdir($uploadDir);
+                    }
+                }
+
+                if (!empty($packageId)) {
+                    $this->moderatorModel->deleteTravelPackage((int) $packageId);
+                }
+
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to add travel package: ' . $e->getMessage()
+                ]);
+                return;
+            }
+        }
+
+        public function getTravelPackageCardData(){
+
+            header('Content-Type: application/json');
+
+            try {
+                $travelPackageCardData = $this->moderatorModel->loadTravelPackageCardData();
+
+                echo json_encode([
+                    'success' => true,
+                    'travelPackageCardData' => $travelPackageCardData,
+                    'message' => 'Travel Package Card data loaded Successfully.'
+                ]);
+                return;
+
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'travelPackageCardData' => [],
+                    'message' => 'Database error occurred when getting travel package card data: ' . $e->getMessage()
+                ]);
+                return;
+            }
+        }
+
+        public function getTravelPackageData($packageId){
+
+            header('Content-Type: application/json');
+
+            if (!$packageId || !is_numeric($packageId)) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'travelPackageData' => null,
+                    'message' => 'Invalid package id'
+                ]);
+                return;
+            }
+
+            try {
+                $travelPackageData = $this->moderatorModel->loadTravelPackageData((int) $packageId);
+
+                if (!$travelPackageData) {
+                    http_response_code(404);
+                    echo json_encode([
+                        'success' => false,
+                        'travelPackageData' => null,
+                        'message' => 'No travel package data found for the given ID.'
+                    ]);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'travelPackageData' => $travelPackageData,
+                    'message' => 'Travel Package data loaded Successfully.'
+                ]);
+                return;
+
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'travelPackageData' => null,
+                    'message' => 'Database error occurred when getting travel package data: ' . $e->getMessage()
+                ]);
+                return;
+            }
+        }
+
         public function addTravelSpot(){
 
             header('Content-Type: application/json');
@@ -3685,166 +4069,202 @@
             }
         }
 
-
         // ==================== USER PROBLEMS CENTER ====================
-
-        public function support(){
+        
+        public function subtabComplainHandling(){
             ob_start();
-            $this->view('Moderator/support/support');
+            $this->view('Moderator/oversight/subtabComplainHandling');
             $html = ob_get_clean();
 
             $loadingContent = [
                 'html' => $html,
-                'css'  => URL_ROOT.'/public/css/moderator/support/support.css',
-                'js'   => URL_ROOT.'/public/js/moderator/support/support.js'
+                'css'  => URL_ROOT.'/public/css/moderator/oversight/subtabComplainHandling.css',
+                'js'   => URL_ROOT.'/public/js/moderator/oversight/subtabComplainHandling.js'
             ];
 
             $unEncodedResponse = [
-                'tabId' => 'support',
+                'ok' => 'oversight',
                 'loadingContent' => $loadingContent
             ];
 
-            $this->view('UserTemplates/moderatorDash', $unEncodedResponse);
+            echo json_encode($unEncodedResponse);
         }
 
-        public function problems(){
-
-            ob_start();
-            $this->view('Moderator/quickProblems/quickProblems');
-            $html = ob_get_clean();
-
-            $loadingContent = [
-                'html' => $html,
-                'css'  => URL_ROOT.'/public/css/moderator/quickProblems/quickProblems.css',
-                'js'   => URL_ROOT.'/public/js/moderator/quickProblems/quickProblems.js'
-            ];
-
-            $unEncodedResponse = [
-                'tabId' => 'qproblem',
-                'loadingContent' => $loadingContent
-            ];
-
-            $this->view('UserTemplates/moderatorDash', $unEncodedResponse);
-        }
-
-        public function getProblems(){
-
+        public function getAllComplaints() {
             header('Content-Type: application/json');
 
-            $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+            // Log to PHP error log
+            error_log("getAllComplaints called");
 
-            try{
-                $problems = $this->moderatorModel->getAllProblems($filter);
-                $counts = $this->moderatorModel->getProblemCounts();
-                
+            try {
+                $complaints = $this->moderatorModel->getAllComplaintsGrouped();
+
                 echo json_encode([
                     'success' => true,
-                    'problems' => $problems,
-                    'counts' => $counts
+                    'complaints' => $complaints
                 ]);
-            } catch(PDOException $e){
+
+            } catch(PDOException $e) {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching complaints: ' . $e->getMessage()]);
             }
         }
 
-        public function completeProblem(){
-            
+        public function getComplaintDetails() {
             header('Content-Type: application/json');
 
-            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+            // Log to PHP error log
+            error_log("getComplaintDetails called");
+
+            $complaintId = $_GET['complaintId'] ?? null;
+
+            if (!$complaintId || !is_numeric($complaintId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid complaint ID']);
                 return;
             }
 
+            try {
+                $complaint = $this->moderatorModel->getComplaintDetails($complaintId);
+
+                if (!$complaint) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Complaint not found']);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'complaint' => $complaint
+                ]);
+
+            } catch(PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when fetching complaint details: ' . $e->getMessage()]);
+            }
+        }
+
+        public function startComplaintHandling() {
+            header('Content-Type: application/json');
+
+            // Log to PHP error log
+            error_log("startComplaintHandling called");
+
             $input = json_decode(file_get_contents('php://input'), true);
+            $complaintId = $input['complaintId'] ?? null;
+
+            if (!$complaintId || !is_numeric($complaintId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid complaint ID']);
+                return;
+            }
+
+            // Get current user (moderator) ID from session
             $moderatorId = getSession('user_id');
 
-            if(!$moderatorId || empty($input['problemId'])){
-                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
                 return;
             }
 
-            try{
-                if($this->moderatorModel->completeProblem($input['problemId'], $moderatorId)){
-                    echo json_encode(['success' => true, 'message' => 'Problem marked as completed']);
+            try {
+                $result = $this->moderatorModel->startComplaintHandling($complaintId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Complaint handling started successfully']);
                 } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to update problem']);
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to start complaint handling']);
                 }
-            } catch(PDOException $e){
+
+            } catch(PDOException $e) {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when starting complaint handling: ' . $e->getMessage()]);
             }
         }
 
-        public function deleteProblem(){
-
+        public function markComplaintCompleted() {
             header('Content-Type: application/json');
 
-            if($_SERVER['REQUEST_METHOD'] !== 'DELETE'){
-                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+            // Log to PHP error log
+            error_log("markComplaintCompleted called");
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $complaintId = $input['complaintId'] ?? null;
+
+            if (!$complaintId || !is_numeric($complaintId)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid complaint ID']);
                 return;
             }
 
-            $input = json_decode(file_get_contents('php://input'), true);
+            // Get current user (moderator) ID from session
             $moderatorId = getSession('user_id');
 
-            if(!$moderatorId || empty($input['problemId'])){
-                echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            if (!$moderatorId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
                 return;
             }
 
-            try{
-                if($this->moderatorModel->deleteProblem($input['problemId'])){
-                    echo json_encode(['success' => true, 'message' => 'Problem deleted successfully']);
+            try {
+                $result = $this->moderatorModel->markComplaintCompleted($complaintId, $moderatorId);
+
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Complaint marked as completed successfully']);
                 } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to delete problem']);
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Failed to mark complaint as completed']);
                 }
-            } catch(PDOException $e){
+
+            } catch(PDOException $e) {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred when marking complaint as completed: ' . $e->getMessage()]);
             }
         }
 
-        public function submitProblem(){
 
-            header('Content-Type: application/json');
 
-            if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-                echo json_encode(['success' => false, 'message' => 'Invalid method']);
-                return;
-            }
+        public function subtabHelpdesk(){
+            ob_start();
+            $this->view('Moderator/oversight/subtabHelpdesk');
+            $html = ob_get_clean();
 
-            $input = json_decode(file_get_contents('php://input'), true);
-            $userId = getSession('user_id');
-
-            if(!$userId){
-                echo json_encode(['success' => false, 'message' => 'You must be logged in to submit a problem']);
-                return;
-            }
-
-            if(empty($input['subject']) || empty($input['message'])){
-                echo json_encode(['success' => false, 'message' => 'Subject and message are required']);
-                return;
-            }
-
-            $data = [
-                'userId' => $userId,
-                'subject' => htmlspecialchars($input['subject']),
-                'message' => htmlspecialchars($input['message'])
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/oversight/subtabHelpdesk.css',
+                'js'   => URL_ROOT.'/public/js/moderator/oversight/subtabHelpdesk.js'
             ];
 
-            try{
-                if($this->moderatorModel->submitUserProblem($data)){
-                    echo json_encode(['success' => true, 'message' => 'Your problem has been submitted successfully! Our team will look into it.']);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to submit problem']);
-                }
-            } catch(PDOException $e){
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
-            }
+            $unEncodedResponse = [
+                'ok' => 'oversight',
+                'loadingContent' => $loadingContent
+            ];
+
+            echo json_encode($unEncodedResponse);
         }
+
+        public function subtabPackages(){
+            ob_start();
+            $this->view('Moderator/content/contentPackages');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/content/subtabPackages.css',
+                'js'   => URL_ROOT.'/public/js/moderator/content/subtabPackages.js'
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent' => $loadingContent
+            ];
+
+            echo json_encode($unEncodedResponse);
+        }
+
+        
 
     }
 

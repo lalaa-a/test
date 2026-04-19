@@ -130,19 +130,16 @@ function redirectIfLoggedIn($redirect_url = '/dashboard') {
         $accountType = getSession('user_account_type');
         switch ($accountType) {
             case 'admin':
-                $redirect_url = '/dashboard/admin';
+                $redirect_url = '/admin/dashboard';
                 break;
-            case 'site_modertor':
-                $redirect_url = '/dashboard/siteModerator';
-                break;
-            case 'business_manager':
-                $redirect_url = '/dashboard/businessManager';
+            case 'site_moderator':
+                $redirect_url = '/moderator/dashboard';
                 break;
             case 'driver':
-                $redirect_url = '/dashboard/driver';
+                $redirect_url = '/driver/dashboard';
                 break;
             case 'guide':
-                $redirect_url = '/dashboard/guide';
+                $redirect_url = '/guide/dashboard';
                 break;
             case 'tourist':
                 $redirect_url = '/RegUser/home';

@@ -36,6 +36,28 @@
             $this->view('UserTemplates/guideDash', $unEncodedResponse);
         }
 
+        public function subtabVisits(){
+                ob_start();
+            $this->view('Guide/schedule/subtabVisits');
+                $fullcontent = ob_get_clean();
+    
+                $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/schedule/subtabVisits.css';
+            $js = URL_ROOT.'/public/js/guide/schedule/subtabVisits.js';
+    
+                $loadingContent = [
+                    'html' => $html,
+                    'css' => $css,
+                    'js' => $js
+                ];
+    
+                $unEncodedResponse = [
+                    'ok' => true,
+                    'loadingContent'=>$loadingContent
+                ];
+                echo json_encode($unEncodedResponse);
+        }
+
         public function requests() {
             ob_start();
             $this->view('Guide/requests/requests');
@@ -736,6 +758,135 @@
             }
         }
 
+        /* Guide Visits API Endpoints */
+        public function getGuideVisits() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            try {
+                $visits = $this->guideModel->getGuideVisits($userId);
+                echo json_encode(['success' => true, 'visits' => $visits]);
+            } catch (Exception $e) {
+                error_log('Error in getGuideVisits: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load visits']);
+            }
+        }
+
+        public function getVisitDetails($acceptId = null) {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            if (!$acceptId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Accept ID is required']);
+                return;
+            }
+
+            try {
+                $visit = $this->guideModel->getVisitDetails($userId, $acceptId);
+
+                if ($visit) {
+                    echo json_encode(['success' => true, 'tour' => $visit]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Visit not found']);
+                }
+            } catch (Exception $e) {
+                error_log('Error in getVisitDetails: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load visit details']);
+            }
+        }
+
+        public function getVisitEvents() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $tripId = $_GET['tripId'] ?? null;
+            if (!$tripId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Trip ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->guideModel->getVisitEvents($userId, $tripId);
+
+                if (empty($result['success'])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $result['message'] ?? 'Failed to load visit events',
+                        'events' => $result['events'] ?? []
+                    ]);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'events' => $result['events'] ?? [],
+                    'trip' => $result['trip'] ?? null,
+                    'featureFlags' => $result['featureFlags'] ?? []
+                ]);
+            } catch (Exception $e) {
+                error_log('Error in getVisitEvents: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to load visit events']);
+            }
+        }
+
+        public function markVisitEventComplete() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input || !isset($input['eventId'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Event ID is required']);
+                return;
+            }
+
+            try {
+                $result = $this->guideModel->markVisitEventComplete($userId, $input['eventId']);
+
+                if ($result['success']) {
+                    echo json_encode(['success' => true, 'message' => $result['message']]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => $result['message']]);
+                }
+            } catch (Exception $e) {
+                error_log('Error in markVisitEventComplete: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to mark event complete']);
+            }
+        }
+
         public function earnings() {
             ob_start();
             $this->view('Guide/earnings/earnings');
@@ -756,6 +907,145 @@
                 'loadingContent'=>$loadingContent
             ];
             $this->view('UserTemplates/guideDash', $unEncodedResponse);
+        }
+
+        public function support(){
+            ob_start();
+            $this->view('Guide/support/support');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/support/support.css';
+            $js = URL_ROOT.'/public/js/guide/support/support.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'support',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/guideDash', $unEncodedResponse);
+        }
+
+        public function subtabHelpdesk(){
+            ob_start();
+            $this->view('Guide/support/subtabHelpdesk');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/support/subtabHelpdesk.css';
+            $js = URL_ROOT.'/public/js/guide/support/subtabHelpdesk.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function subtabComplainAndFeedback(){
+            ob_start();
+            $this->view('Guide/support/subtabComplainAndFeedback');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/support/subtabComplainAndFeedback.css';
+            $js = URL_ROOT.'/public/js/guide/support/subtabComplainAndFeedback.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function submitProblem() {
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'You must be logged in to submit a problem']);
+                return;
+            }
+
+            $subject = trim((string)($input['subject'] ?? ''));
+            $message = trim((string)($input['message'] ?? ''));
+
+            if ($subject === '' || $message === '') {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Subject and message are required']);
+                return;
+            }
+
+            $data = [
+                'userId' => (int)$userId,
+                'subject' => htmlspecialchars($subject, ENT_QUOTES, 'UTF-8'),
+                'message' => htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            ];
+
+            try {
+                if ($this->guideModel->submitUserProblem($data)) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Your complaint/feedback was submitted successfully. Our team will review it soon.'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit complaint/feedback']);
+                }
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        public function getUserProblemsByUserId() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $filter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+
+            try {
+                $problems = $this->guideModel->getUserProblemsByUserId((int)$userId, $filter);
+                echo json_encode([
+                    'success' => true,
+                    'problems' => $problems
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
         }
 
         public function getEarningsSummary() {

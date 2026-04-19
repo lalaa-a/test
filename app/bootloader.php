@@ -10,6 +10,7 @@
     require_once 'helpers/html_js_css_Extractor.php';
     require_once 'config/config.php';
     require_once 'helpers/mail_helper.php';
+    require_once 'helpers/trip_status_helper.php';
     
     // Load libraries and configurations
     require_once 'libraries/Core.php';

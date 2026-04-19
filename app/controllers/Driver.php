@@ -1092,7 +1092,7 @@
             }
 
             try {
-                $tour = $this->driverModel->getTourDetails($acceptId);
+                $tour = $this->driverModel->getTourDetails($userId, $acceptId);
 
                 if ($tour) {
                     echo json_encode(['success' => true, 'tour' => $tour]);
@@ -1126,7 +1126,7 @@
             }
 
             try {
-                $result = $this->driverModel->startTrip($input['tripId'], $input['pin']);
+                $result = $this->driverModel->startTrip($userId, $input['tripId'], $input['pin']);
 
                 if ($result['success']) {
                     echo json_encode(['success' => true, 'message' => $result['message']]);
@@ -1160,8 +1160,24 @@
             }
 
             try {
-                $events = $this->driverModel->getTripEvents($tripId);
-                echo json_encode(['success' => true, 'events' => $events]);
+                $result = $this->driverModel->getTripEvents($userId, $tripId);
+
+                if (empty($result['success'])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $result['message'] ?? 'Failed to load trip events',
+                        'events' => $result['events'] ?? []
+                    ]);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'events' => $result['events'] ?? [],
+                    'trip' => $result['trip'] ?? null,
+                    'featureFlags' => $result['featureFlags'] ?? []
+                ]);
             } catch (Exception $e) {
                 error_log('Error in getTripEvents: ' . $e->getMessage());
                 http_response_code(500);
@@ -1188,7 +1204,7 @@
             }
 
             try {
-                $result = $this->driverModel->markEventComplete($input['eventId']);
+                $result = $this->driverModel->markEventComplete($userId, $input['eventId']);
 
                 if ($result['success']) {
                     echo json_encode(['success' => true, 'message' => $result['message']]);
@@ -1222,7 +1238,7 @@
             }
 
             try {
-                $result = $this->driverModel->completeTrip($input['tripId']);
+                $result = $this->driverModel->completeTrip($userId, $input['tripId']);
 
                 if ($result['success']) {
                     echo json_encode(['success' => true, 'message' => $result['message']]);
@@ -1450,6 +1466,145 @@
                 error_log('Error in getMonthlyEarnings: ' . $e->getMessage());
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Failed to load monthly earnings']);
+            }
+        }
+
+        public function support(){
+            ob_start();
+            $this->view('Driver/support/support');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/support/support.css';
+            $js = URL_ROOT.'/public/js/driver/support/support.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'support',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
+        public function subtabHelpdesk(){
+            ob_start();
+            $this->view('Driver/support/subtabHelpdesk');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/support/subtabHelpdesk.css';
+            $js = URL_ROOT.'/public/js/driver/support/subtabHelpdesk.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function subtabComplainAndFeedback(){
+            ob_start();
+            $this->view('Driver/support/subtabComplainAndFeedback');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/support/subtabComplainAndFeedback.css';
+            $js = URL_ROOT.'/public/js/driver/support/subtabComplainAndFeedback.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'ok' => true,
+                'loadingContent'=>$loadingContent
+            ];
+            echo json_encode($unEncodedResponse);
+        }
+
+        public function submitProblem() {
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'You must be logged in to submit a problem']);
+                return;
+            }
+
+            $subject = trim((string)($input['subject'] ?? ''));
+            $message = trim((string)($input['message'] ?? ''));
+
+            if ($subject === '' || $message === '') {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Subject and message are required']);
+                return;
+            }
+
+            $data = [
+                'userId' => (int)$userId,
+                'subject' => htmlspecialchars($subject, ENT_QUOTES, 'UTF-8'),
+                'message' => htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            ];
+
+            try {
+                if ($this->driverModel->submitUserProblem($data)) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Your complaint/feedback was submitted successfully. Our team will review it soon.'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit complaint/feedback']);
+                }
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        public function getUserProblemsByUserId() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $filter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+
+            try {
+                $problems = $this->driverModel->getUserProblemsByUserId((int)$userId, $filter);
+                echo json_encode([
+                    'success' => true,
+                    'problems' => $problems
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
             }
         }
     }

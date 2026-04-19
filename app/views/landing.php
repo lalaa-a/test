@@ -1982,8 +1982,8 @@
         </ul>
 
         <div class="nav-actions">
-            <a href="#" class="btn btn-ghost">Log In</a>
-            <a href="#" class="btn btn-primary">Get Started</a>
+            <a href="<?php echo URL_ROOT; ?>/User/login" class="btn btn-ghost">Log In</a>
+            <a href="<?php echo URL_ROOT; ?>/User/register" class="btn btn-primary">Get Started</a>
         </div>
 
         <button class="hamburger" id="hamburger">

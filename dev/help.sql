@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS help_chats (
     user_type ENUM('Traveller', 'Guide', 'Driver') NOT NULL,
     assigned_moderator_id INT DEFAULT NULL,
     status ENUM('Open', 'Assigned', 'Closed') NOT NULL DEFAULT 'Open',
-    subject VARCHAR(255) DEFAULT NULL,
+    subject VARCHAR(255) DEFAULT NULL COMMENT 'Routing key: SITE or DRIVER:<userId> or GUIDE:<userId>',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     closed_at TIMESTAMP NULL,
@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS help_chats (
     INDEX idx_user (user_id, user_type),
     INDEX idx_status (status),
     INDEX idx_moderator (assigned_moderator_id),
+    INDEX idx_subject (subject),
     INDEX idx_created (created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -75,12 +76,23 @@ SELECT
     hc.assigned_moderator_id,
     hc.status,
     hc.subject,
+    CASE
+        WHEN hc.subject IS NULL OR hc.subject = '' OR UPPER(hc.subject) = 'SITE' THEN 'Site'
+        WHEN UPPER(hc.subject) LIKE 'DRIVER:%' THEN 'Driver'
+        WHEN UPPER(hc.subject) LIKE 'GUIDE:%' THEN 'Guide'
+        ELSE 'Site'
+    END AS target_type,
+    CASE
+        WHEN UPPER(hc.subject) LIKE 'DRIVER:%' OR UPPER(hc.subject) LIKE 'GUIDE:%'
+            THEN CAST(SUBSTRING_INDEX(hc.subject, ':', -1) AS UNSIGNED)
+        ELSE NULL
+    END AS target_user_id,
     hc.created_at,
     hc.updated_at,
     CASE 
-        WHEN hc.user_type = 'Traveller' THEN (SELECT fullname FROM users WHERE user_id = hc.user_id)
-        WHEN hc.user_type = 'Guide' THEN (SELECT fullname FROM users WHERE user_id = hc.user_id)
-        WHEN hc.user_type = 'Driver' THEN (SELECT fullname FROM users WHERE user_id = hc.user_id)
+        WHEN hc.user_type = 'Traveller' THEN (SELECT fullname FROM users WHERE id = hc.user_id)
+        WHEN hc.user_type = 'Guide' THEN (SELECT fullname FROM users WHERE id = hc.user_id)
+        WHEN hc.user_type = 'Driver' THEN (SELECT fullname FROM users WHERE id = hc.user_id)
         ELSE 'Unknown'
     END AS user_name,
     (SELECT COUNT(*) FROM help_messages hm WHERE hm.chat_id = hc.id AND hm.is_read = 0 AND hm.sender_type != 'Moderator') AS unread_count,

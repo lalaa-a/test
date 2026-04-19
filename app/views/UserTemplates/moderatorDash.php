@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Dashboard</title>
+    <title>Site Manager Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=monitor_heart" />
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
@@ -484,6 +484,7 @@
             border: 1px solid #e9ecef;
             overflow: hidden;
             animation: slideUp 0.3s ease;
+            z-index: 1010;
         }
 
         @keyframes slideUp {
@@ -832,14 +833,11 @@
                 <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
                 <div class="sidebar-user-details">
                     <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
-                    <span class="sidebar-user-role">Driver</span>
+                    <span class="sidebar-user-role">Site Manager</span>
                 </div>
                 <i class="fas fa-chevron-up sidebar-dropdown-icon"></i>
                 <div class="sidebar-dropdown-menu" id="sidebarUserDropdown">
-                    <a href="#" class="sidebar-dropdown-item" id="sidebarProfileSettingsBtn">
-                        <i class="fas fa-cog"></i> Profile Settings
-                    </a>
-                    <a href="<?php echo URL_ROOT.'/Driver/driverProfile'?>" class="sidebar-dropdown-item">
+                    <a href="<?php echo URL_ROOT.'/Moderator/moderatorProfile'?>" class="sidebar-dropdown-item">
                         <i class="fas fa-user-circle"></i> My Profile
                     </a>
                     <div class="sidebar-dropdown-divider"></div>

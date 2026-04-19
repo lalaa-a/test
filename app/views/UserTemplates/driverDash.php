@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/public/css/notification/notification-unit.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUc91mpWQzeFwZB8byhyY0GBGSS35XjW0&loading=async" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
@@ -818,6 +818,7 @@
             <li><a href="<?php echo URL_ROOT.'/Driver/pricing'?>" data-tab="pricing"><i class="fa-solid fa-money-check-dollar"></i> <span>Pricing</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/Driver/vehicles'?>" data-tab="vehicles"><i class="fa-solid fa-car"></i></i> <span>Vehicles</span></a></li>
             <li><a href="<?php echo URL_ROOT.'/Driver/earnings'?>" data-tab="earnings"><i class="fa-solid fa-sack-dollar"></i> <span>Earnings</span></a></li>
+            <li><a href="<?php echo URL_ROOT.'/Driver/support'?>" data-tab="support"><i class="fa-solid fa-headset"></i> <span>Support</span></a></li>
         </ul>
 
         <!-- User Info Section -->

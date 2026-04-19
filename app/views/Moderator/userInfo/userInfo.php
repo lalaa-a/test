@@ -9,7 +9,7 @@
         </li>
         <li class="nav-tab">
             <button class="nav-tab-link" data-tab="subtabVehicleInfo">
-                <i class="fa-solid fa-id-card"></i>
+                <i class="fa-solid fa-car"></i>
                 <span class="nav-tab-text">Vehicle Information</span>
             </button>
         </li>

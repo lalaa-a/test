@@ -259,7 +259,32 @@
         public function loadTravelSpotCardData(){
 
             error_log("Loading Travel Spot Card Data");
-            $query = 'SELECT spotId, spotName, overview , averageRating, totalReviews, mainFilterId, mainFilterName, subFilterId, subFilterName, photoPath FROM travel_spot_card_data WHERE spotId IS NOT NULL';
+            $query = 'SELECT
+                        ts.spotId,
+                        ts.spotName,
+                        ts.overview,
+                        ts.province,
+                        ts.district,
+                        ts.bestTimeFrom,
+                        ts.bestTimeTo,
+                        ts.visitingDurationMin,
+                        ts.visitingDurationMax,
+                        ts.ticketPriceLocal,
+                        ts.ticketPriceForeigner,
+                        ts.averageRating,
+                        ts.totalReviews,
+                        tmf.mainFilterId,
+                        tmf.mainFilterName,
+                        tsf.subFilterId,
+                        tsf.subFilterName,
+                        tsp.photoPath
+                    FROM travel_spots ts
+                    LEFT JOIN travel_spots_subfilters tss ON ts.spotId = tss.spotId
+                    LEFT JOIN travelspots_subfilters tsf ON tss.subFilterId = tsf.subFilterId
+                    LEFT JOIN travelspots_mainfilters tmf ON tsf.mainFilterId = tmf.mainFilterId
+                    LEFT JOIN travel_spots_photos tsp ON ts.spotId = tsp.spotId
+                    WHERE ts.spotId IS NOT NULL
+                    ORDER BY ts.spotId ASC, tsp.photoId ASC';
             $this->db->query($query);
             return $this->db->resultSet();
         }
@@ -438,6 +463,266 @@
             $this->db->bind(':moderatorId', $contributionData['moderatorId']);
             $this->db->bind(':spotId', $contributionData['spotId']);
 
+            return $this->db->execute();
+        }
+
+        public function searchTravelSpotsForPackages($name){
+
+            $query = "SELECT 
+                        ts.spotId,
+                        ts.spotName,
+                        ts.province,
+                        ts.district,
+                        ts.overview,
+                        tsp.photoPath
+                    FROM travel_spots ts
+                    LEFT JOIN (
+                        SELECT tsp1.spotId, tsp1.photoPath
+                        FROM travel_spots_photos tsp1
+                        INNER JOIN (
+                            SELECT spotId, MIN(photoId) AS minPhotoId
+                            FROM travel_spots_photos
+                            GROUP BY spotId
+                        ) tsp2 ON tsp1.photoId = tsp2.minPhotoId
+                    ) tsp ON tsp.spotId = ts.spotId
+                    WHERE ts.spotName LIKE CONCAT('%', :name, '%')
+                    ORDER BY 
+                        CASE
+                            WHEN ts.spotName LIKE CONCAT(:name, '%') THEN 1
+                            ELSE 2
+                        END,
+                        ts.spotName ASC
+                    LIMIT 30";
+
+            $this->db->query($query);
+            $this->db->bind(':name', $name);
+            return $this->db->resultSet();
+        }
+
+        public function createTravelPackage($packageData){
+
+            $query = "INSERT INTO travel_packages (
+                        packageName,
+                        overview,
+                        packageDetails,
+                        durationDays,
+                        estimatedPriceLkr,
+                        status,
+                        moderatorId
+                    ) VALUES (
+                        :packageName,
+                        :overview,
+                        :packageDetails,
+                        :durationDays,
+                        :estimatedPriceLkr,
+                        :status,
+                        :moderatorId
+                    )";
+
+            $this->db->query($query);
+            $this->db->bind(':packageName', $packageData['packageName']);
+            $this->db->bind(':overview', $packageData['overview']);
+            $this->db->bind(':packageDetails', $packageData['packageDetails']);
+            $this->db->bind(':durationDays', (int) $packageData['durationDays']);
+            $this->db->bind(':estimatedPriceLkr', $packageData['estimatedPriceLkr']);
+            $this->db->bind(':status', $packageData['status']);
+            $this->db->bind(':moderatorId', (int) $packageData['moderatorId']);
+
+            $this->db->execute();
+            return (int) $this->db->lastInsertId();
+        }
+
+        public function addTravelPackageSpot($packageId, $spotId, $dayNumber, $visitOrder, $spotNote = null){
+
+            $query = "INSERT INTO travel_package_spots (
+                        packageId,
+                        spotId,
+                        dayNumber,
+                        visitOrder,
+                        spotNote
+                    ) VALUES (
+                        :packageId,
+                        :spotId,
+                        :dayNumber,
+                        :visitOrder,
+                        :spotNote
+                    )";
+
+            $this->db->query($query);
+            $this->db->bind(':packageId', (int) $packageId);
+            $this->db->bind(':spotId', (int) $spotId);
+            $this->db->bind(':dayNumber', (int) $dayNumber);
+            $this->db->bind(':visitOrder', (int) $visitOrder);
+            $this->db->bind(':spotNote', $spotNote);
+            return $this->db->execute();
+        }
+
+        public function addTravelPackagePhoto($packageId, $photoPath, $photoOrder){
+
+            $query = "INSERT INTO travel_package_photos (packageId, photoPath, photoOrder)
+                    VALUES (:packageId, :photoPath, :photoOrder)";
+
+            $this->db->query($query);
+            $this->db->bind(':packageId', (int) $packageId);
+            $this->db->bind(':photoPath', $photoPath);
+            $this->db->bind(':photoOrder', (int) $photoOrder);
+            return $this->db->execute();
+        }
+
+        public function createTravelPackageWithRelations($packageData, $selectedSpots, $photoPaths = []){
+            try {
+                $this->db->beginTransaction();
+
+                $packageId = $this->createTravelPackage($packageData);
+
+                foreach ($selectedSpots as $index => $spot) {
+                    if (empty($spot['spotId'])) {
+                        throw new Exception('Selected spot is missing spotId');
+                    }
+
+                    $dayNumber = !empty($spot['dayNumber']) ? (int) $spot['dayNumber'] : 1;
+                    $visitOrder = !empty($spot['visitOrder']) ? (int) $spot['visitOrder'] : ($index + 1);
+                    $spotNote = isset($spot['spotNote']) && $spot['spotNote'] !== ''
+                        ? trim((string) $spot['spotNote'])
+                        : null;
+
+                    $this->addTravelPackageSpot($packageId, (int) $spot['spotId'], $dayNumber, $visitOrder, $spotNote);
+                }
+
+                foreach ($photoPaths as $index => $photoPath) {
+                    $this->addTravelPackagePhoto($packageId, $photoPath, $index + 1);
+                }
+
+                $this->db->commit();
+                return $packageId;
+
+            } catch (Exception $e) {
+                $this->db->rollback();
+                error_log('createTravelPackageWithRelations failed: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function loadTravelPackageCardData(){
+
+            $query = "SELECT
+                        tp.packageId,
+                        tp.packageName,
+                        tp.overview,
+                        tp.packageDetails,
+                        tp.durationDays,
+                        tp.estimatedPriceLkr,
+                        tp.status,
+                        tp.createdAt,
+                        cover.photoPath AS coverPhotoPath,
+                        IFNULL(spotMeta.spotCount, 0) AS spotCount,
+                        IFNULL(spotMeta.spotNames, '') AS spotNames
+                    FROM travel_packages tp
+                    LEFT JOIN (
+                        SELECT tpp1.packageId, tpp1.photoPath
+                        FROM travel_package_photos tpp1
+                        INNER JOIN (
+                            SELECT packageId, MIN(packagePhotoId) AS firstPhotoId
+                            FROM travel_package_photos
+                            GROUP BY packageId
+                        ) tpp2 ON tpp1.packagePhotoId = tpp2.firstPhotoId
+                    ) cover ON cover.packageId = tp.packageId
+                    LEFT JOIN (
+                        SELECT
+                            tps.packageId,
+                            COUNT(*) AS spotCount,
+                            GROUP_CONCAT(ts.spotName ORDER BY tps.dayNumber ASC, tps.visitOrder ASC SEPARATOR ', ') AS spotNames
+                        FROM travel_package_spots tps
+                        INNER JOIN travel_spots ts ON ts.spotId = tps.spotId
+                        GROUP BY tps.packageId
+                    ) spotMeta ON spotMeta.packageId = tp.packageId
+                    ORDER BY tp.createdAt DESC";
+
+            $this->db->query($query);
+            return $this->db->resultSet();
+        }
+
+        public function loadTravelPackageData($packageId){
+
+            $mainQuery = "SELECT
+                            tp.packageId,
+                            tp.packageName,
+                            tp.overview,
+                            tp.packageDetails,
+                            tp.durationDays,
+                            tp.estimatedPriceLkr,
+                            tp.status,
+                            tp.moderatorId,
+                            tp.createdAt,
+                            tp.updatedAt
+                        FROM travel_packages tp
+                        WHERE tp.packageId = :packageId";
+
+            $this->db->query($mainQuery);
+            $this->db->bind(':packageId', (int) $packageId);
+            $mainDetails = $this->db->single();
+
+            if (!$mainDetails) {
+                return null;
+            }
+
+            $photoQuery = "SELECT packagePhotoId, photoPath, photoOrder
+                        FROM travel_package_photos
+                        WHERE packageId = :packageId
+                        ORDER BY photoOrder ASC, packagePhotoId ASC";
+
+            $this->db->query($photoQuery);
+            $this->db->bind(':packageId', (int) $packageId);
+            $photos = $this->db->resultSet();
+
+            $spotsQuery = "SELECT
+                            tps.packageSpotId,
+                            tps.spotId,
+                            tps.dayNumber,
+                            tps.visitOrder,
+                            tps.spotNote,
+                            ts.spotName,
+                            ts.province,
+                            ts.district,
+                            ts.overview,
+                            spotCover.photoPath AS spotPhotoPath
+                        FROM travel_package_spots tps
+                        INNER JOIN travel_spots ts ON ts.spotId = tps.spotId
+                        LEFT JOIN (
+                            SELECT tsp1.spotId, tsp1.photoPath
+                            FROM travel_spots_photos tsp1
+                            INNER JOIN (
+                                SELECT spotId, MIN(photoId) AS minPhotoId
+                                FROM travel_spots_photos
+                                GROUP BY spotId
+                            ) tsp2 ON tsp1.photoId = tsp2.minPhotoId
+                        ) spotCover ON spotCover.spotId = ts.spotId
+                        WHERE tps.packageId = :packageId
+                        ORDER BY tps.dayNumber ASC, tps.visitOrder ASC";
+
+            $this->db->query($spotsQuery);
+            $this->db->bind(':packageId', (int) $packageId);
+            $spots = $this->db->resultSet();
+
+            return [
+                'mainDetails' => $mainDetails,
+                'photos' => $photos,
+                'spots' => $spots
+            ];
+        }
+
+        public function deleteTravelPackage($packageId){
+
+            $this->db->query('DELETE FROM travel_package_spots WHERE packageId = :packageId');
+            $this->db->bind(':packageId', (int) $packageId);
+            $this->db->execute();
+
+            $this->db->query('DELETE FROM travel_package_photos WHERE packageId = :packageId');
+            $this->db->bind(':packageId', (int) $packageId);
+            $this->db->execute();
+
+            $this->db->query('DELETE FROM travel_packages WHERE packageId = :packageId');
+            $this->db->bind(':packageId', (int) $packageId);
             return $this->db->execute();
         }
 
@@ -5154,6 +5439,157 @@
                     'success' => false,
                     'message' => 'Failed to fetch guides: ' . $e->getMessage()
                 ];
+            }
+        }
+
+        // Complain Handling Methods
+        public function getAllComplaintsGrouped() {
+            try {
+                $query = "SELECT
+                            up.problemId,
+                            up.userId,
+                            up.subject,
+                            up.message,
+                            up.status,
+                            up.completedBy,
+                            up.completedAt,
+                            up.createdAt,
+                            up.updatedAt,
+                            u.fullname AS userName,
+                            u.email AS userEmail,
+                            u.phone AS userPhone,
+                            u.account_type AS userAccountType,
+                            u.profile_photo AS userAvatar,
+                            COALESCE(moderator.fullname, moderator.email, CONCAT('Moderator #', moderator.id), 'Unknown') AS handlerName
+                          FROM user_problems up
+                          JOIN users u ON up.userId = u.id
+                          LEFT JOIN users moderator ON up.completedBy = moderator.id
+                          ORDER BY
+                            CASE up.status
+                                WHEN 'pending' THEN 1
+                                WHEN 'in_progress' THEN 2
+                                WHEN 'completed' THEN 3
+                            END,
+                            up.createdAt DESC";
+
+                $this->db->query($query);
+                $complaints = $this->db->resultSet();
+
+                // Group complaints by status
+                $grouped = [
+                    'pending' => [],
+                    'in_progress' => [],
+                    'completed' => []
+                ];
+
+                foreach ($complaints as $complaint) {
+                    $grouped[$complaint->status][] = $complaint;
+                }
+
+                return $grouped;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getAllComplaintsGrouped: " . $e->getMessage());
+                return [
+                    'pending' => [],
+                    'in_progress' => [],
+                    'completed' => []
+                ];
+            }
+        }
+
+        public function getComplaintDetails($problemId) {
+            try {
+                $query = "SELECT
+                            up.problemId,
+                            up.userId,
+                            up.subject,
+                            up.message,
+                            up.status,
+                            up.completedBy,
+                            up.completedAt,
+                            up.createdAt,
+                            up.updatedAt,
+                            u.fullname AS userName,
+                            u.email AS userEmail,
+                            u.phone AS userPhone,
+                            u.secondary_phone AS userSecondaryPhone,
+                            u.address AS userAddress,
+                            u.account_type AS userAccountType,
+                            u.profile_photo AS userAvatar,
+                            u.language AS userLanguage,
+                            u.dob AS userDob,
+                            u.gender AS userGender,
+                            u.last_login AS userLastLogin,
+                            COALESCE(moderator.fullname, moderator.email, CONCAT('Moderator #', moderator.id), 'Unknown') AS handlerName,
+                            moderator.email AS handlerEmail
+                          FROM user_problems up
+                          JOIN users u ON up.userId = u.id
+                          LEFT JOIN users moderator ON up.completedBy = moderator.id
+                          WHERE up.problemId = :problemId";
+
+                $this->db->query($query);
+                $this->db->bind(':problemId', $problemId);
+                $complaint = $this->db->single();
+
+                if ($complaint) {
+                    error_log("getComplaintDetails: found complaint details for problemId=" . $problemId);
+                } else {
+                    error_log("getComplaintDetails: no complaint found for problemId=" . $problemId);
+                }
+
+                return $complaint;
+
+            } catch (PDOException $e) {
+                error_log("Database error in getComplaintDetails: " . $e->getMessage());
+                return null;
+            }
+        }
+
+        public function startComplaintHandling($problemId, $moderatorId) {
+            try {
+                $query = "UPDATE user_problems
+                          SET status = 'in_progress',
+                              completedBy = :moderatorId,
+                              updatedAt = NOW()
+                          WHERE problemId = :problemId AND status = 'pending'";
+
+                $this->db->query($query);
+                $this->db->bind(':problemId', $problemId);
+                $this->db->bind(':moderatorId', $moderatorId);
+
+                $result = $this->db->execute();
+                error_log("startComplaintHandling: problemId=$problemId, moderatorId=$moderatorId, result=" . ($result ? 'success' : 'failed'));
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in startComplaintHandling: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function markComplaintCompleted($problemId, $moderatorId) {
+            try {
+                $query = "UPDATE user_problems
+                          SET status = 'completed',
+                              completedBy = :moderatorId,
+                              completedAt = NOW(),
+                              updatedAt = NOW()
+                          WHERE problemId = :problemId AND status = 'in_progress'";
+
+                $this->db->query($query);
+                $this->db->bind(':problemId', $problemId);
+                $this->db->bind(':moderatorId', $moderatorId);
+
+                $result = $this->db->execute();
+                error_log("markComplaintCompleted: problemId=$problemId, moderatorId=$moderatorId, result=" . ($result ? 'success' : 'failed'));
+
+                return $result;
+
+            } catch (PDOException $e) {
+                error_log("Database error in markComplaintCompleted: " . $e->getMessage());
+                return false;
             }
         }
 

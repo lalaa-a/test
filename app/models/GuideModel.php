@@ -7,6 +7,25 @@ class GuideModel {
         $this->db = new Database();
     }
 
+    private function hasColumn($tableName, $columnName) {
+        try {
+            $this->db->query('SELECT COUNT(*) AS total
+                              FROM information_schema.COLUMNS
+                              WHERE TABLE_SCHEMA = :tableSchema
+                                AND TABLE_NAME = :tableName
+                                AND COLUMN_NAME = :columnName');
+            $this->db->bind(':tableSchema', DB_NAME);
+            $this->db->bind(':tableName', $tableName);
+            $this->db->bind(':columnName', $columnName);
+            $row = $this->db->single();
+
+            return $row && (int)$row->total > 0;
+        } catch (Exception $e) {
+            error_log('GuideModel hasColumn check failed for ' . $tableName . '.' . $columnName . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getBasicGuideInfo($userId){
 
         error_log("getBasicDriverInfo called with userId: " . print_r($userId, true));
@@ -643,10 +662,31 @@ class GuideModel {
 
     public function getTripEventsByTripId($tripId) {
         try {
+            $itineraryTable = $this->getTravelSpotItineraryTableName();
+            $latitudeSelect = 'te.latitude';
+            $longitudeSelect = 'te.longitude';
+            $itineraryJoin = '';
+
+            if ($itineraryTable !== null) {
+                $latitudeSelect = 'COALESCE(tsi_first.latitude, te.latitude) AS latitude';
+                $longitudeSelect = 'COALESCE(tsi_first.longitude, te.longitude) AS longitude';
+                $itineraryJoin = "LEFT JOIN {$itineraryTable} tsi_first
+                                 ON tsi_first.pointId = (
+                                     SELECT tsi_sub.pointId
+                                     FROM {$itineraryTable} tsi_sub
+                                     WHERE tsi_sub.spotId = te.travelSpotId
+                                       AND tsi_sub.latitude IS NOT NULL
+                                       AND tsi_sub.longitude IS NOT NULL
+                                     ORDER BY tsi_sub.pointOrder ASC, tsi_sub.pointId ASC
+                                     LIMIT 1
+                                 )";
+            }
+
             $query = "SELECT te.eventId, te.tripId, te.userId, te.eventDate, te.startTime, te.endTime, te.eventType, te.eventStatus, 
-                             te.travelSpotId, te.locationName, te.latitude, te.longitude, te.description, te.created_at, te.updated_at,
+                             te.travelSpotId, te.locationName, {$latitudeSelect}, {$longitudeSelect}, te.description, te.created_at, te.updated_at,
                              ts.spotName, ts.overview as spotDescription, ts.averageRating
                      FROM trip_events te
+                     {$itineraryJoin}
                      LEFT JOIN travel_spots ts ON te.travelSpotId = ts.spotId
                      WHERE te.tripId = :tripId 
                      ORDER BY te.eventDate ASC, te.startTime ASC";
@@ -686,6 +726,322 @@ class GuideModel {
         } catch (Exception $e) {
             error_log("Error fetching trip itinerary for trip $tripId: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Guide Visits Methods
+     */
+    public function getGuideVisits($guideId) {
+        try {
+            $startPinSelect = $this->hasColumn('created_trips', 'startPin') ? 'ct.startPin AS startPin' : 'NULL AS startPin';
+            $pinMatchSelect = $this->hasColumn('created_trips', 'pinMatch') ? 'ct.pinMatch AS pinMatch' : '0 AS pinMatch';
+
+            $query = "SELECT
+                        gat.acceptId,
+                        gat.eventId,
+                        gat.tripId,
+                        gat.travelSpotId,
+                        gat.guideId,
+                        gat.guideFullName,
+                        gat.guideProfilePhoto,
+                        gat.guideAverageRating,
+                        gat.guideBio,
+                        gat.chargeType,
+                        gat.numberOfPeople,
+                        gat.totalCharge,
+                        gat.doneStatus,
+                        gat.paymentStatus,
+                        gat.completedAt,
+                        gat.createdAt,
+                        gat.updatedAt,
+                        ct.tripTitle,
+                        ct.description,
+                        ct.startDate,
+                        ct.endDate,
+                        ct.status AS tripStatus,
+                        {$startPinSelect},
+                        {$pinMatchSelect},
+                        u.fullname AS rqUserName,
+                        u.profile_photo AS rqUserProfilePhoto,
+                        ts.spotName AS travelSpotName,
+                        te.eventDate,
+                        te.startTime,
+                        te.endTime,
+                        te.eventType,
+                        te.eventStatus,
+                        te.gDone
+                      FROM guide_accepted_trips gat
+                      LEFT JOIN created_trips ct ON gat.tripId = ct.tripId
+                      LEFT JOIN users u ON ct.userId = u.id
+                      LEFT JOIN trip_events te ON gat.eventId = te.eventId AND gat.tripId = te.tripId
+                      LEFT JOIN travel_spots ts ON gat.travelSpotId = ts.spotId
+                      WHERE gat.guideId = :guideId
+                      ORDER BY gat.createdAt DESC";
+
+            $this->db->query($query);
+            $this->db->bind(':guideId', $guideId);
+            $visits = $this->db->resultSet();
+
+            $categorizedVisits = [
+                'ongoing' => [],
+                'upcoming' => [],
+                'completed' => []
+            ];
+
+            $today = date('Y-m-d');
+
+            foreach ($visits as $visit) {
+                $visitArray = (array) $visit;
+                $tripStatus = strtolower((string)($visit->tripStatus ?? ''));
+
+                if ((int)($visit->doneStatus ?? 0) === 1 || $tripStatus === 'completed') {
+                    $categorizedVisits['completed'][] = $visitArray;
+                } elseif ($tripStatus === 'ongoing' || (string)($visit->startDate ?? '') === $today) {
+                    $categorizedVisits['ongoing'][] = $visitArray;
+                } else {
+                    $categorizedVisits['upcoming'][] = $visitArray;
+                }
+            }
+
+            return $categorizedVisits;
+        } catch (Exception $e) {
+            error_log("Error getting guide visits for guide $guideId: " . $e->getMessage());
+            return [
+                'ongoing' => [],
+                'upcoming' => [],
+                'completed' => []
+            ];
+        }
+    }
+
+    public function getVisitDetails($guideId, $acceptId) {
+        try {
+            $startPinSelect = $this->hasColumn('created_trips', 'startPin') ? 'ct.startPin AS startPin' : 'NULL AS startPin';
+            $pinMatchSelect = $this->hasColumn('created_trips', 'pinMatch') ? 'ct.pinMatch AS pinMatch' : '0 AS pinMatch';
+
+            $query = "SELECT
+                        gat.acceptId,
+                        gat.eventId,
+                        gat.tripId,
+                        gat.travelSpotId,
+                        gat.guideId,
+                        gat.guideFullName,
+                        gat.guideProfilePhoto,
+                        gat.guideAverageRating,
+                        gat.guideBio,
+                        gat.chargeType,
+                        gat.numberOfPeople,
+                        gat.totalCharge,
+                        gat.doneStatus,
+                        gat.paymentStatus,
+                        gat.completedAt,
+                        gat.createdAt,
+                        gat.updatedAt,
+                        ct.tripTitle,
+                        ct.description,
+                        ct.startDate,
+                        ct.endDate,
+                        ct.status AS tripStatus,
+                        {$startPinSelect},
+                        {$pinMatchSelect},
+                        u.fullname AS rqUserName,
+                        u.profile_photo AS rqUserProfilePhoto,
+                        ts.spotName AS travelSpotName,
+                        te.eventDate,
+                        te.startTime,
+                        te.endTime,
+                        te.eventType,
+                        te.eventStatus,
+                        te.gDone
+                      FROM guide_accepted_trips gat
+                      LEFT JOIN created_trips ct ON gat.tripId = ct.tripId
+                      LEFT JOIN users u ON ct.userId = u.id
+                      LEFT JOIN trip_events te ON gat.eventId = te.eventId AND gat.tripId = te.tripId
+                      LEFT JOIN travel_spots ts ON gat.travelSpotId = ts.spotId
+                      WHERE gat.acceptId = :acceptId
+                        AND gat.guideId = :guideId
+                      LIMIT 1";
+
+            $this->db->query($query);
+            $this->db->bind(':acceptId', $acceptId);
+            $this->db->bind(':guideId', $guideId);
+            $visit = $this->db->single();
+
+            if (!$visit) {
+                return null;
+            }
+
+            return (array) $visit;
+        } catch (Exception $e) {
+            error_log("Error getting visit details for acceptId $acceptId: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getVisitEvents($guideId, $tripId) {
+        try {
+            $hasStartPin = $this->hasColumn('created_trips', 'startPin');
+            $hasPinMatch = $this->hasColumn('created_trips', 'pinMatch');
+            $startPinSelect = $hasStartPin ? 'ct.startPin' : "'' AS startPin";
+            $pinMatchSelect = $hasPinMatch ? 'ct.pinMatch' : '0 AS pinMatch';
+            $itineraryTable = $this->getTravelSpotItineraryTableName();
+            $latitudeSelect = 'te.latitude';
+            $longitudeSelect = 'te.longitude';
+            $itineraryJoin = '';
+
+            if ($itineraryTable !== null) {
+                $latitudeSelect = 'COALESCE(tsi_first.latitude, te.latitude) AS latitude';
+                $longitudeSelect = 'COALESCE(tsi_first.longitude, te.longitude) AS longitude';
+                $itineraryJoin = "LEFT JOIN {$itineraryTable} tsi_first
+                                 ON tsi_first.pointId = (
+                                     SELECT tsi_sub.pointId
+                                     FROM {$itineraryTable} tsi_sub
+                                     WHERE tsi_sub.spotId = te.travelSpotId
+                                       AND tsi_sub.latitude IS NOT NULL
+                                       AND tsi_sub.longitude IS NOT NULL
+                                     ORDER BY tsi_sub.pointOrder ASC, tsi_sub.pointId ASC
+                                     LIMIT 1
+                                 )";
+            }
+
+            $tripSelect = "SELECT ct.tripId,
+                                  ct.status,
+                                  {$startPinSelect},
+                                  {$pinMatchSelect}
+                           FROM created_trips ct
+                           INNER JOIN guide_accepted_trips gat ON gat.tripId = ct.tripId
+                           WHERE ct.tripId = :tripId
+                             AND gat.guideId = :guideId
+                           LIMIT 1";
+
+            $this->db->query($tripSelect);
+            $this->db->bind(':tripId', $tripId);
+            $this->db->bind(':guideId', $guideId);
+            $trip = $this->db->single();
+
+            if (!$trip) {
+                return ['success' => false, 'message' => 'Trip not found for this guide', 'events' => []];
+            }
+
+            $query = "SELECT DISTINCT
+                        te.eventId,
+                        te.tripId,
+                        te.eventDate,
+                        te.startTime,
+                        te.endTime,
+                        te.eventType,
+                        te.eventStatus,
+                        te.travelSpotId,
+                        te.locationName,
+                        {$latitudeSelect},
+                        {$longitudeSelect},
+                        te.description,
+                        te.dDone,
+                        te.gDone,
+                        te.tDoneGuide,
+                        ts.spotName,
+                        ts.overview as spotDescription,
+                        ts.averageRating
+                      FROM trip_events te
+                      INNER JOIN guide_accepted_trips gat ON gat.eventId = te.eventId AND gat.tripId = te.tripId
+                      {$itineraryJoin}
+                      LEFT JOIN travel_spots ts ON te.travelSpotId = ts.spotId
+                      WHERE gat.tripId = :tripId
+                        AND gat.guideId = :guideId
+                      ORDER BY te.eventDate ASC, te.startTime ASC";
+
+            $this->db->query($query);
+            $this->db->bind(':tripId', $tripId);
+            $this->db->bind(':guideId', $guideId);
+            $events = $this->db->resultSet();
+
+            $events = array_map(function($event) {
+                return (array) $event;
+            }, $events);
+
+            $startPinValue = $hasStartPin ? trim((string)($trip->startPin ?? '')) : '';
+            $pinMatched = $hasPinMatch ? (int)($trip->pinMatch ?? 0) === 1 : true;
+
+            return [
+                'success' => true,
+                'events' => $events,
+                'trip' => [
+                    'tripId' => (int)($trip->tripId ?? $tripId),
+                    'status' => (string)($trip->status ?? ''),
+                    'startPinRequired' => $hasStartPin,
+                    'hasStartPinValue' => $startPinValue !== '',
+                    'pinMatched' => $pinMatched
+                ],
+                'featureFlags' => [
+                    'hasStartPin' => $hasStartPin,
+                    'hasPinMatch' => $hasPinMatch
+                ]
+            ];
+        } catch (Exception $e) {
+            error_log("Error getting visit events for trip $tripId: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error occurred', 'events' => []];
+        }
+    }
+
+    public function markVisitEventComplete($guideId, $eventId) {
+        try {
+            $hasPinMatch = $this->hasColumn('created_trips', 'pinMatch');
+
+            $eventMetaQuery = $hasPinMatch
+                ? "SELECT te.eventId, te.tripId, te.gDone, ct.status, ct.pinMatch
+                   FROM trip_events te
+                   INNER JOIN guide_accepted_trips gat ON gat.eventId = te.eventId AND gat.tripId = te.tripId
+                   INNER JOIN created_trips ct ON ct.tripId = te.tripId
+                   WHERE te.eventId = :eventId
+                     AND gat.guideId = :guideId
+                   LIMIT 1"
+                : "SELECT te.eventId, te.tripId, te.gDone, ct.status
+                   FROM trip_events te
+                   INNER JOIN guide_accepted_trips gat ON gat.eventId = te.eventId AND gat.tripId = te.tripId
+                   INNER JOIN created_trips ct ON ct.tripId = te.tripId
+                   WHERE te.eventId = :eventId
+                     AND gat.guideId = :guideId
+                   LIMIT 1";
+
+            $this->db->query($eventMetaQuery);
+            $this->db->bind(':eventId', $eventId);
+            $this->db->bind(':guideId', $guideId);
+            $eventMeta = $this->db->single();
+
+            if (!$eventMeta) {
+                return ['success' => false, 'message' => 'Event not found for this guide'];
+            }
+
+            if ((int)($eventMeta->gDone ?? 0) === 1) {
+                return ['success' => true, 'message' => 'Event already marked as completed'];
+            }
+
+            if (strtolower((string)($eventMeta->status ?? '')) !== 'ongoing') {
+                return ['success' => false, 'message' => 'Trip must be ongoing before marking events'];
+            }
+
+            if ($hasPinMatch && (int)($eventMeta->pinMatch ?? 0) !== 1) {
+                return ['success' => false, 'message' => 'Traveller PIN must be matched before marking guide events'];
+            }
+
+            $query = "UPDATE trip_events
+                      SET gDone = 1,
+                          updated_at = CURRENT_TIMESTAMP
+                      WHERE eventId = :eventId
+                        AND tripId = :tripId";
+            $this->db->query($query);
+            $this->db->bind(':eventId', $eventId);
+            $this->db->bind(':tripId', $eventMeta->tripId);
+
+            if ($this->db->execute()) {
+                return ['success' => true, 'message' => 'Event marked as completed'];
+            }
+
+            return ['success' => false, 'message' => 'Failed to mark event as completed'];
+        } catch (Exception $e) {
+            error_log("Error marking guide event $eventId as complete: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error occurred'];
         }
     }
 
@@ -888,5 +1244,63 @@ class GuideModel {
             error_log("Error getting guide monthly earnings: " . $e->getMessage());
             return [];
         }
+    }
+
+    private function getTravelSpotItineraryTableName() {
+        $tables = ['travel_spot_ininerary', 'travel_spots_itinerary', 'travel_spot_itinerary'];
+
+        foreach ($tables as $table) {
+            $this->db->query("SHOW TABLES LIKE :tableName");
+            $this->db->bind(':tableName', $table);
+            $result = $this->db->single();
+
+            if ($result) {
+                return $table;
+            }
+        }
+
+        return null;
+    }
+
+    public function submitUserProblem($data) {
+        $query = "INSERT INTO user_problems (userId, subject, message, status)
+                  VALUES (:userId, :subject, :message, 'pending')";
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$data['userId']);
+        $this->db->bind(':subject', (string)$data['subject']);
+        $this->db->bind(':message', (string)$data['message']);
+
+        return $this->db->execute();
+    }
+
+    public function getUserProblemsByUserId($userId, $filter = 'all') {
+        $query = "SELECT
+                    up.problemId,
+                    up.userId,
+                    up.subject,
+                    up.message,
+                    up.status,
+                    up.completedBy,
+                    up.completedAt,
+                    up.createdAt,
+                    mod_user.fullname AS completedByName
+                  FROM user_problems up
+                  LEFT JOIN users mod_user ON up.completedBy = mod_user.id
+                  WHERE up.userId = :userId";
+
+        if ($filter === 'pending') {
+            $query .= " AND up.status = 'pending'";
+        } elseif ($filter === 'in_progress') {
+            $query .= " AND up.status = 'in_progress'";
+        } elseif ($filter === 'completed') {
+            $query .= " AND up.status = 'completed'";
+        }
+
+        $query .= " ORDER BY up.createdAt DESC";
+
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$userId);
+
+        return $this->db->resultSet();
     }
 }

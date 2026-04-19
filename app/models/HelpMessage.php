@@ -78,6 +78,18 @@ class HelpMessage {
         return $result ? (int)$result->count : 0;
     }
 
+    // Get unread message count for any viewer by excluding their own sender_id.
+    public function getUnreadCountForViewer($chatId, $viewerId) {
+        $this->db->query('SELECT COUNT(*) as count FROM help_messages
+            WHERE chat_id = :chat_id
+              AND is_read = 0
+              AND sender_id != :viewer_id');
+        $this->db->bind(':chat_id', (int)$chatId);
+        $this->db->bind(':viewer_id', (int)$viewerId);
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
+    }
+
     // Get last message for a chat
     public function getLastMessage($chatId) {
         $this->db->query('SELECT * FROM help_messages WHERE chat_id = :chat_id ORDER BY created_at DESC LIMIT 1');
@@ -86,20 +98,22 @@ class HelpMessage {
     }
 
     // Mark messages as read
-    public function markAsRead($chatId, $readerType) {
-        // Mark all messages from the "other" party as read
-        if ($readerType === 'Moderator') {
-            // Moderator reading - mark user messages as read
-            $this->db->query('UPDATE help_messages SET is_read = 1 
-                WHERE chat_id = :chat_id 
-                AND sender_type IN ("Traveller", "Guide", "Driver")');
+    public function markAsRead($chatId, $readerType, $readerId = null) {
+        if ($readerId !== null) {
+            // Prefer sender_id-based read updates to support peers with same sender_type (e.g., Moderator <-> Moderator).
+            $this->db->query('UPDATE help_messages SET is_read = 1
+                WHERE chat_id = :chat_id
+                  AND sender_id != :reader_id');
+            $this->db->bind(':reader_id', (int)$readerId);
         } else {
-            // User reading - mark moderator messages as read
-            $this->db->query('UPDATE help_messages SET is_read = 1 
-                WHERE chat_id = :chat_id 
-                AND sender_type = "Moderator"');
+            // Backward-compatible type-based fallback.
+            $this->db->query('UPDATE help_messages SET is_read = 1
+                WHERE chat_id = :chat_id
+                  AND sender_type != :reader_type');
+            $this->db->bind(':reader_type', $readerType);
         }
-        $this->db->bind(':chat_id', $chatId);
+
+        $this->db->bind(':chat_id', (int)$chatId);
         return $this->db->execute();
     }
 

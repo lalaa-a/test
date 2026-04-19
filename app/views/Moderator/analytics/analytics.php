@@ -3,19 +3,19 @@
     <ul class="nav-tabs">
         <li class="nav-tab">
             <button class="nav-tab-link active" data-tab="subtabEarningsBreakdown">
-                <i class="fa-solid fa-person-walking-luggage"></i>
+                <i class="fa-solid fa-coins"></i>
                 <span class="nav-tab-text">Earnings Breakdown</span>
             </button>
         </li>
         <li class="nav-tab">
             <button class="nav-tab-link" data-tab="subtabPayoutAnalysis">
-                <i class="fa-solid fa-taxi"></i>
+                <i class="fa-solid fa-money-bill-wave"></i>
                 <span class="nav-tab-text">Payout Analysis</span>
             </button>
         </li>
         <li class="nav-tab">
             <button class="nav-tab-link" data-tab="subtabUserAnalysis">
-                <i class="fa-solid fa-compass"></i>
+                <i class="fa-solid fa-users"></i>
                 <span class="nav-tab-text">User Analysis</span>
             </button>
         </li>

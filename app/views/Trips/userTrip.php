@@ -15,6 +15,7 @@
     </div>
 
     <div class="stats-grid">
+
         <div class="stat-card">
             <div class="stat-icon total">
                 <i class="fas fa-route"></i>
@@ -22,6 +23,26 @@
             <div class="stat-content">
                 <div class="stat-number" id="totalTripsCount">0</div>
                 <div class="stat-label">Total Trips</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon ongoing">
+                <i class="fas fa-plane"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="ongoingStatsCount">0</div>
+                <div class="stat-label">Ongoing</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon scheduled">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number" id="scheduledStatsCount">0</div>
+                <div class="stat-label">Scheduled</div>
             </div>
         </div>
 
@@ -56,26 +77,6 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon scheduled">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number" id="scheduledStatsCount">0</div>
-                <div class="stat-label">Scheduled</div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon ongoing">
-                <i class="fas fa-plane"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number" id="ongoingStatsCount">0</div>
-                <div class="stat-label">Ongoing</div>
-            </div>
-        </div>
-
-        <div class="stat-card">
             <div class="stat-icon completed">
                 <i class="fas fa-check-circle"></i>
             </div>
@@ -84,29 +85,35 @@
                 <div class="stat-label">Completed</div>
             </div>
         </div>
+
     </div>
 
     <div class="section-nav">
-        <a href="#pending-section" class="nav-link active" data-section="pending">
-            <i class="fas fa-clock"></i>
-            Pending
-        </a>
-        <a href="#wconfirmation-section" class="nav-link" data-section="wconfirmation">
-            <i class="fas fa-hourglass-half"></i>
-            Waiting Confirmation
-        </a>
-        <a href="#awpayment-section" class="nav-link" data-section="awpayment">
-            <i class="fas fa-credit-card"></i>
-            Awaiting Payment
-        </a>
-        <a href="#scheduled-section" class="nav-link" data-section="scheduled">
-            <i class="fas fa-calendar-check"></i>
-            Scheduled
-        </a>
         <a href="#ongoing-section" class="nav-link" data-section="ongoing">
             <i class="fas fa-plane"></i>
             Ongoing
         </a>
+
+        <a href="#scheduled-section" class="nav-link" data-section="scheduled">
+            <i class="fas fa-calendar-check"></i>
+            Scheduled
+        </a>
+
+        <a href="#awpayment-section" class="nav-link" data-section="awpayment">
+            <i class="fas fa-credit-card"></i>
+            Awaiting Payment
+        </a>
+
+        <a href="#wconfirmation-section" class="nav-link" data-section="wconfirmation">
+            <i class="fas fa-hourglass-half"></i>
+            Waiting Confirmation
+        </a>
+
+        <a href="#pending-section" class="nav-link active" data-section="pending">
+            <i class="fas fa-clock"></i>
+            Pending
+        </a>
+
         <a href="#completed-section" class="nav-link" data-section="completed">
             <i class="fas fa-check-circle"></i>
             Completed

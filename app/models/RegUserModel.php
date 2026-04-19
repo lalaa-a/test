@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../helpers/trip_status_helper.php';
+
 class RegUserModel {
     private $db;
 
@@ -9,6 +11,7 @@ class RegUserModel {
     public function getUserTrips($userId){
 
         $this->syncUserTripStatusesByConfirmations((int)$userId);
+        $this->syncUserTripStatusesByDate((int)$userId);
 
         $query = 'SELECT tripId, userId, tripTitle , description, numberOfPeople, startDate, endDate, status, createdAt, updatedAt FROM created_trips WHERE userId = :userId ORDER BY createdAt DESC';
 
@@ -71,8 +74,7 @@ class RegUserModel {
     }
 
     public function getTripStatusForUser($userId, $tripId) {
-        $this->moveTripToPendingIfRejected((int)$userId, (int)$tripId);
-        $this->promoteTripToScheduledIfReady((int)$userId, (int)$tripId);
+        $this->syncTripLifecycleForUser((int)$userId, (int)$tripId);
 
         $this->db->query('SELECT status FROM created_trips WHERE tripId = :tripId AND userId = :userId LIMIT 1');
         $this->db->bind(':tripId', $tripId);
@@ -83,6 +85,28 @@ class RegUserModel {
 
     public function isTripPendingForUser($userId, $tripId) {
         return $this->getTripStatusForUser($userId, $tripId) === 'pending';
+    }
+
+    public function syncTripLifecycleForUser($userId, $tripId) {
+        $userId = (int)$userId;
+        $tripId = (int)$tripId;
+
+        $status = $this->moveTripToPendingIfRejected($userId, $tripId);
+        if ($status === null) {
+            return null;
+        }
+
+        if ($status === 'wConfirmation') {
+            $status = $this->promoteTripToScheduledIfReady($userId, $tripId);
+        } elseif ($status === 'awPayment') {
+            $this->ensurePendingTripPaymentRecords($userId, $tripId);
+        }
+
+        if ($status === 'scheduled') {
+            $status = $this->promoteTripToOngoingIfToday($userId, $tripId);
+        }
+
+        return $status;
     }
 
     private function getTripRevisionStats($userId, $tripId) {
@@ -406,6 +430,60 @@ class RegUserModel {
         }
 
         return $updatedTrip ? $updatedTrip->status : null;
+    }
+
+    private function promoteTripToOngoingIfToday($userId, $tripId) {
+        $this->db->query('SELECT status, startDate, endDate FROM created_trips WHERE tripId = :tripId AND userId = :userId LIMIT 1');
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':userId', $userId);
+        $trip = $this->db->single();
+
+        if (!$trip) {
+            return null;
+        }
+
+        if (!shouldMoveTripToOngoingToday($trip->status, $trip->startDate, $trip->endDate)) {
+            return $trip->status;
+        }
+
+        $this->db->query('UPDATE created_trips
+            SET status = :nextStatus,
+                updatedAt = CURRENT_TIMESTAMP
+            WHERE tripId = :tripId
+              AND userId = :userId
+              AND status = :currentStatus');
+        $this->db->bind(':nextStatus', 'ongoing');
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':currentStatus', 'scheduled');
+
+        if ($this->db->execute() && $this->db->rowCount() > 0) {
+            return 'ongoing';
+        }
+
+        $this->db->query('SELECT status FROM created_trips WHERE tripId = :tripId AND userId = :userId LIMIT 1');
+        $this->db->bind(':tripId', $tripId);
+        $this->db->bind(':userId', $userId);
+        $updatedTrip = $this->db->single();
+
+        return $updatedTrip ? $updatedTrip->status : $trip->status;
+    }
+
+    private function syncUserTripStatusesByDate($userId) {
+        $this->db->query('SELECT tripId, status, startDate, endDate FROM created_trips WHERE userId = :userId AND status = :status');
+        $this->db->bind(':userId', $userId);
+        $this->db->bind(':status', 'scheduled');
+        $trips = $this->db->resultSet();
+
+        if (!$trips) {
+            return;
+        }
+
+        foreach ($trips as $trip) {
+            if (shouldMoveTripToOngoingToday($trip->status, $trip->startDate, $trip->endDate)) {
+                $this->promoteTripToOngoingIfToday((int)$userId, (int)$trip->tripId);
+            }
+        }
     }
 
     private function syncUserTripStatusesByConfirmations($userId) {
@@ -2305,6 +2383,89 @@ class RegUserModel {
         $results = $this->db->resultSet();
         error_log("Results for getTripStartEndEvents: " . json_encode($results));
         return $results ? $results : [];
+    }
+
+    public function submitUserProblem($data) {
+        $query = "INSERT INTO user_problems (userId, subject, message, status)
+                  VALUES (:userId, :subject, :message, 'pending')";
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$data['userId']);
+        $this->db->bind(':subject', (string)$data['subject']);
+        $this->db->bind(':message', (string)$data['message']);
+
+        return $this->db->execute();
+    }
+
+    public function getUserProblems($filter = 'all') {
+        $query = "SELECT
+                    up.problemId,
+                    up.userId,
+                    up.subject,
+                    up.message,
+                    up.status,
+                    up.completedBy,
+                    up.completedAt,
+                    up.createdAt,
+                    u.fullname,
+                    u.email,
+                    u.phone,
+                    u.account_type,
+                    u.profile_photo,
+                    mod_user.fullname AS completedByName
+                  FROM user_problems up
+                  INNER JOIN users u ON up.userId = u.id
+                  LEFT JOIN users mod_user ON up.completedBy = mod_user.id";
+
+        if ($filter === 'pending') {
+            $query .= " WHERE up.status = 'pending'";
+        } elseif ($filter === 'in_progress') {
+            $query .= " WHERE up.status = 'in_progress'";
+        } elseif ($filter === 'completed') {
+            $query .= " WHERE up.status = 'completed'";
+        }
+
+        $query .= " ORDER BY
+                    CASE up.status
+                        WHEN 'pending' THEN 1
+                        WHEN 'in_progress' THEN 2
+                        WHEN 'completed' THEN 3
+                        ELSE 4
+                    END,
+                    up.createdAt DESC";
+
+        $this->db->query($query);
+        return $this->db->resultSet();
+    }
+
+    public function getUserProblemsByUserId($userId, $filter = 'all') {
+        $query = "SELECT
+                    up.problemId,
+                    up.userId,
+                    up.subject,
+                    up.message,
+                    up.status,
+                    up.completedBy,
+                    up.completedAt,
+                    up.createdAt,
+                    mod_user.fullname AS completedByName
+                  FROM user_problems up
+                  LEFT JOIN users mod_user ON up.completedBy = mod_user.id
+                  WHERE up.userId = :userId";
+
+        if ($filter === 'pending') {
+            $query .= " AND up.status = 'pending'";
+        } elseif ($filter === 'in_progress') {
+            $query .= " AND up.status = 'in_progress'";
+        } elseif ($filter === 'completed') {
+            $query .= " AND up.status = 'completed'";
+        }
+
+        $query .= " ORDER BY up.createdAt DESC";
+
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$userId);
+
+        return $this->db->resultSet();
     }
     
 }

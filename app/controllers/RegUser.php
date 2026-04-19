@@ -7,8 +7,10 @@ require_once '../app/helpers/currency_helper.php';
     class RegUser extends Controller {
 
         private $regUserModel;
+        private $moderatorModel;
         public function __construct(){
             $this->regUserModel = $this->model('RegUserModel');
+            $this->moderatorModel = $this->model('ModeratorModel');
         }
 
         public function help() {
@@ -32,6 +34,162 @@ require_once '../app/helpers/currency_helper.php';
             ];
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
         }
+
+
+        public function support($subtabId = null){
+
+            // Support subtab fetch route: /RegUser/support/{subtabId}
+            if ($subtabId !== null) {
+                if ($subtabId === 'subtabHelpdesk') {
+                    $this->subtabHelpdesk();
+                    return;
+                }
+
+                // Keep backward compatibility with historical typo from support view.
+                if ($subtabId === 'subtabComplainAndFeedback' || $subtabId === 'complpainAndFeedback') {
+                    $this->subtabComplainAndFeedback();
+                    return;
+                }
+
+                header('Content-Type: application/json');
+                http_response_code(404);
+                echo json_encode([
+                    'ok' => false,
+                    'message' => 'Unknown support subtab'
+                ]);
+                return;
+            }
+
+            ob_start();
+            $this->view('RegUser/support/support');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/RegUser/support/support.css';
+            $js = URL_ROOT.'/public/js/RegUser/support/support.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'support',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function subtabHelpdesk() {
+            header('Content-Type: application/json');
+
+            ob_start();
+            $this->view('RegUser/support/subtabHelpdesk');
+            $html = ob_get_clean();
+
+            echo json_encode([
+                'ok' => true,
+                'loadingContent' => [
+                    'html' => $html,
+                    'css' => URL_ROOT.'/public/css/regUser/support/subtabHelpdesk.css',
+                    'js' => URL_ROOT.'/public/js/regUser/support/subtabHelpdesk.js'
+                ]
+            ]);
+        }
+
+        public function subtabComplainAndFeedback() {
+            header('Content-Type: application/json');
+
+            ob_start();
+            $this->view('RegUser/support/subtabComplainAndFeedback');
+            $html = ob_get_clean();
+
+            echo json_encode([
+                'ok' => true,
+                'loadingContent' => [
+                    'html' => $html,
+                    'css' => URL_ROOT.'/public/css/regUser/support/subtabComplainAndFeedback.css',
+                    'js' => URL_ROOT.'/public/js/regUser/support/subtabComplainAndFeedback.js'
+                ]
+            ]);
+        }
+
+        public function submitProblem() {
+            header('Content-Type: application/json');
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Invalid method']);
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $userId = getSession('user_id');
+
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'You must be logged in to submit a problem']);
+                return;
+            }
+
+            $subject = trim((string)($input['subject'] ?? ''));
+            $message = trim((string)($input['message'] ?? ''));
+
+            if ($subject === '' || $message === '') {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Subject and message are required']);
+                return;
+            }
+
+            $data = [
+                'userId' => (int)$userId,
+                'subject' => htmlspecialchars($subject, ENT_QUOTES, 'UTF-8'),
+                'message' => htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            ];
+
+            try {
+                if ($this->regUserModel->submitUserProblem($data)) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Your complaint/feedback was submitted successfully. Our team will review it soon.'
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit complaint/feedback']);
+                }
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        public function getUserProblemsByUserId() {
+            header('Content-Type: application/json');
+
+            $userId = getSession('user_id');
+            if (!$userId) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                return;
+            }
+
+            $filter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+
+            try {
+                $problems = $this->regUserModel->getUserProblemsByUserId((int)$userId, $filter);
+                echo json_encode([
+                    'success' => true,
+                    'problems' => $problems
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
+            }
+        }
+
+        
+
 
         private function getProviderRevisionState($userId, $tripId) {
             if (!$userId || !$tripId) {
@@ -407,60 +565,159 @@ require_once '../app/helpers/currency_helper.php';
         public function destinations() {
 
             requireLogin();
-            $structCardData = [];
-
             $moderatorModel = $this->model('ModeratorModel');
             $travelSpotCardData = $moderatorModel->loadTravelSpotCardData();
 
-            error_log(print_r(json_encode($travelSpotCardData),true));
+            $mainFilters = [];
+            $allSpots = [];
+            $provinces = [];
 
-            //structure the data that can use fro render the cards.
-            foreach($travelSpotCardData as $item){
+            foreach ($travelSpotCardData as $item) {
+                $spotId = isset($item->spotId) ? (int)$item->spotId : 0;
+                if ($spotId <= 0) {
+                    continue;
+                }
 
-                $mainFilterId = $item -> mainFilterId;
-                $spotId = $item -> spotId;
-                
-                if(!isset($structCardData[$mainFilterId])){
-                    $structCardData[$mainFilterId] = [
-                        "mainFilterName" => $item -> mainFilterName,
-                        "travelSpots" => []
+                $mainFilterKey = !empty($item->mainFilterId) ? (string)$item->mainFilterId : 'other';
+                $mainFilterName = trim((string)($item->mainFilterName ?? ''));
+                if ($mainFilterName === '') {
+                    $mainFilterName = 'Other Destinations';
+                }
+
+                if (!isset($mainFilters[$mainFilterKey])) {
+                    $mainFilters[$mainFilterKey] = [
+                        'mainFilterName' => $mainFilterName,
+                        'travelSpots' => []
                     ];
                 }
-                
-                if(!isset($structCardData[$mainFilterId]["travelSpots"][$spotId])){
-                    $structCardData[$mainFilterId]["travelSpots"][$spotId] = [
-                        "spotName"      => $item -> spotName,
-                        "overview"      => $item -> overview,
-                        "totalReviews"  => $item -> totalReviews,
-                        "averageRating" => $item -> averageRating,
-                        "subFilters"    => [],
-                        "photoPaths"    => []
+
+                if (!isset($mainFilters[$mainFilterKey]['travelSpots'][$spotId])) {
+                    $mainFilters[$mainFilterKey]['travelSpots'][$spotId] = [
+                        'spotId' => $spotId,
+                        'spotName' => (string)($item->spotName ?? ''),
+                        'overview' => (string)($item->overview ?? ''),
+                        'province' => trim((string)($item->province ?? '')),
+                        'district' => trim((string)($item->district ?? '')),
+                        'bestTimeFrom' => trim((string)($item->bestTimeFrom ?? '')),
+                        'bestTimeTo' => trim((string)($item->bestTimeTo ?? '')),
+                        'visitingDurationMin' => isset($item->visitingDurationMin) ? (int)$item->visitingDurationMin : null,
+                        'visitingDurationMax' => isset($item->visitingDurationMax) ? (int)$item->visitingDurationMax : null,
+                        'ticketPriceLocal' => isset($item->ticketPriceLocal) ? (float)$item->ticketPriceLocal : null,
+                        'ticketPriceForeigner' => isset($item->ticketPriceForeigner) ? (float)$item->ticketPriceForeigner : null,
+                        'totalReviews' => isset($item->totalReviews) ? (int)$item->totalReviews : 0,
+                        'averageRating' => isset($item->averageRating) ? (float)$item->averageRating : 0.0,
+                        'subFilters' => [],
+                        'photoPaths' => []
                     ];
                 }
-                
-                $currentSpot = &$structCardData[$mainFilterId]["travelSpots"][$spotId];
-                
-                if(!isset($currentSpot["subFilters"][$item -> subFilterId])){
-                    $currentSpot["subFilters"][$item -> subFilterId] = $item -> subFilterName ;
+
+                if (!isset($allSpots[$spotId])) {
+                    $allSpots[$spotId] = $mainFilters[$mainFilterKey]['travelSpots'][$spotId];
                 }
-                
-                if(!in_array($item -> photoPath, $currentSpot["photoPaths"])){
-                    $currentSpot["photoPaths"][] = $item -> photoPath;
+
+                $currentSpot = &$mainFilters[$mainFilterKey]['travelSpots'][$spotId];
+                $currentAllSpot = &$allSpots[$spotId];
+
+                $subFilterId = isset($item->subFilterId) ? (string)$item->subFilterId : '';
+                $subFilterName = trim((string)($item->subFilterName ?? ''));
+                if ($subFilterId !== '' && $subFilterName !== '') {
+                    if (!isset($currentSpot['subFilters'][$subFilterId])) {
+                        $currentSpot['subFilters'][$subFilterId] = $subFilterName;
+                    }
+
+                    if (!isset($currentAllSpot['subFilters'][$subFilterId])) {
+                        $currentAllSpot['subFilters'][$subFilterId] = $subFilterName;
+                    }
                 }
+
+                $photoPath = trim((string)($item->photoPath ?? ''));
+                if ($photoPath !== '') {
+                    if (!in_array($photoPath, $currentSpot['photoPaths'], true)) {
+                        $currentSpot['photoPaths'][] = $photoPath;
+                    }
+
+                    if (!in_array($photoPath, $currentAllSpot['photoPaths'], true)) {
+                        $currentAllSpot['photoPaths'][] = $photoPath;
+                    }
+                }
+
+                if ($currentSpot['province'] !== '') {
+                    $provinces[$currentSpot['province']] = $currentSpot['province'];
+                }
+
+                unset($currentSpot, $currentAllSpot);
             }
 
-            error_log("structured card data". print_r($structCardData,true));
+            $spotSortFn = function ($left, $right) {
+                $leftRating = (float)($left['averageRating'] ?? 0);
+                $rightRating = (float)($right['averageRating'] ?? 0);
 
-            $cardData = [
-                            "cardData" => $structCardData
+                if ($leftRating !== $rightRating) {
+                    return $rightRating <=> $leftRating;
+                }
+
+                $leftReviews = (int)($left['totalReviews'] ?? 0);
+                $rightReviews = (int)($right['totalReviews'] ?? 0);
+                if ($leftReviews !== $rightReviews) {
+                    return $rightReviews <=> $leftReviews;
+                }
+
+                return strcasecmp((string)($left['spotName'] ?? ''), (string)($right['spotName'] ?? ''));
+            };
+
+            foreach ($mainFilters as &$mainFilter) {
+                uasort($mainFilter['travelSpots'], $spotSortFn);
+            }
+            unset($mainFilter);
+
+            uasort($allSpots, $spotSortFn);
+            ksort($provinces);
+
+            $mainFilters = ['all' => [
+                'mainFilterName' => 'All Destinations',
+                'travelSpots' => $allSpots
+            ]] + $mainFilters;
+
+            $selectedFilter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+            if (!array_key_exists($selectedFilter, $mainFilters)) {
+                $selectedFilter = 'all';
+            }
+
+            $selectedProvince = isset($_GET['province']) ? trim((string)$_GET['province']) : 'all';
+            if ($selectedProvince !== 'all' && !isset($provinces[$selectedProvince])) {
+                $selectedProvince = 'all';
+            }
+
+            $visibleSpots = $mainFilters[$selectedFilter]['travelSpots'];
+            if ($selectedProvince !== 'all') {
+                $visibleSpots = array_filter($visibleSpots, function ($spot) use ($selectedProvince) {
+                    return (string)($spot['province'] ?? '') === $selectedProvince;
+                });
+            }
+
+            $filterMeta = [];
+            foreach ($mainFilters as $filterKey => $filterInfo) {
+                $filterMeta[$filterKey] = [
+                    'name' => (string)$filterInfo['mainFilterName'],
+                    'count' => count($filterInfo['travelSpots'])
+                ];
+            }
+
+            $data = [
+                'mainFilters' => $mainFilters,
+                'filterMeta' => $filterMeta,
+                'visibleSpots' => $visibleSpots,
+                'provinces' => array_values($provinces),
+                'selectedFilter' => $selectedFilter,
+                'selectedProvince' => $selectedProvince
             ];
 
             ob_start();
-            $this->view('Explore/travelSpots/travelSpotsView',$cardData);
+            $this->view('Explore/travelSpots/allDestinations', $data);
             $html = ob_get_clean();
 
-            $css = URL_ROOT.'/public/css/regUser/travelSpots/travelSpotsView.css';
-            $js = URL_ROOT.'/public/js/regUser/travelSpots/travelSpotsView.js';
+            $css = URL_ROOT.'/public/css/regUser/travelSpots/allDestinations.css';
+            $js = URL_ROOT.'/public/js/regUser/travelSpots/allDestinations.js';
 
             $loadingContent = [
                 'html' => $html,
@@ -471,6 +728,44 @@ require_once '../app/helpers/currency_helper.php';
             $unEncodedResponse = [
                 'tabId'=>'destinations',
                 'loadingContent'=>$loadingContent
+            ];
+
+            $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function destination($spotId) {
+
+            requireLogin();
+            $spotId = (int)$spotId;
+
+            if ($spotId <= 0) {
+                header('Location: ' . URL_ROOT . '/RegUser/destinations');
+                exit;
+            }
+
+            $travelSpotData = travelSpotDetails($spotId);
+
+            $data = [
+                'travelSpotData' => $travelSpotData,
+                'spotId' => $spotId
+            ];
+
+            ob_start();
+            $this->view('Explore/travelSpots/destDetails', $data);
+            $html = ob_get_clean();
+
+            $css = URL_ROOT.'/public/css/regUser/travelSpots/destDetails.css';
+            $js = URL_ROOT.'/public/js/regUser/travelSpots/destDetails.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId' => 'destinations',
+                'loadingContent' => $loadingContent
             ];
 
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
@@ -505,9 +800,19 @@ require_once '../app/helpers/currency_helper.php';
             
             $profileControllerModel = $this->model('ProfileControllerModel');
             $driversWithMainFilters = $profileControllerModel->getAccountsByMainFilters('driver');
+
+            $selectedFilter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+            if (!array_key_exists($selectedFilter, $driversWithMainFilters)) {
+                $selectedFilter = 'all';
+            }
+
+            if ($selectedFilter !== 'all' && empty($driversWithMainFilters[$selectedFilter]['accounts'])) {
+                $selectedFilter = 'all';
+            }
             
             $data = [
-                'mainFilters' => $driversWithMainFilters
+                'mainFilters' => $driversWithMainFilters,
+                'selectedFilter' => $selectedFilter
             ];
             
             ob_start();
@@ -535,10 +840,20 @@ require_once '../app/helpers/currency_helper.php';
         public function guides() {
 
             $profileControllerModel = $this->model('ProfileControllerModel');
-            $driversWithMainFilters = $profileControllerModel->getAccountsByMainFilters('guide');
+            $guidesWithMainFilters = $profileControllerModel->getAccountsByMainFilters('guide');
+
+            $selectedFilter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+            if (!array_key_exists($selectedFilter, $guidesWithMainFilters)) {
+                $selectedFilter = 'all';
+            }
+
+            if ($selectedFilter !== 'all' && empty($guidesWithMainFilters[$selectedFilter]['accounts'])) {
+                $selectedFilter = 'all';
+            }
             
             $data = [
-                'mainFilters' => $driversWithMainFilters
+                'mainFilters' => $guidesWithMainFilters,
+                'selectedFilter' => $selectedFilter
             ];
             
             ob_start();
@@ -601,6 +916,11 @@ require_once '../app/helpers/currency_helper.php';
         }
 
         public function tripEventList($tripId){
+
+            $userId = getSession('user_id');
+            if ($userId) {
+                $this->regUserModel->syncTripLifecycleForUser((int)$userId, (int)$tripId);
+            }
 
             $basicTripDetails = $this->regUserModel->getTripById($tripId);
             ob_start();
@@ -1914,11 +2234,14 @@ require_once '../app/helpers/currency_helper.php';
         }
 
         public function packages() {
-            // Placeholder for packages management
+            ob_start();
+            $this->view('RegUser/packages/packages');
+            $html = ob_get_clean();
+
             $loadingContent = [
-                'html' => '<div class="packages-section"><h2>Packages Management</h2><p>Package management functionality coming soon...</p></div>',
-                'css' => '.packages-section { padding: 20px; }',
-                'js' => 'console.log("Packages section loaded");'
+                'html' => $html,
+                'css' => URL_ROOT.'/public/css/regUser/packages/packages.css',
+                'js' => URL_ROOT.'/public/js/regUser/packages/packages.js'
             ];
 
             $unEncodedResponse = [
@@ -1927,6 +2250,90 @@ require_once '../app/helpers/currency_helper.php';
             ];
 
             $this->view('UserTemplates/travellerDash', $unEncodedResponse);
+        }
+
+        public function getPackageCatalog() {
+            header('Content-Type: application/json');
+
+            try {
+                $packageCards = $this->moderatorModel->loadTravelPackageCardData();
+
+                $activePackages = [];
+                foreach ($packageCards as $packageCard) {
+                    if (isset($packageCard->status) && strtolower((string) $packageCard->status) === 'active') {
+                        $activePackages[] = $packageCard;
+                    }
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'packages' => $activePackages
+                ]);
+                return;
+
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'packages' => [],
+                    'message' => 'Failed to load package catalog: ' . $e->getMessage()
+                ]);
+                return;
+            }
+        }
+
+        public function getPackageCatalogDetails($packageId) {
+            header('Content-Type: application/json');
+
+            if (!$packageId || !is_numeric($packageId)) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'packageData' => null,
+                    'message' => 'Invalid package id'
+                ]);
+                return;
+            }
+
+            try {
+                $packageData = $this->moderatorModel->loadTravelPackageData((int) $packageId);
+
+                if (!$packageData || !isset($packageData['mainDetails'])) {
+                    http_response_code(404);
+                    echo json_encode([
+                        'success' => false,
+                        'packageData' => null,
+                        'message' => 'Package not found'
+                    ]);
+                    return;
+                }
+
+                $status = strtolower((string) ($packageData['mainDetails']->status ?? 'inactive'));
+                if ($status !== 'active') {
+                    http_response_code(403);
+                    echo json_encode([
+                        'success' => false,
+                        'packageData' => null,
+                        'message' => 'Package is not available'
+                    ]);
+                    return;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'packageData' => $packageData
+                ]);
+                return;
+
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'packageData' => null,
+                    'message' => 'Failed to load package details: ' . $e->getMessage()
+                ]);
+                return;
+            }
         }
 
         public function getUserTrips() {
@@ -2080,8 +2487,7 @@ require_once '../app/helpers/currency_helper.php';
                     return;
                 }
 
-                $this->regUserModel->moveTripToPendingIfRejected((int)$userId, (int)$tripId);
-                $this->regUserModel->promoteTripToScheduledIfReady((int)$userId, (int)$tripId);
+                $this->regUserModel->syncTripLifecycleForUser((int)$userId, (int)$tripId);
                 
                 // Get trip details
                 $trip = $this->regUserModel->getTripById($tripId);
@@ -2337,6 +2743,23 @@ require_once '../app/helpers/currency_helper.php';
                 error_log('Error submitting rating: ' . $e->getMessage());
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Failed to submit rating']);
+            }
+        }
+
+        public function getUserProblems() {
+            header('Content-Type: application/json');
+
+            $filter = isset($_GET['filter']) ? trim((string)$_GET['filter']) : 'all';
+
+            try {
+                $problems = $this->regUserModel->getUserProblems($filter);
+                echo json_encode([
+                    'success' => true,
+                    'problems' => $problems
+                ]);
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error occurred']);
             }
         }
 

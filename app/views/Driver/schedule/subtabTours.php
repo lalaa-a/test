@@ -309,6 +309,7 @@
                 <label for="tripPin">Enter Trip PIN from Traveller:</label>
                 <input type="text" id="tripPin" class="pin-input" placeholder="Enter 6-digit PIN" maxlength="6">
                 <p class="pin-help">Get the PIN from the traveller to start this trip</p>
+                <p class="pin-status" id="tripPinStatus" aria-live="polite"></p>
             </div>
         </div>
         <div class="modal-footer">
@@ -326,8 +327,22 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <div id="eventsList">
-                <!-- Events will be loaded here -->
+            <div class="event-completion-layout">
+                <div class="event-list-panel">
+                    <div id="eventPinGateNotice" class="event-pin-gate-notice" style="display: none;"></div>
+                    <div id="eventsList">
+                        <!-- Events will be loaded here -->
+                    </div>
+                </div>
+
+                <aside class="event-map-panel">
+                    <div class="event-map-head">
+                        <h4>Places and Route</h4>
+                        <p>Use this map while marking event progress.</p>
+                    </div>
+                    <div id="driver-events-route-map" class="event-route-map"></div>
+                    <p id="driver-events-map-empty-state" class="event-map-empty-state">Map points are not available for this trip.</p>
+                </aside>
             </div>
         </div>
         <div class="modal-footer">

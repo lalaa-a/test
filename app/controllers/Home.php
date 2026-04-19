@@ -7,9 +7,14 @@
         }
         */
 
+        // index page (first loading page landing page)
         public function index() {
-            $this->view('Homepage');
+            redirectIfLoggedIn();
+            $this->view('landing');
         }
+
+
+        //testing functions meewa haduwe na
 
         public function trips() {
             $this->view('pay');

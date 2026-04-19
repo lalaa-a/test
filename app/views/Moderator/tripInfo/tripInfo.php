@@ -13,12 +13,6 @@
                 <span class="nav-tab-text">Trip Control</span>
             </button>
         </li>
-        <li class="nav-tab">
-            <button class="nav-tab-link" data-tab="subtabVehicleVerification">
-                <i class="fa-solid fa-car"></i>
-                <span class="nav-tab-text">Vehicle Verifications</span>
-            </button>
-        </li>
     </ul>
 </nav>
 

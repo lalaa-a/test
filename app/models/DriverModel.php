@@ -7,6 +7,25 @@ class DriverModel {
         $this->db = new Database();
     }
 
+    private function hasColumn($tableName, $columnName) {
+        try {
+            $this->db->query('SELECT COUNT(*) AS total
+                              FROM information_schema.COLUMNS
+                              WHERE TABLE_SCHEMA = :tableSchema
+                                AND TABLE_NAME = :tableName
+                                AND COLUMN_NAME = :columnName');
+            $this->db->bind(':tableSchema', DB_NAME);
+            $this->db->bind(':tableName', $tableName);
+            $this->db->bind(':columnName', $columnName);
+            $row = $this->db->single();
+
+            return $row && (int)$row->total > 0;
+        } catch (Exception $e) {
+            error_log('DriverModel hasColumn check failed for ' . $tableName . '.' . $columnName . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getBasicDriverInfo($userId){
 
         error_log("getBasicDriverInfo called with userId: " . print_r($userId, true));
@@ -893,10 +912,31 @@ class DriverModel {
 
     public function getTripEventsByTripId($tripId) {
         try {
+                        $itineraryTable = $this->getTravelSpotItineraryTableName();
+                        $latitudeSelect = 'te.latitude';
+                        $longitudeSelect = 'te.longitude';
+                        $itineraryJoin = '';
+
+                        if ($itineraryTable !== null) {
+                                $latitudeSelect = 'COALESCE(tsi_first.latitude, te.latitude) AS latitude';
+                                $longitudeSelect = 'COALESCE(tsi_first.longitude, te.longitude) AS longitude';
+                                $itineraryJoin = "LEFT JOIN {$itineraryTable} tsi_first
+                                                                     ON tsi_first.pointId = (
+                                                                                SELECT tsi_sub.pointId
+                                                                                FROM {$itineraryTable} tsi_sub
+                                                                                WHERE tsi_sub.spotId = te.travelSpotId
+                                                                                    AND tsi_sub.latitude IS NOT NULL
+                                                                                    AND tsi_sub.longitude IS NOT NULL
+                                                                                ORDER BY tsi_sub.pointOrder ASC, tsi_sub.pointId ASC
+                                                                                LIMIT 1
+                                                                     )";
+                        }
+
             $query = "SELECT te.eventId, te.tripId, te.userId, te.eventDate, te.startTime, te.endTime, te.eventType, te.eventStatus, 
-                             te.travelSpotId, te.locationName, te.latitude, te.longitude, te.description, te.created_at, te.updated_at,
+                                                         te.travelSpotId, te.locationName, {$latitudeSelect}, {$longitudeSelect}, te.description, te.created_at, te.updated_at,
                              ts.spotName, ts.overview as spotDescription, ts.averageRating
                      FROM trip_events te
+                                         {$itineraryJoin}
                      LEFT JOIN travel_spots ts ON te.travelSpotId = ts.spotId
                      WHERE te.tripId = :tripId 
                      ORDER BY te.eventDate ASC, te.startTime ASC";
@@ -944,6 +984,10 @@ class DriverModel {
      */
     public function getDriverTours($driverId) {
         try {
+            $acceptedTripsTable = $this->getAcceptedTripsTableName();
+            $startPinSelect = $this->hasColumn('created_trips', 'startPin') ? 'ct.startPin AS startPin' : 'NULL AS startPin';
+            $pinMatchSelect = $this->hasColumn('created_trips', 'pinMatch') ? 'ct.pinMatch AS pinMatch' : '0 AS pinMatch';
+
             $query = "SELECT
                         dat.acceptId,
                         dat.tripId,
@@ -972,11 +1016,12 @@ class DriverModel {
                         ct.startDate,
                         ct.endDate,
                         ct.status as tripStatus,
-                        ct.startPin,
+                                                {$startPinSelect},
+                                                {$pinMatchSelect},
                         u.fullname as rqUserName,
                         u.profile_photo as rqUserProfilePhoto,
                         v.model as vehicleModel
-                      FROM driver_accept_trips dat
+                                            FROM {$acceptedTripsTable} dat
                       LEFT JOIN created_trips ct ON dat.tripId = ct.tripId
                       LEFT JOIN users u ON dat.rqUserId = u.id
                       LEFT JOIN vehicles v ON dat.vehicleId = v.vehicleId
@@ -1022,8 +1067,12 @@ class DriverModel {
         }
     }
 
-    public function getTourDetails($acceptId) {
+    public function getTourDetails($driverId, $acceptId) {
         try {
+            $acceptedTripsTable = $this->getAcceptedTripsTableName();
+            $startPinSelect = $this->hasColumn('created_trips', 'startPin') ? 'ct.startPin AS startPin' : 'NULL AS startPin';
+            $pinMatchSelect = $this->hasColumn('created_trips', 'pinMatch') ? 'ct.pinMatch AS pinMatch' : '0 AS pinMatch';
+
             $query = "SELECT
                         dat.acceptId,
                         dat.tripId,
@@ -1052,18 +1101,22 @@ class DriverModel {
                         ct.startDate,
                         ct.endDate,
                         ct.status as tripStatus,
+                                                {$startPinSelect},
+                                                {$pinMatchSelect},
                         u.fullname as rqUserName,
                         u.profile_photo as rqUserProfilePhoto,
                         v.model as vehicleModel
-                      FROM driver_accept_trips dat
+                                            FROM {$acceptedTripsTable} dat
                       LEFT JOIN created_trips ct ON dat.tripId = ct.tripId
                       LEFT JOIN users u ON dat.rqUserId = u.id
                       LEFT JOIN vehicles v ON dat.vehicleId = v.vehicleId
-                      WHERE dat.acceptId = :acceptId
+                                            WHERE dat.acceptId = :acceptId
+                                                AND dat.driverId = :driverId
                       LIMIT 1";
 
             $this->db->query($query);
             $this->db->bind(':acceptId', $acceptId);
+                        $this->db->bind(':driverId', $driverId);
             $tour = $this->db->single();
 
             if (!$tour) {
@@ -1078,11 +1131,37 @@ class DriverModel {
         }
     }
 
-    public function startTrip($tripId, $pin) {
+    public function startTrip($driverId, $tripId, $pin) {
         try {
-            // First verify the PIN
-            $query = "SELECT startPin FROM created_trips WHERE tripId = :tripId LIMIT 1";
+            $acceptedTripsTable = $this->getAcceptedTripsTableName();
+            $hasStartPin = $this->hasColumn('created_trips', 'startPin');
+            $hasPinMatch = $this->hasColumn('created_trips', 'pinMatch');
+
+            if (!$hasStartPin) {
+                return ['success' => false, 'message' => 'Trip start PIN is not configured in this environment'];
+            }
+
+            $query = "SELECT acceptId
+                      FROM {$acceptedTripsTable}
+                      WHERE tripId = :tripId
+                        AND driverId = :driverId
+                      LIMIT 1";
+
             $this->db->query($query);
+            $this->db->bind(':tripId', $tripId);
+            $this->db->bind(':driverId', $driverId);
+            $acceptedTrip = $this->db->single();
+
+            if (!$acceptedTrip) {
+                return ['success' => false, 'message' => 'You are not assigned to this trip'];
+            }
+
+            $tripSelect = $hasPinMatch
+                ? "SELECT startPin, pinMatch, status FROM created_trips WHERE tripId = :tripId LIMIT 1"
+                : "SELECT startPin, status FROM created_trips WHERE tripId = :tripId LIMIT 1";
+
+            // Verify PIN issued by traveller
+            $this->db->query($tripSelect);
             $this->db->bind(':tripId', $tripId);
             $trip = $this->db->single();
 
@@ -1090,17 +1169,30 @@ class DriverModel {
                 return ['success' => false, 'message' => 'Trip not found'];
             }
 
-            if ($trip->startPin != $pin) {
+            $storedPin = trim((string)($trip->startPin ?? ''));
+            if ($storedPin === '') {
+                return ['success' => false, 'message' => 'Traveller has not generated a start PIN yet'];
+            }
+
+            if ($storedPin !== trim((string)$pin)) {
                 return ['success' => false, 'message' => 'Invalid PIN'];
             }
 
-            // Update trip status to ongoing
-            $updateQuery = "UPDATE created_trips SET status = 'ongoing', updatedAt = CURRENT_TIMESTAMP WHERE tripId = :tripId";
+            $setParts = [
+                "status = 'ongoing'",
+                'updatedAt = CURRENT_TIMESTAMP'
+            ];
+
+            if ($hasPinMatch) {
+                $setParts[] = 'pinMatch = 1';
+            }
+
+            $updateQuery = 'UPDATE created_trips SET ' . implode(', ', $setParts) . ' WHERE tripId = :tripId';
             $this->db->query($updateQuery);
             $this->db->bind(':tripId', $tripId);
 
             if ($this->db->execute()) {
-                return ['success' => true, 'message' => 'Trip started successfully'];
+                return ['success' => true, 'message' => 'PIN matched and trip started successfully'];
             } else {
                 return ['success' => false, 'message' => 'Failed to start trip'];
             }
@@ -1111,8 +1203,52 @@ class DriverModel {
         }
     }
 
-    public function getTripEvents($tripId) {
+        public function getTripEvents($driverId, $tripId) {
         try {
+                        $acceptedTripsTable = $this->getAcceptedTripsTableName();
+                                                $itineraryTable = $this->getTravelSpotItineraryTableName();
+                        $hasStartPin = $this->hasColumn('created_trips', 'startPin');
+                        $hasPinMatch = $this->hasColumn('created_trips', 'pinMatch');
+                        $startPinSelect = $hasStartPin ? 'ct.startPin' : "'' AS startPin";
+                        $pinMatchSelect = $hasPinMatch ? 'ct.pinMatch' : '0 AS pinMatch';
+                                                $latitudeSelect = 'te.latitude';
+                                                $longitudeSelect = 'te.longitude';
+                                                $itineraryJoin = '';
+
+                                                if ($itineraryTable !== null) {
+                                                                $latitudeSelect = 'COALESCE(tsi_first.latitude, te.latitude) AS latitude';
+                                                                $longitudeSelect = 'COALESCE(tsi_first.longitude, te.longitude) AS longitude';
+                                                                $itineraryJoin = "LEFT JOIN {$itineraryTable} tsi_first
+                                                                                                                                     ON tsi_first.pointId = (
+                                                                                                                                                SELECT tsi_sub.pointId
+                                                                                                                                                FROM {$itineraryTable} tsi_sub
+                                                                                                                                                WHERE tsi_sub.spotId = te.travelSpotId
+                                                                                                                                                    AND tsi_sub.latitude IS NOT NULL
+                                                                                                                                                    AND tsi_sub.longitude IS NOT NULL
+                                                                                                                                                ORDER BY tsi_sub.pointOrder ASC, tsi_sub.pointId ASC
+                                                                                                                                                LIMIT 1
+                                                                                                                                     )";
+                                                }
+
+                        $tripSelect = "SELECT ct.tripId,
+                                                                    ct.status,
+                                                                    {$startPinSelect},
+                                                                    {$pinMatchSelect}
+                                                     FROM created_trips ct
+                                                     INNER JOIN {$acceptedTripsTable} dat ON dat.tripId = ct.tripId
+                                                     WHERE ct.tripId = :tripId
+                                                         AND dat.driverId = :driverId
+                                                     LIMIT 1";
+
+                        $this->db->query($tripSelect);
+                        $this->db->bind(':tripId', $tripId);
+                        $this->db->bind(':driverId', $driverId);
+                        $trip = $this->db->single();
+
+                        if (!$trip) {
+                                return ['success' => false, 'message' => 'Trip not found for this driver', 'events' => []];
+                        }
+
             $query = "SELECT
                         te.eventId,
                         te.tripId,
@@ -1123,8 +1259,8 @@ class DriverModel {
                         te.eventStatus,
                         te.travelSpotId,
                         te.locationName,
-                        te.latitude,
-                        te.longitude,
+                                                {$latitudeSelect},
+                                                {$longitudeSelect},
                         te.description,
                         te.dDone,
                         te.gDone,
@@ -1133,6 +1269,7 @@ class DriverModel {
                         ts.overview as spotDescription,
                         ts.averageRating
                       FROM trip_events te
+                                            {$itineraryJoin}
                       LEFT JOIN travel_spots ts ON te.travelSpotId = ts.spotId
                       WHERE te.tripId = :tripId
                       ORDER BY te.eventDate ASC, te.startTime ASC";
@@ -1141,21 +1278,85 @@ class DriverModel {
             $this->db->bind(':tripId', $tripId);
             $events = $this->db->resultSet();
 
-            return array_map(function($event) {
+            $events = array_map(function($event) {
                 return (array) $event;
             }, $events);
 
+            $startPinValue = $hasStartPin ? trim((string)($trip->startPin ?? '')) : '';
+            $pinMatched = $hasPinMatch ? (int)($trip->pinMatch ?? 0) === 1 : true;
+
+            return [
+                'success' => true,
+                'events' => $events,
+                'trip' => [
+                    'tripId' => (int)($trip->tripId ?? $tripId),
+                    'status' => (string)($trip->status ?? ''),
+                    'startPinRequired' => $hasStartPin,
+                    'hasStartPinValue' => $startPinValue !== '',
+                    'pinMatched' => $pinMatched
+                ],
+                'featureFlags' => [
+                    'hasStartPin' => $hasStartPin,
+                    'hasPinMatch' => $hasPinMatch
+                ]
+            ];
+
         } catch (Exception $e) {
             error_log("Error getting trip events for trip $tripId: " . $e->getMessage());
-            return [];
+            return ['success' => false, 'message' => 'Database error occurred', 'events' => []];
         }
     }
 
-    public function markEventComplete($eventId) {
+    public function markEventComplete($driverId, $eventId) {
         try {
-            $query = "UPDATE trip_events SET dDone = 1, updated_at = CURRENT_TIMESTAMP WHERE eventId = :eventId";
+            $acceptedTripsTable = $this->getAcceptedTripsTableName();
+            $hasPinMatch = $this->hasColumn('created_trips', 'pinMatch');
+
+            $eventMetaQuery = $hasPinMatch
+                ? "SELECT te.eventId, te.tripId, te.dDone, ct.status, ct.pinMatch
+                   FROM trip_events te
+                   INNER JOIN {$acceptedTripsTable} dat ON dat.tripId = te.tripId
+                   INNER JOIN created_trips ct ON ct.tripId = te.tripId
+                   WHERE te.eventId = :eventId
+                     AND dat.driverId = :driverId
+                   LIMIT 1"
+                : "SELECT te.eventId, te.tripId, te.dDone, ct.status
+                   FROM trip_events te
+                   INNER JOIN {$acceptedTripsTable} dat ON dat.tripId = te.tripId
+                   INNER JOIN created_trips ct ON ct.tripId = te.tripId
+                   WHERE te.eventId = :eventId
+                     AND dat.driverId = :driverId
+                   LIMIT 1";
+
+            $this->db->query($eventMetaQuery);
+            $this->db->bind(':eventId', $eventId);
+            $this->db->bind(':driverId', $driverId);
+            $eventMeta = $this->db->single();
+
+            if (!$eventMeta) {
+                return ['success' => false, 'message' => 'Event not found for this driver'];
+            }
+
+            if ((int)($eventMeta->dDone ?? 0) === 1) {
+                return ['success' => true, 'message' => 'Event already marked as completed'];
+            }
+
+            if (strtolower((string)($eventMeta->status ?? '')) !== 'ongoing') {
+                return ['success' => false, 'message' => 'Trip must be ongoing before marking events'];
+            }
+
+            if ($hasPinMatch && (int)($eventMeta->pinMatch ?? 0) !== 1) {
+                return ['success' => false, 'message' => 'Enter the correct traveller PIN and start the trip first'];
+            }
+
+            $query = "UPDATE trip_events
+                      SET dDone = 1,
+                          updated_at = CURRENT_TIMESTAMP
+                      WHERE eventId = :eventId
+                        AND tripId = :tripId";
             $this->db->query($query);
             $this->db->bind(':eventId', $eventId);
+            $this->db->bind(':tripId', $eventMeta->tripId);
 
             if ($this->db->execute()) {
                 return ['success' => true, 'message' => 'Event marked as completed'];
@@ -1169,8 +1370,35 @@ class DriverModel {
         }
     }
 
-    public function completeTrip($tripId) {
+    public function completeTrip($driverId, $tripId) {
         try {
+            $acceptedTripsTable = $this->getAcceptedTripsTableName();
+
+            $ownershipQuery = "SELECT acceptId
+                               FROM {$acceptedTripsTable}
+                               WHERE tripId = :tripId
+                                 AND driverId = :driverId
+                               LIMIT 1";
+            $this->db->query($ownershipQuery);
+            $this->db->bind(':tripId', $tripId);
+            $this->db->bind(':driverId', $driverId);
+            $acceptedTrip = $this->db->single();
+
+            if (!$acceptedTrip) {
+                return ['success' => false, 'message' => 'Trip not found for this driver'];
+            }
+
+            $pendingEventsQuery = "SELECT COUNT(*) AS pendingEvents
+                                   FROM trip_events
+                                   WHERE tripId = :tripId
+                                     AND (dDone IS NULL OR dDone = 0)";
+            $this->db->query($pendingEventsQuery);
+            $this->db->bind(':tripId', $tripId);
+            $pendingEventsRow = $this->db->single();
+            if ($pendingEventsRow && (int)$pendingEventsRow->pendingEvents > 0) {
+                return ['success' => false, 'message' => 'Complete all trip events before finishing the trip'];
+            }
+
             // Start transaction
             $this->db->beginTransaction();
 
@@ -1180,10 +1408,16 @@ class DriverModel {
             $this->db->bind(':tripId', $tripId);
             $this->db->execute();
 
-            // Update driver_accept_trips to mark as done
-            $query = "UPDATE driver_accept_trips SET doneStatus = 1, completedAt = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP WHERE tripId = :tripId";
+                        // Update accepted trip record to mark as done
+                        $query = "UPDATE {$acceptedTripsTable}
+                                            SET doneStatus = 1,
+                                                    completedAt = CURRENT_TIMESTAMP,
+                                                    updatedAt = CURRENT_TIMESTAMP
+                                            WHERE tripId = :tripId
+                                                AND driverId = :driverId";
             $this->db->query($query);
             $this->db->bind(':tripId', $tripId);
+                        $this->db->bind(':driverId', $driverId);
             $this->db->execute();
 
             $this->db->commit();
@@ -1347,6 +1581,22 @@ class DriverModel {
         }
 
         return 'driver_accepted_trips';
+    }
+
+    private function getTravelSpotItineraryTableName() {
+        $tables = ['travel_spot_ininerary', 'travel_spots_itinerary', 'travel_spot_itinerary'];
+
+        foreach ($tables as $table) {
+            $this->db->query("SHOW TABLES LIKE :tableName");
+            $this->db->bind(':tableName', $table);
+            $result = $this->db->single();
+
+            if ($result) {
+                return $table;
+            }
+        }
+
+        return null;
     }
 
     public function getEarningsSummary($driverId) {
@@ -1549,5 +1799,47 @@ class DriverModel {
             error_log("Error getting monthly earnings: " . $e->getMessage());
             return [];
         }
+    }
+
+    public function submitUserProblem($data) {
+        $query = "INSERT INTO user_problems (userId, subject, message, status)
+                  VALUES (:userId, :subject, :message, 'pending')";
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$data['userId']);
+        $this->db->bind(':subject', (string)$data['subject']);
+        $this->db->bind(':message', (string)$data['message']);
+
+        return $this->db->execute();
+    }
+
+    public function getUserProblemsByUserId($userId, $filter = 'all') {
+        $query = "SELECT
+                    up.problemId,
+                    up.userId,
+                    up.subject,
+                    up.message,
+                    up.status,
+                    up.completedBy,
+                    up.completedAt,
+                    up.createdAt,
+                    mod_user.fullname AS completedByName
+                  FROM user_problems up
+                  LEFT JOIN users mod_user ON up.completedBy = mod_user.id
+                  WHERE up.userId = :userId";
+
+        if ($filter === 'pending') {
+            $query .= " AND up.status = 'pending'";
+        } elseif ($filter === 'in_progress') {
+            $query .= " AND up.status = 'in_progress'";
+        } elseif ($filter === 'completed') {
+            $query .= " AND up.status = 'completed'";
+        }
+
+        $query .= " ORDER BY up.createdAt DESC";
+
+        $this->db->query($query);
+        $this->db->bind(':userId', (int)$userId);
+
+        return $this->db->resultSet();
     }
 }

@@ -1,0 +1,245 @@
+.support-subtab {
+	max-width: 1100px;
+	margin: 96px auto 24px;
+	padding: 0 20px 20px;
+}
+
+.subtab-header {
+	margin-bottom: 18px;
+}
+
+.subtab-header h2 {
+	color: #006a71;
+	font-size: 1.5rem;
+	margin: 0 0 8px;
+}
+
+.subtab-header p {
+	margin: 0;
+	color: #64748b;
+}
+
+.helpdesk-chat-shell {
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 620px;
+}
+
+.helpdesk-chat-header {
+	padding: 16px 18px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid #e5e7eb;
+	gap: 12px;
+	background: linear-gradient(135deg, #006a71 0%, #008891 100%);
+	color: #ffffff;
+}
+
+.helpdesk-agent-meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.agent-avatar {
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.helpdesk-agent-meta h3 {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.helpdesk-agent-meta p {
+	margin: 2px 0 0;
+	font-size: 0.82rem;
+	opacity: 0.95;
+}
+
+.helpdesk-chat-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.helpdesk-btn {
+	border: none;
+	border-radius: 8px;
+	padding: 9px 12px;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 0.85rem;
+}
+
+.helpdesk-btn.primary {
+	background: #ffffff;
+	color: #006a71;
+}
+
+.helpdesk-btn.ghost {
+	background: rgba(255, 255, 255, 0.16);
+	color: #ffffff;
+}
+
+.helpdesk-chat-messages {
+	flex: 1;
+	background: #f1f5f9;
+	padding: 16px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.date-divider {
+	text-align: center;
+}
+
+.date-divider span {
+	background: rgba(0, 0, 0, 0.06);
+	border-radius: 999px;
+	padding: 3px 10px;
+	font-size: 0.72rem;
+	color: #64748b;
+}
+
+.message {
+	max-width: 80%;
+}
+
+.message-content {
+	border-radius: 12px;
+	padding: 10px 12px;
+	line-height: 1.45;
+	font-size: 0.92rem;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.message-time {
+	font-size: 0.72rem;
+	color: #64748b;
+	margin-top: 4px;
+	display: block;
+}
+
+.support-message {
+	align-self: flex-start;
+}
+
+.support-message .message-content {
+	background: #ffffff;
+	color: #1f2937;
+}
+
+.user-message {
+	align-self: flex-end;
+}
+
+.user-message .message-content {
+	background: linear-gradient(135deg, #006a71 0%, #008891 100%);
+	color: #ffffff;
+}
+
+.sender-name {
+	font-weight: 700;
+	font-size: 0.8rem;
+	margin: 0 0 4px;
+}
+
+.system-message {
+	align-self: center;
+	max-width: 92%;
+}
+
+.system-message .message-content.system {
+	background: #fff7ed;
+	color: #9a3412;
+	border: 1px solid #fed7aa;
+}
+
+.delete-message-btn {
+	border: none;
+	background: transparent;
+	color: inherit;
+	font-size: 0.75rem;
+	margin-top: 5px;
+	cursor: pointer;
+	opacity: 0.85;
+}
+
+.delete-message-btn:hover {
+	opacity: 1;
+	text-decoration: underline;
+}
+
+.helpdesk-chat-input-wrap {
+	border-top: 1px solid #e5e7eb;
+	padding: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: #ffffff;
+}
+
+.helpdesk-chat-input {
+	flex: 1;
+	border: 1px solid #d1d5db;
+	border-radius: 999px;
+	padding: 10px 14px;
+	font-size: 0.92rem;
+}
+
+.helpdesk-chat-input:focus {
+	outline: none;
+	border-color: #006a71;
+	box-shadow: 0 0 0 3px rgba(0, 106, 113, 0.12);
+}
+
+.helpdesk-send-btn {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	border: none;
+	cursor: pointer;
+	color: #ffffff;
+	background: #006a71;
+}
+
+#helpdeskChatStatusText.is-connected {
+	color: #dcfce7;
+}
+
+#helpdeskChatStatusText.is-error {
+	color: #fee2e2;
+}
+
+#helpdeskChatStatusText.is-pending {
+	color: #ffedd5;
+}
+
+@media (max-width: 900px) {
+	.support-subtab {
+		margin-top: 100px;
+		padding: 0 12px 16px;
+	}
+
+	.helpdesk-chat-shell {
+		min-height: 540px;
+	}
+
+	.message {
+		max-width: 92%;
+	}
+}
