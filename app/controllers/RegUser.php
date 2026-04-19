@@ -2218,14 +2218,18 @@ require_once '../app/helpers/currency_helper.php';
         }
 
         public function home() {
-            // Default dashboard content
+
+            ob_start();
+            $this->view('RegUser/home/home');
+            $html = ob_get_clean();
+
             $loadingContent = [
-                'html' => '<div class="welcome-message"><h2>Welcome to Admin Dashboard</h2><p>Select a tab from the sidebar to manage different sections.</p></div>',
-                'css' => '.welcome-message { text-align: center; padding: 40px; } .welcome-message h2 { color: var(--primary); margin-bottom: 15px; }',
-                'js' => 'console.log("Dashboard home loaded");'
+                'html' => $html,
+                'css' => URL_ROOT.'/public/css/regUser/home/home.css',
+                'js' => URL_ROOT.'/public/js/regUser/home/home.js'
             ];
 
-           $unEncodedResponse = [
+            $unEncodedResponse = [
                 'tabId'=>'home',
                 'loadingContent'=>$loadingContent
             ];

@@ -132,6 +132,58 @@ class Helpc extends Controller {
         return $subject['targetType'] === $userType && (int)$subject['targetUserId'] === (int)$userId;
     }
 
+    private function uniqueChatsById($chats) {
+        $chatMap = [];
+
+        foreach ((array)$chats as $chat) {
+            $chatId = (int)($chat->id ?? 0);
+            if ($chatId <= 0) {
+                continue;
+            }
+
+            $chatMap[$chatId] = $chat;
+        }
+
+        return array_values($chatMap);
+    }
+
+    private function collectChatsForUnreadSummary($userId, $accountType) {
+        $userId = (int)$userId;
+        $accountType = strtolower(trim((string)$accountType));
+
+        if ($userId <= 0 || $accountType === '') {
+            return [];
+        }
+
+        if ($accountType === 'tourist') {
+            return $this->helpChatModel->getActiveChatsForUser($userId, 'Traveller');
+        }
+
+        if ($accountType === 'driver') {
+            $ownerChats = $this->helpChatModel->getActiveChatsForUser($userId, 'Driver');
+            $providerChats = $this->helpChatModel->getChatsForProviderSubject('DRIVER', $userId);
+            return $this->uniqueChatsById(array_merge($ownerChats, $providerChats));
+        }
+
+        if ($accountType === 'guide') {
+            $ownerChats = $this->helpChatModel->getActiveChatsForUser($userId, 'Guide');
+            $providerChats = $this->helpChatModel->getChatsForProviderSubject('GUIDE', $userId);
+            return $this->uniqueChatsById(array_merge($ownerChats, $providerChats));
+        }
+
+        if ($accountType === 'site_moderator') {
+            return $this->helpChatModel->getChatsForModerator($userId);
+        }
+
+        if ($accountType === 'admin') {
+            $siteChats = $this->helpChatModel->getAllChats();
+            $directChats = $this->helpChatModel->getDirectUserChatsForViewer($userId);
+            return $this->uniqueChatsById(array_merge($siteChats, $directChats));
+        }
+
+        return [];
+    }
+
     private function canUserOpenTargetedChat($accountType, $userId, $targetType, $targetUserId, &$errorMessage = null) {
         if ($targetType === 'Site') {
             return true;
@@ -846,6 +898,42 @@ class Helpc extends Controller {
         } else {
             echo json_encode(['status' => 'no_chat']);
         }
+    }
+
+    public function getUnreadMessageCount() {
+        header('Content-Type: application/json');
+
+        $userId = $_SESSION['user_id'] ?? null;
+        $accountType = $_SESSION['user_account_type'] ?? null;
+
+        if (!$userId || !$accountType) {
+            http_response_code(401);
+            echo json_encode([
+                'status' => 'error',
+                'success' => false,
+                'message' => 'Not logged in',
+                'unreadCount' => 0
+            ]);
+            return;
+        }
+
+        $chats = $this->collectChatsForUnreadSummary((int)$userId, (string)$accountType);
+        $chatIds = [];
+
+        foreach ($chats as $chat) {
+            $chatId = (int)($chat->id ?? 0);
+            if ($chatId > 0) {
+                $chatIds[] = $chatId;
+            }
+        }
+
+        $totalUnread = $this->helpMessageModel->getUnreadCountForViewerAcrossChats($chatIds, (int)$userId);
+
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'unreadCount' => (int)$totalUnread
+        ]);
     }
 
     // Delete a single message

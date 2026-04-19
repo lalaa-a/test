@@ -1,0 +1,550 @@
+.moderator-dashboard-page {
+	padding: 0 20px 24px;
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+.moddash-hero-card {
+	display: flex;
+	gap: 20px;
+	border-radius: 14px;
+	border: 1px solid #dde4ec;
+	background: linear-gradient(135deg, #ffffff 0%, #f2fbfb 100%);
+	box-shadow: 0 8px 24px rgba(0, 106, 113, 0.08);
+	padding: 22px;
+	margin-bottom: 16px;
+}
+
+.moddash-hero-copy {
+	flex: 1;
+	min-width: 0;
+}
+
+.moddash-hero-kicker {
+	margin: 0;
+	color: var(--primary, #006a71);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: 700;
+}
+
+.moddash-hero-title {
+	margin: 8px 0 8px;
+	font-size: 32px;
+	color: var(--primary, #006a71);
+	line-height: 1.2;
+}
+
+.moddash-hero-subtitle {
+	margin: 0;
+	max-width: 760px;
+	color: #64748b;
+	font-size: 15px;
+	font-family: 'Roboto', sans-serif;
+}
+
+.moddash-hero-actions {
+	margin-top: 18px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.moddash-primary-btn,
+.moddash-ghost-btn,
+.moddash-refresh-btn {
+	border-radius: 10px;
+	padding: 10px 14px;
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s ease;
+	text-decoration: none;
+}
+
+.moddash-primary-btn {
+	border: 1px solid var(--primary, #006a71);
+	background: var(--primary, #006a71);
+	color: #ffffff;
+	box-shadow: 0 8px 18px rgba(0, 106, 113, 0.2);
+}
+
+.moddash-primary-btn:hover {
+	background: #01535a;
+	border-color: #01535a;
+}
+
+.moddash-ghost-btn,
+.moddash-refresh-btn {
+	border: 1px solid #d9e5e7;
+	background: #ffffff;
+	color: #134e57;
+}
+
+.moddash-ghost-btn:hover,
+.moddash-refresh-btn:hover {
+	background: #f4fbfb;
+	border-color: #bdd2d6;
+}
+
+.moddash-refresh-btn {
+	padding: 10px;
+	justify-content: center;
+}
+
+.moddash-refresh-btn.is-loading {
+	opacity: 0.75;
+}
+
+.moddash-refresh-btn:disabled {
+	cursor: not-allowed;
+}
+
+.moddash-hero-aside {
+	width: min(330px, 100%);
+	display: grid;
+	gap: 10px;
+}
+
+.moddash-hero-chip {
+	border: 1px solid #dceef0;
+	background: rgba(255, 255, 255, 0.88);
+	border-radius: 10px;
+	padding: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+}
+
+.moddash-hero-chip .label {
+	font-size: 13px;
+	color: #687684;
+	font-family: 'Roboto', sans-serif;
+}
+
+.moddash-hero-chip .value {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--primary, #006a71);
+}
+
+.moddash-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 14px;
+	margin-bottom: 16px;
+}
+
+.moddash-stat-card {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 16px;
+	border: 1px solid #ecf2f4;
+	box-shadow: 0 4px 18px rgba(0, 106, 113, 0.07);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.moddash-stat-icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+.moddash-stat-icon.account {
+	background: #e8efff;
+	color: #2f5fbb;
+}
+
+.moddash-stat-icon.license {
+	background: #fff3df;
+	color: #b66900;
+}
+
+.moddash-stat-icon.vehicle {
+	background: #eaf6f1;
+	color: #28735a;
+}
+
+.moddash-stat-icon.complaint {
+	background: #ffecef;
+	color: #b43853;
+}
+
+.moddash-stat-icon.payout {
+	background: #ecf5ff;
+	color: #235aa7;
+}
+
+.moddash-stat-icon.profit {
+	background: #e6f8ee;
+	color: #1f8a48;
+}
+
+.moddash-stat-content {
+	min-width: 0;
+}
+
+.moddash-stat-number {
+	font-size: 20px;
+	line-height: 1.2;
+	font-weight: 700;
+	color: #0f5560;
+	margin-bottom: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.moddash-stat-label {
+	font-size: 12px;
+	color: #607382;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.moddash-grid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.moddash-panel {
+	background: #ffffff;
+	border: 1px solid #ecf2f4;
+	border-radius: 12px;
+	box-shadow: 0 4px 18px rgba(0, 106, 113, 0.06);
+	padding: 16px;
+}
+
+.moddash-panel-wide,
+.moddash-chart-panel {
+	grid-column: span 6;
+}
+
+.moddash-panel-list {
+	grid-column: span 4;
+}
+
+.moddash-actions-panel {
+	grid-column: span 12;
+}
+
+.moddash-panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.moddash-panel-header h2 {
+	margin: 0;
+	color: #0f5560;
+	font-size: 16px;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.moddash-panel-header a {
+	color: #0f5560;
+	font-size: 13px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.moddash-panel-header a:hover {
+	text-decoration: underline;
+}
+
+.moddash-breakdown-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.moddash-breakdown-row .meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
+	color: #4a6370;
+	font-size: 13px;
+}
+
+.moddash-breakdown-row .meta strong {
+	color: #0f5560;
+}
+
+.moddash-breakdown-row .bar {
+	width: 100%;
+	height: 9px;
+	border-radius: 999px;
+	background: #edf4f6;
+	overflow: hidden;
+}
+
+.moddash-breakdown-row .bar span {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	transition: width 0.3s ease;
+}
+
+#modDashQueueAccountsBar {
+	background: linear-gradient(90deg, #6ba7ff, #3874d9);
+}
+
+#modDashQueueLicensesBar {
+	background: linear-gradient(90deg, #ffc46b, #f8a440);
+}
+
+#modDashQueueVehiclesBar {
+	background: linear-gradient(90deg, #7ad6a7, #39a66d);
+}
+
+#modDashQueueComplaintsBar {
+	background: linear-gradient(90deg, #ff9aa5, #e45b6d);
+}
+
+#modDashQueuePayoutsBar {
+	background: linear-gradient(90deg, #7ec8ff, #3f8fcd);
+}
+
+.moddash-metrics-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.moddash-metric-card {
+	border: 1px solid #edf3f5;
+	border-radius: 10px;
+	padding: 12px;
+	background: #fbfefe;
+}
+
+.moddash-metric-card .label {
+	color: #607382;
+	font-size: 12px;
+	display: block;
+	margin-bottom: 5px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.moddash-metric-card strong {
+	color: #0f5560;
+	font-size: 18px;
+	line-height: 1.2;
+}
+
+.moddash-metric-card .meta {
+	display: block;
+	margin-top: 6px;
+	color: #738896;
+	font-size: 12px;
+}
+
+.moddash-chart-wrap {
+	position: relative;
+	min-height: 260px;
+}
+
+.moddash-chart-wrap canvas {
+	width: 100% !important;
+	height: 260px !important;
+}
+
+.moddash-chart-empty {
+	margin: 0;
+	color: #607382;
+	font-size: 13px;
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 0 16px;
+}
+
+.moddash-list-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.moddash-list-item {
+	border: 1px solid #edf3f5;
+	border-radius: 10px;
+	padding: 11px 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	background: #fcfefe;
+}
+
+.moddash-list-main {
+	min-width: 0;
+}
+
+.moddash-list-main h4 {
+	margin: 0 0 4px;
+	font-size: 14px;
+	color: #15434a;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.moddash-list-main p {
+	margin: 0;
+	font-size: 12px;
+	color: #607382;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.moddash-status-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.moddash-status-badge.pending,
+.moddash-status-badge.account,
+.moddash-status-badge.license,
+.moddash-status-badge.vehicle {
+	background: #fff2dc;
+	color: #a86700;
+}
+
+.moddash-status-badge.in-progress,
+.moddash-status-badge.driver,
+.moddash-status-badge.guide {
+	background: #eaf2ff;
+	color: #2f5fbb;
+}
+
+.moddash-status-badge.completed,
+.moddash-status-badge.accepted {
+	background: #e8f7ed;
+	color: #2f9e57;
+}
+
+.moddash-status-badge.rejected,
+.moddash-status-badge.cancelled {
+	background: #ffe3e8;
+	color: #b93f55;
+}
+
+.moddash-empty-text {
+	margin: 6px 0 0;
+	color: #738896;
+	font-size: 13px;
+}
+
+.moddash-actions-grid {
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.moddash-action-link {
+	border: 1px solid #e6eef0;
+	border-radius: 10px;
+	text-decoration: none;
+	color: #0f5560;
+	font-weight: 600;
+	font-size: 13px;
+	padding: 12px;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #fcfefe;
+	transition: all 0.2s ease;
+}
+
+.moddash-action-link:hover {
+	background: #f3fbfb;
+	border-color: #cde1e4;
+	transform: translateY(-1px);
+}
+
+@media (max-width: 1180px) {
+	.moddash-panel-wide,
+	.moddash-chart-panel,
+	.moddash-panel-list {
+		grid-column: span 6;
+	}
+}
+
+@media (max-width: 960px) {
+	.moddash-hero-card {
+		flex-direction: column;
+	}
+
+	.moddash-hero-aside {
+		width: 100%;
+		grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	}
+
+	.moddash-metrics-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 760px) {
+	.moderator-dashboard-page {
+		padding: 0 10px 18px;
+	}
+
+	.moddash-hero-title {
+		font-size: 26px;
+	}
+
+	.moddash-panel-wide,
+	.moddash-chart-panel,
+	.moddash-panel-list,
+	.moddash-actions-panel {
+		grid-column: span 12;
+	}
+
+	.moddash-stats-grid {
+		grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+	}
+
+	.moddash-list-item {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.moddash-list-main h4,
+	.moddash-list-main p {
+		white-space: normal;
+	}
+}

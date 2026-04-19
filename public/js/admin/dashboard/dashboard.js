@@ -1,637 +1,914 @@
 (function () {
-    if (window.AdminDashboardHome) {
-        if (window.adminDashboardHome && typeof window.adminDashboardHome.destroy === 'function') {
-            window.adminDashboardHome.destroy();
+    if (window.AdminDashboardManager) {
+        if (window.adminDashboardManager && typeof window.adminDashboardManager.destroy === 'function') {
+            window.adminDashboardManager.destroy();
         }
-        delete window.AdminDashboardHome;
-        delete window.adminDashboardHome;
+        delete window.adminDashboardManager;
+        delete window.AdminDashboardManager;
     }
 
-    class AdminDashboardHome {
+    class AdminDashboardManager {
         constructor() {
-            this.URL_ROOT = 'http://localhost/test';
-            this.refreshButton = document.getElementById('refreshDashboardSummaryBtn');
-            this.timeRangeSelect = document.getElementById('dashboardOverviewTimeRange');
-            this.summaryCards = Array.from(document.querySelectorAll('.summary-card'));
-            this.overviewMetricCards = Array.from(document.querySelectorAll('.overview-metric-card'));
-            this.overviewChartCards = Array.from(document.querySelectorAll('.overview-chart-card'));
-            this.summaryElements = {
-                pendingVerifications: document.getElementById('summaryPendingVerifications'),
-                openSupportChats: document.getElementById('summaryOpenSupportChats'),
-                pendingPayouts: document.getElementById('summaryPendingPayouts'),
-                ongoingTrips: document.getElementById('summaryOngoingTrips')
-            };
-            this.summaryMetaElements = {
-                pendingVerifications: document.getElementById('summaryPendingVerificationsMeta'),
-                openSupportChats: document.getElementById('summaryOpenSupportChatsMeta'),
-                pendingPayouts: document.getElementById('summaryPendingPayoutsMeta'),
-                ongoingTrips: document.getElementById('summaryOngoingTripsMeta')
-            };
-            this.overviewMetricElements = {
-                totalUsers: document.getElementById('overviewTotalUsers'),
-                verifiedAccounts: document.getElementById('overviewVerifiedAccounts'),
-                totalVehicles: document.getElementById('overviewTotalVehicles'),
-                siteProfit: document.getElementById('overviewSiteProfit')
-            };
-            this.overviewMetricMetaElements = {
-                totalUsers: document.getElementById('overviewTotalUsersMeta'),
-                verifiedAccounts: document.getElementById('overviewVerifiedAccountsMeta'),
-                totalVehicles: document.getElementById('overviewTotalVehiclesMeta'),
-                siteProfit: document.getElementById('overviewSiteProfitMeta')
-            };
-            this.charts = {};
-            this.handleRefreshClick = this.loadDashboardData.bind(this);
-            this.handleTimeRangeChange = this.loadPlatformOverview.bind(this);
-
-            this.init();
-        }
-
-        init() {
-            if (this.refreshButton) {
-                this.refreshButton.addEventListener('click', this.handleRefreshClick);
-            }
-
-            if (this.timeRangeSelect) {
-                this.timeRangeSelect.addEventListener('change', this.handleTimeRangeChange);
-            }
-
-            this.loadDashboardData();
-        }
-
-        async loadDashboardData() {
-            this.setRefreshButtonLoading(true);
-
-            try {
-                await Promise.allSettled([
-                    this.loadSummaryStats(),
-                    this.loadPlatformOverview()
-                ]);
-            } finally {
-                this.setRefreshButtonLoading(false);
-            }
-        }
-
-        async loadSummaryStats() {
-            this.setSummaryLoadingState(true);
-
-            try {
-                const [
-                    accountsResponse,
-                    licensesResponse,
-                    vehiclesResponse,
-                    supportChatsResponse,
-                    driverPayoutsResponse,
-                    guidePayoutsResponse,
-                    tripLogsResponse
-                ] = await Promise.all([
-                    fetch(`${this.URL_ROOT}/Admin/getAccounts/pending`),
-                    fetch(`${this.URL_ROOT}/Admin/getPendingLicenses`),
-                    fetch(`${this.URL_ROOT}/Admin/getPendingVehicles`),
-                    fetch(`${this.URL_ROOT}/helpc/getChatsForModerator`),
-                    fetch(`${this.URL_ROOT}/Admin/getPendingDriverPayouts`),
-                    fetch(`${this.URL_ROOT}/Admin/getPendingGuidePayouts`),
-                    fetch(`${this.URL_ROOT}/Admin/getTripLogs`)
-                ]);
-
-                const [
-                    accountsData,
-                    licensesData,
-                    vehiclesData,
-                    supportChatsData,
-                    driverPayoutsData,
-                    guidePayoutsData,
-                    tripLogsData
-                ] = await Promise.all([
-                    accountsResponse.json(),
-                    licensesResponse.json(),
-                    vehiclesResponse.json(),
-                    supportChatsResponse.json(),
-                    driverPayoutsResponse.json(),
-                    guidePayoutsResponse.json(),
-                    tripLogsResponse.json()
-                ]);
-
-                if (!accountsResponse.ok || !accountsData.success) {
-                    throw new Error(accountsData.message || 'Failed to load pending accounts');
-                }
-
-                if (!licensesResponse.ok || !licensesData.success) {
-                    throw new Error(licensesData.message || 'Failed to load pending licenses');
-                }
-
-                if (!vehiclesResponse.ok || !vehiclesData.success) {
-                    throw new Error(vehiclesData.message || 'Failed to load pending vehicles');
-                }
-
-                if (!driverPayoutsResponse.ok || !driverPayoutsData.success) {
-                    throw new Error(driverPayoutsData.message || 'Failed to load pending driver payouts');
-                }
-
-                if (!guidePayoutsResponse.ok || !guidePayoutsData.success) {
-                    throw new Error(guidePayoutsData.message || 'Failed to load pending guide payouts');
-                }
-
-                if (!tripLogsResponse.ok || !tripLogsData.success) {
-                    throw new Error(tripLogsData.message || 'Failed to load trip logs');
-                }
-
-                const verificationCounts = {
-                    accounts: Array.isArray(accountsData.accounts) ? accountsData.accounts.length : 0,
-                    licenses: Array.isArray(licensesData.licenses) ? licensesData.licenses.length : 0,
-                    vehicles: Array.isArray(vehiclesData.vehicles) ? vehiclesData.vehicles.length : 0
-                };
-
-                const pendingVerifications = verificationCounts.accounts + verificationCounts.licenses + verificationCounts.vehicles;
-                const openSupportChats = this.getOpenSupportChatsCount(supportChatsData);
-                const pendingPayouts = this.getPendingPayoutsCount(driverPayoutsData, guidePayoutsData);
-                const ongoingTrips = this.getTripCountByStatus(tripLogsData, 'ongoing');
-
-                this.summaryElements.pendingVerifications.textContent = this.formatCount(pendingVerifications);
-                this.summaryElements.openSupportChats.textContent = this.formatCount(openSupportChats);
-                this.summaryElements.pendingPayouts.textContent = this.formatCount(pendingPayouts);
-                this.summaryElements.ongoingTrips.textContent = this.formatCount(ongoingTrips);
-
-                this.summaryMetaElements.pendingVerifications.textContent = `${this.formatCount(verificationCounts.accounts)} accounts, ${this.formatCount(verificationCounts.licenses)} licenses, ${this.formatCount(verificationCounts.vehicles)} vehicles`;
-                this.summaryMetaElements.openSupportChats.textContent = openSupportChats === 0
-                    ? 'No users are waiting in the helpdesk right now'
-                    : `${this.formatCount(openSupportChats)} support conversation${openSupportChats === 1 ? '' : 's'} currently open`;
-                this.summaryMetaElements.pendingPayouts.textContent = pendingPayouts === 0
-                    ? 'No driver or guide payouts are pending right now'
-                    : `${this.formatCount(pendingPayouts)} driver and guide payout${pendingPayouts === 1 ? '' : 's'} awaiting action`;
-                this.summaryMetaElements.ongoingTrips.textContent = ongoingTrips === 0
-                    ? 'No trips are marked as ongoing right now'
-                    : `${this.formatCount(ongoingTrips)} trip${ongoingTrips === 1 ? '' : 's'} currently in progress`;
-
-                this.markSummaryErrorState(false);
-            } catch (error) {
-                console.error('Error loading dashboard summary:', error);
-                this.renderSummaryError(error);
-            } finally {
-                this.setSummaryLoadingState(false);
-            }
-        }
-
-        async loadPlatformOverview() {
-            this.setOverviewLoadingState(true);
-
-            try {
-                const timeRange = this.timeRangeSelect ? this.timeRangeSelect.value : '90days';
-                const [
-                    userBaseStatsResponse,
-                    verificationStatsResponse,
-                    registrationTrendResponse,
-                    vehicleStatsResponse,
-                    vehicleBreakdownResponse,
-                    earningsMetricsResponse,
-                    revenueTrendResponse
-                ] = await Promise.all([
-                    fetch(`${this.URL_ROOT}/Admin/getUserBaseStats`),
-                    fetch(`${this.URL_ROOT}/Admin/getVerificationStats`),
-                    fetch(`${this.URL_ROOT}/Admin/getRegistrationTrend?timeRange=${timeRange}`),
-                    fetch(`${this.URL_ROOT}/Admin/getVehicleVerificationStats`),
-                    fetch(`${this.URL_ROOT}/Admin/getVehicleVerificationStatusBreakdown`),
-                    fetch(`${this.URL_ROOT}/Admin/getEarningsMetrics?timeRange=${timeRange}&viewType=daily`),
-                    fetch(`${this.URL_ROOT}/Admin/getRevenueTrend?timeRange=${timeRange}&viewType=daily`)
-                ]);
-
-                const [
-                    userBaseStatsData,
-                    verificationStatsData,
-                    registrationTrendData,
-                    vehicleStatsData,
-                    vehicleBreakdownData,
-                    earningsMetricsData,
-                    revenueTrendData
-                ] = await Promise.all([
-                    userBaseStatsResponse.json(),
-                    verificationStatsResponse.json(),
-                    registrationTrendResponse.json(),
-                    vehicleStatsResponse.json(),
-                    vehicleBreakdownResponse.json(),
-                    earningsMetricsResponse.json(),
-                    revenueTrendResponse.json()
-                ]);
-
-                if (!userBaseStatsResponse.ok || !userBaseStatsData.success) {
-                    throw new Error(userBaseStatsData.message || 'Failed to load user base stats');
-                }
-
-                if (!verificationStatsResponse.ok || !verificationStatsData.success) {
-                    throw new Error(verificationStatsData.message || 'Failed to load verification stats');
-                }
-
-                if (!registrationTrendResponse.ok || !registrationTrendData.success) {
-                    throw new Error(registrationTrendData.message || 'Failed to load registration trend');
-                }
-
-                if (!vehicleStatsResponse.ok || !vehicleStatsData.success) {
-                    throw new Error(vehicleStatsData.message || 'Failed to load vehicle stats');
-                }
-
-                if (!vehicleBreakdownResponse.ok || !vehicleBreakdownData.success) {
-                    throw new Error(vehicleBreakdownData.message || 'Failed to load vehicle status breakdown');
-                }
-
-                if (!earningsMetricsResponse.ok || !earningsMetricsData.success) {
-                    throw new Error(earningsMetricsData.message || 'Failed to load earnings metrics');
-                }
-
-                if (!revenueTrendResponse.ok || !revenueTrendData.success) {
-                    throw new Error(revenueTrendData.message || 'Failed to load revenue trend');
-                }
-
-                this.updateOverviewMetrics(
-                    userBaseStatsData.stats,
-                    verificationStatsData.stats,
-                    vehicleStatsData.stats,
-                    earningsMetricsData.metrics
-                );
-
-                this.renderRegistrationTrendChart(registrationTrendData.trend || {});
-                this.renderVerificationMixChart((verificationStatsData.stats && verificationStatsData.stats.overall) || {});
-                this.renderRevenueTrendChart(revenueTrendData.trend || {});
-                this.renderVehicleStatusChart(vehicleBreakdownData.breakdown || {});
-
-                this.markOverviewErrorState(false);
-            } catch (error) {
-                console.error('Error loading platform overview:', error);
-                this.renderOverviewError(error);
-            } finally {
-                this.setOverviewLoadingState(false);
-            }
-        }
-
-        updateOverviewMetrics(userStats, verificationStats, vehicleStats, earningsMetrics) {
-            const totalUsers = Number(userStats.totalUsers || 0);
-            const verifiedAccounts = Number(verificationStats.overall?.verified || 0);
-            const totalVehicles = Number(vehicleStats.totalVehicles || 0);
-            const siteProfit = Number(earningsMetrics.siteProfit || 0);
-            const drivers = Number(userStats.drivers || 0);
-            const guides = Number(userStats.guides || 0);
-            const tourists = Number(userStats.regUsers || 0);
-            const pendingAccounts = Number(verificationStats.overall?.pending || 0);
-            const pendingVehicles = Number(vehicleStats.pendingVerifications || 0);
-
-            this.overviewMetricElements.totalUsers.textContent = this.formatCount(totalUsers);
-            this.overviewMetricElements.verifiedAccounts.textContent = this.formatCount(verifiedAccounts);
-            this.overviewMetricElements.totalVehicles.textContent = this.formatCount(totalVehicles);
-            this.overviewMetricElements.siteProfit.textContent = `LKR ${this.formatCurrency(siteProfit)}`;
-
-            this.overviewMetricMetaElements.totalUsers.textContent = `${this.formatCount(drivers)} drivers, ${this.formatCount(guides)} guides, ${this.formatCount(tourists)} tourists`;
-            this.overviewMetricMetaElements.verifiedAccounts.textContent = pendingAccounts === 0
-                ? 'No accounts are currently pending review'
-                : `${this.formatCount(pendingAccounts)} accounts are still pending approval`;
-            this.overviewMetricMetaElements.totalVehicles.textContent = pendingVehicles === 0
-                ? 'Vehicle verification queue is currently clear'
-                : `${this.formatCount(pendingVehicles)} vehicles are still waiting for review`;
-            this.overviewMetricMetaElements.siteProfit.textContent = `Total revenue ${this.formatCurrencyLabel(earningsMetrics.totalRevenue || 0)} in the selected range`;
-        }
-
-        renderRegistrationTrendChart(trend) {
-            const canvas = document.getElementById('overviewRegistrationTrendChart');
-            if (!canvas || typeof Chart === 'undefined') {
+            this.root = document.getElementById('adminDashboardPage');
+            if (!this.root) {
                 return;
             }
 
-            if (this.charts.registrationTrend) {
-                this.charts.registrationTrend.destroy();
-            }
+            this.urlRoot = this.root.dataset.urlRoot || 'http://localhost/test';
+            this.refreshBtn = document.getElementById('admDashRefreshBtn');
 
-            this.charts.registrationTrend = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels: trend.labels || [],
-                    datasets: [
-                        {
-                            label: 'Drivers',
-                            data: trend.drivers || [],
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.10)',
-                            fill: true,
-                            tension: 0.35
-                        },
-                        {
-                            label: 'Guides',
-                            data: trend.guides || [],
-                            borderColor: '#d97706',
-                            backgroundColor: 'rgba(217, 119, 6, 0.10)',
-                            fill: true,
-                            tension: 0.35
-                        },
-                        {
-                            label: 'Tourists',
-                            data: trend.tourists || [],
-                            borderColor: '#7c3aed',
-                            backgroundColor: 'rgba(124, 58, 237, 0.10)',
-                            fill: true,
-                            tension: 0.35
-                        }
-                    ]
-                },
-                options: this.getLineChartOptions('Registrations')
-            });
-        }
-
-        renderVerificationMixChart(overall) {
-            const canvas = document.getElementById('overviewVerificationMixChart');
-            if (!canvas || typeof Chart === 'undefined') {
-                return;
-            }
-
-            if (this.charts.verificationMix) {
-                this.charts.verificationMix.destroy();
-            }
-
-            this.charts.verificationMix = new Chart(canvas, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Verified', 'Pending', 'Rejected', 'Not Applied'],
-                    datasets: [{
-                        data: [
-                            overall.verified || 0,
-                            overall.pending || 0,
-                            overall.rejected || 0,
-                            overall.notApplied || 0
-                        ],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#94a3b8'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: this.getDoughnutChartOptions()
-            });
-        }
-
-        renderRevenueTrendChart(trend) {
-            const canvas = document.getElementById('overviewRevenueTrendChart');
-            if (!canvas || typeof Chart === 'undefined') {
-                return;
-            }
-
-            if (this.charts.revenueTrend) {
-                this.charts.revenueTrend.destroy();
-            }
-
-            this.charts.revenueTrend = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels: trend.labels || [],
-                    datasets: [
-                        {
-                            label: 'Total Revenue',
-                            data: trend.totalRevenue || [],
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.10)',
-                            fill: true,
-                            tension: 0.35
-                        },
-                        {
-                            label: 'Site Profit',
-                            data: trend.siteProfit || [],
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.10)',
-                            fill: true,
-                            tension: 0.35
-                        }
-                    ]
-                },
-                options: this.getCurrencyLineChartOptions()
-            });
-        }
-
-        renderVehicleStatusChart(breakdown) {
-            const canvas = document.getElementById('overviewVehicleStatusChart');
-            if (!canvas || typeof Chart === 'undefined') {
-                return;
-            }
-
-            if (this.charts.vehicleStatus) {
-                this.charts.vehicleStatus.destroy();
-            }
-
-            this.charts.vehicleStatus = new Chart(canvas, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Approved', 'Pending', 'Rejected'],
-                    datasets: [{
-                        data: [
-                            breakdown.approved || 0,
-                            breakdown.pending || 0,
-                            breakdown.rejected || 0
-                        ],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: this.getDoughnutChartOptions()
-            });
-        }
-
-        getLineChartOptions(yLabel) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top' }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: yLabel
-                        },
-                        ticks: {
-                            callback: (value) => this.formatCount(value)
-                        }
-                    }
-                }
+            this.charts = {
+                queue: null,
+                revenue: null,
+                registration: null
             };
-        }
 
-        getCurrencyLineChartOptions() {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => `${context.dataset.label}: LKR ${this.formatCurrency(context.parsed.y)}`
-                        }
-                    }
+            this.state = {
+                pendingAccounts: [],
+                pendingLicenses: [],
+                pendingVehicles: [],
+                complaints: {
+                    pending: [],
+                    in_progress: [],
+                    completed: []
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Amount (LKR)'
-                        },
-                        ticks: {
-                            callback: (value) => `LKR ${this.formatCurrency(value)}`
-                        }
-                    }
-                }
+                paymentStats: null,
+                driverPayoutStats: null,
+                guidePayoutStats: null,
+                pendingDriverPayouts: [],
+                pendingGuidePayouts: [],
+                earningsMetrics: null,
+                revenueTrend: null,
+                registrationTrend: null,
+                tripLogs: [],
+                unreadMessages: 0
             };
+
+            this.handleRefresh = this.loadDashboard.bind(this);
+
+            this.bindEvents();
+            this.loadDashboard();
         }
 
-        getDoughnutChartOptions() {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => `${context.label}: ${this.formatCount(context.parsed)}`
-                        }
-                    }
-                }
-            };
-        }
-
-        getOpenSupportChatsCount(supportChatsData) {
-            if (supportChatsData && supportChatsData.status === 'success' && Array.isArray(supportChatsData.chats)) {
-                return supportChatsData.chats.filter((chat) => chat.status === 'Open').length;
+        bindEvents() {
+            if (this.refreshBtn) {
+                this.refreshBtn.addEventListener('click', this.handleRefresh);
             }
-
-            return 0;
         }
 
-        getPendingPayoutsCount(driverPayoutsData, guidePayoutsData) {
-            const driverPending = driverPayoutsData && Array.isArray(driverPayoutsData.payouts)
-                ? driverPayoutsData.payouts.length
-                : 0;
-            const guidePending = guidePayoutsData && Array.isArray(guidePayoutsData.payouts)
-                ? guidePayoutsData.payouts.length
-                : 0;
-
-            return driverPending + guidePending;
-        }
-
-        getTripCountByStatus(tripLogsData, status) {
-            if (!tripLogsData || !Array.isArray(tripLogsData.trips)) {
-                return 0;
+        destroy() {
+            if (this.refreshBtn) {
+                this.refreshBtn.removeEventListener('click', this.handleRefresh);
             }
-
-            return tripLogsData.trips.filter((trip) => trip.status === status).length;
-        }
-
-        renderSummaryError(error) {
-            Object.values(this.summaryElements).forEach((element) => {
-                if (element) {
-                    element.textContent = '--';
-                }
-            });
-
-            Object.values(this.summaryMetaElements).forEach((element) => {
-                if (element) {
-                    element.textContent = error.message || 'Unable to load summary data right now.';
-                }
-            });
-
-            this.markSummaryErrorState(true);
-        }
-
-        renderOverviewError(error) {
-            Object.values(this.overviewMetricElements).forEach((element) => {
-                if (element) {
-                    element.textContent = '--';
-                }
-            });
-
-            Object.values(this.overviewMetricMetaElements).forEach((element) => {
-                if (element) {
-                    element.textContent = error.message || 'Unable to load overview data right now.';
-                }
-            });
-
             this.destroyCharts();
-            this.markOverviewErrorState(true);
         }
 
         destroyCharts() {
             Object.keys(this.charts).forEach((key) => {
-                if (this.charts[key] && typeof this.charts[key].destroy === 'function') {
+                if (this.charts[key]) {
                     this.charts[key].destroy();
+                    this.charts[key] = null;
                 }
             });
-
-            this.charts = {};
         }
 
-        setSummaryLoadingState(isLoading) {
-            this.summaryCards.forEach((card) => {
-                card.classList.toggle('is-loading', isLoading);
-            });
-        }
+        async loadDashboard() {
+            this.setLoading(true);
 
-        setOverviewLoadingState(isLoading) {
-            this.overviewMetricCards.forEach((card) => {
-                card.classList.toggle('is-loading', isLoading);
-            });
+            try {
+                const [
+                    accountsRes,
+                    licensesRes,
+                    vehiclesRes,
+                    complaintsRes,
+                    paymentStatsRes,
+                    driverPayoutStatsRes,
+                    guidePayoutStatsRes,
+                    pendingDriverRes,
+                    pendingGuideRes,
+                    earningsRes,
+                    revenueTrendRes,
+                    registrationTrendRes,
+                    tripLogsRes,
+                    unreadRes
+                ] = await Promise.allSettled([
+                    this.fetchJson('/Admin/getAccounts/pending'),
+                    this.fetchJson('/Admin/getPendingLicenses'),
+                    this.fetchJson('/Admin/getPendingVehicles'),
+                    this.fetchJson('/Admin/getAllComplaints'),
+                    this.fetchJson('/Admin/getPaymentStats'),
+                    this.fetchJson('/Admin/getDriverPayoutStats'),
+                    this.fetchJson('/Admin/getGuidePayoutStats'),
+                    this.fetchJson('/Admin/getPendingDriverPayouts'),
+                    this.fetchJson('/Admin/getPendingGuidePayouts'),
+                    this.fetchJson('/Admin/getEarningsMetrics?timeRange=30days&viewType=daily'),
+                    this.fetchJson('/Admin/getRevenueTrend?timeRange=30days&viewType=daily'),
+                    this.fetchJson('/Admin/getRegistrationTrend?timeRange=30days&viewType=daily'),
+                    this.fetchJson('/Admin/getTripLogs'),
+                    this.fetchJson('/helpc/getUnreadMessageCount')
+                ]);
 
-            this.overviewChartCards.forEach((card) => {
-                card.classList.toggle('is-loading', isLoading);
-            });
-        }
+                this.state.pendingAccounts = this.readArrayPayload(accountsRes, 'accounts');
+                this.state.pendingLicenses = this.readArrayPayload(licensesRes, 'licenses');
+                this.state.pendingVehicles = this.readArrayPayload(vehiclesRes, 'vehicles');
+                this.state.complaints = this.readComplaintsPayload(complaintsRes);
+                this.state.paymentStats = this.readObjectPayload(paymentStatsRes, 'stats');
+                this.state.driverPayoutStats = this.readObjectPayload(driverPayoutStatsRes, 'stats');
+                this.state.guidePayoutStats = this.readObjectPayload(guidePayoutStatsRes, 'stats');
+                this.state.pendingDriverPayouts = this.readArrayPayload(pendingDriverRes, 'payouts');
+                this.state.pendingGuidePayouts = this.readArrayPayload(pendingGuideRes, 'payouts');
+                this.state.earningsMetrics = this.readObjectPayload(earningsRes, 'metrics');
+                this.state.revenueTrend = this.readObjectPayload(revenueTrendRes, 'trend');
+                this.state.registrationTrend = this.readObjectPayload(registrationTrendRes, 'trend');
+                this.state.tripLogs = this.readArrayPayload(tripLogsRes, 'trips');
+                this.state.unreadMessages = this.readUnreadCount(unreadRes);
 
-        setRefreshButtonLoading(isLoading) {
-            if (this.refreshButton) {
-                this.refreshButton.disabled = isLoading;
-                this.refreshButton.innerHTML = isLoading
-                    ? '<i class="fas fa-spinner fa-spin"></i> Refreshing'
-                    : '<i class="fas fa-rotate-right"></i> Refresh Summary';
+                // Match analytics behavior: if 30-day registration trend is empty,
+                // fallback to 90-day trend so the chart still provides useful history.
+                if (!this.hasRegistrationTrendData(this.state.registrationTrend)) {
+                    try {
+                        const fallbackRegistration = await this.fetchJson('/Admin/getRegistrationTrend?timeRange=90days&viewType=daily');
+                        if (fallbackRegistration && fallbackRegistration.success) {
+                            this.state.registrationTrend = fallbackRegistration.trend || this.state.registrationTrend;
+                        }
+                    } catch (fallbackError) {
+                        console.warn('Registration trend fallback request failed:', fallbackError);
+                    }
+                }
+
+                this.render();
+            } catch (error) {
+                console.error('Admin dashboard load failed:', error);
+                if (window.showNotification) {
+                    window.showNotification('Failed to load admin dashboard data', 'error');
+                }
+            } finally {
+                this.setLoading(false);
             }
         }
 
-        markSummaryErrorState(hasError) {
-            this.summaryCards.forEach((card) => {
-                card.classList.toggle('is-error', hasError);
+        render() {
+            this.renderHeroSummary();
+            this.renderTopStats();
+            this.renderQueueBreakdown();
+            this.renderFinanceSnapshot();
+            this.renderComplaintList();
+            this.renderVerificationList();
+            this.renderPayoutList();
+            this.renderTripWatchlist();
+            this.renderQueueChart();
+            this.renderRevenueTrendChart();
+            this.renderRegistrationTrendChart();
+        }
+
+        renderHeroSummary() {
+            const today = new Date();
+            this.setText(
+                'admDashTodayDate',
+                today.toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                })
+            );
+
+            this.setText('admDashHeroQueue', this.getWorkQueueCount());
+            this.setText('admDashHeroUnread', this.state.unreadMessages);
+        }
+
+        renderTopStats() {
+            this.setText('admDashPendingAccounts', this.state.pendingAccounts.length);
+            this.setText('admDashPendingLicenses', this.state.pendingLicenses.length);
+            this.setText('admDashPendingVehicles', this.state.pendingVehicles.length);
+            this.setText('admDashOpenComplaints', this.getOpenComplaintsCount());
+            this.setText('admDashPendingPayouts', this.getPendingPayoutCount());
+            this.setText('admDashActiveTrips', this.getActiveTripsCount());
+            this.setText('admDashSiteProfit', this.formatCurrency(this.toNumber(this.state.earningsMetrics && this.state.earningsMetrics.siteProfit)));
+        }
+
+        renderQueueBreakdown() {
+            const rows = [
+                {
+                    count: this.state.pendingAccounts.length,
+                    countId: 'admDashQueueAccounts',
+                    barId: 'admDashQueueAccountsBar'
+                },
+                {
+                    count: this.state.pendingLicenses.length,
+                    countId: 'admDashQueueLicenses',
+                    barId: 'admDashQueueLicensesBar'
+                },
+                {
+                    count: this.state.pendingVehicles.length,
+                    countId: 'admDashQueueVehicles',
+                    barId: 'admDashQueueVehiclesBar'
+                },
+                {
+                    count: this.getOpenComplaintsCount(),
+                    countId: 'admDashQueueComplaints',
+                    barId: 'admDashQueueComplaintsBar'
+                },
+                {
+                    count: this.getPendingPayoutCount(),
+                    countId: 'admDashQueuePayouts',
+                    barId: 'admDashQueuePayoutsBar'
+                }
+            ];
+
+            const total = Math.max(rows.reduce((sum, row) => sum + row.count, 0), 1);
+
+            rows.forEach((row) => {
+                this.setText(row.countId, row.count);
+                this.setBarWidth(row.barId, (row.count / total) * 100);
             });
         }
 
-        markOverviewErrorState(hasError) {
-            this.overviewMetricCards.forEach((card) => {
-                card.classList.toggle('is-error', hasError);
+        renderFinanceSnapshot() {
+            const paymentStats = this.state.paymentStats || {};
+
+            const completedPayments = this.toNumber(paymentStats.completed_count);
+            const cancelledPayments = this.toNumber(paymentStats.cancelled_count);
+            const refundedPayments = this.toNumber(paymentStats.refunded_count);
+            const totalRevenue = this.toNumber(paymentStats.total_revenue);
+
+            this.setText('admDashCompletedPaymentsCount', completedPayments);
+            this.setText('admDashCancelledPaymentsCount', cancelledPayments);
+            this.setText('admDashRefundedPaymentsCount', refundedPayments);
+            this.setText('admDashRevenueAmount', this.formatCurrency(totalRevenue));
+
+            this.setText('admDashPendingPayoutCount', this.getPendingPayoutCount());
+            this.setText('admDashPendingPayoutAmount', this.formatCurrency(this.getPendingPayoutAmount()));
+
+            this.setText('admDashPaidPayoutCount', this.getPaidPayoutCount());
+            this.setText('admDashPaidPayoutAmount', this.formatCurrency(this.getPaidPayoutAmount()));
+
+            this.setText('admDashDriverRevenueAmount', this.formatCurrency(this.toNumber(this.state.earningsMetrics && this.state.earningsMetrics.driverRevenue)));
+            this.setText('admDashGuideRevenueAmount', this.formatCurrency(this.toNumber(this.state.earningsMetrics && this.state.earningsMetrics.guideRevenue)));
+        }
+
+        renderComplaintList() {
+            const listElement = document.getElementById('admDashComplaintList');
+            const emptyElement = document.getElementById('admDashComplaintEmpty');
+            if (!listElement || !emptyElement) {
+                return;
+            }
+
+            const complaints = [
+                ...(this.state.complaints.pending || []),
+                ...(this.state.complaints.in_progress || [])
+            ]
+                .sort((a, b) => this.readTimestamp(b.updatedAt || b.createdAt) - this.readTimestamp(a.updatedAt || a.createdAt))
+                .slice(0, 6);
+
+            if (complaints.length === 0) {
+                listElement.innerHTML = '';
+                emptyElement.style.display = 'block';
+                return;
+            }
+
+            emptyElement.style.display = 'none';
+
+            listElement.innerHTML = complaints
+                .map((complaint) => {
+                    const subject = this.mapComplaintSubject(complaint.subject);
+                    const userName = complaint.userName || 'User';
+                    const status = String(complaint.status || 'pending').toLowerCase();
+                    const statusLabel = this.toTitleCase(status);
+                    const statusClass = status.replace(/_/g, '-');
+
+                    return `
+                        <div class="admdash-list-item">
+                            <div class="admdash-list-main">
+                                <h4>${this.escapeHtml(subject)}</h4>
+                                <p>${this.escapeHtml(userName)}  |  ${this.escapeHtml(this.formatDate(complaint.createdAt))}</p>
+                            </div>
+                            <span class="admdash-status-badge ${this.escapeHtml(statusClass)}">${this.escapeHtml(statusLabel)}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+        renderVerificationList() {
+            const listElement = document.getElementById('admDashVerificationList');
+            const emptyElement = document.getElementById('admDashVerificationEmpty');
+            if (!listElement || !emptyElement) {
+                return;
+            }
+
+            const entries = [];
+
+            (this.state.pendingAccounts || []).forEach((item) => {
+                entries.push({
+                    type: 'account',
+                    title: item.name || 'Pending account verification',
+                    meta: `${item.email || 'Email unavailable'}  |  ${(item.account_type || 'user').toUpperCase()}`,
+                    timestamp: this.readTimestamp(item.verification_created_at || item.created_at)
+                });
             });
 
-            this.overviewChartCards.forEach((card) => {
-                card.classList.toggle('is-error', hasError);
+            (this.state.pendingLicenses || []).forEach((item) => {
+                entries.push({
+                    type: 'license',
+                    title: item.name || 'Pending tourist license verification',
+                    meta: `${item.email || 'Email unavailable'}  |  ${(item.account_type || 'user').toUpperCase()}`,
+                    timestamp: this.readTimestamp(item.created_at)
+                });
+            });
+
+            (this.state.pendingVehicles || []).forEach((item) => {
+                entries.push({
+                    type: 'vehicle',
+                    title: item.owner_name || 'Pending vehicle verification',
+                    meta: `${item.vehicle_type || 'Vehicle not specified'}  |  ${item.registration_number || 'Reg no unavailable'}`,
+                    timestamp: this.readTimestamp(item.submission_date || item.created_at)
+                });
+            });
+
+            const sortedEntries = entries.sort((a, b) => b.timestamp - a.timestamp).slice(0, 7);
+
+            if (sortedEntries.length === 0) {
+                listElement.innerHTML = '';
+                emptyElement.style.display = 'block';
+                return;
+            }
+
+            emptyElement.style.display = 'none';
+
+            listElement.innerHTML = sortedEntries
+                .map((entry) => {
+                    return `
+                        <div class="admdash-list-item">
+                            <div class="admdash-list-main">
+                                <h4>${this.escapeHtml(entry.title)}</h4>
+                                <p>${this.escapeHtml(entry.meta)}  |  ${this.escapeHtml(this.formatDate(entry.timestamp))}</p>
+                            </div>
+                            <span class="admdash-status-badge ${this.escapeHtml(entry.type)}">${this.escapeHtml(this.toTitleCase(entry.type))}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+        renderPayoutList() {
+            const listElement = document.getElementById('admDashPayoutList');
+            const emptyElement = document.getElementById('admDashPayoutEmpty');
+            if (!listElement || !emptyElement) {
+                return;
+            }
+
+            const entries = [];
+
+            (this.state.pendingDriverPayouts || []).forEach((item) => {
+                entries.push({
+                    type: 'driver',
+                    title: item.driverName || 'Driver payout',
+                    tripId: item.tripId,
+                    amount: this.toNumber(item.amount),
+                    timestamp: this.readTimestamp(item.paymentDate || item.createdAt)
+                });
+            });
+
+            (this.state.pendingGuidePayouts || []).forEach((item) => {
+                entries.push({
+                    type: 'guide',
+                    title: item.guideName || 'Guide payout',
+                    tripId: item.tripId,
+                    amount: this.toNumber(item.amount),
+                    timestamp: this.readTimestamp(item.paymentDate || item.createdAt)
+                });
+            });
+
+            const sortedEntries = entries.sort((a, b) => b.timestamp - a.timestamp).slice(0, 7);
+
+            if (sortedEntries.length === 0) {
+                listElement.innerHTML = '';
+                emptyElement.style.display = 'block';
+                return;
+            }
+
+            emptyElement.style.display = 'none';
+
+            listElement.innerHTML = sortedEntries
+                .map((entry) => {
+                    return `
+                        <div class="admdash-list-item">
+                            <div class="admdash-list-main">
+                                <h4>${this.escapeHtml(entry.title)}</h4>
+                                <p>${this.escapeHtml(`Trip #${entry.tripId || '-'}  |  ${this.formatCurrency(entry.amount)}  |  ${this.formatDate(entry.timestamp)}`)}</p>
+                            </div>
+                            <span class="admdash-status-badge ${this.escapeHtml(entry.type)}">${this.escapeHtml(this.toTitleCase(entry.type))}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+        renderTripWatchlist() {
+            const listElement = document.getElementById('admDashTripList');
+            const emptyElement = document.getElementById('admDashTripEmpty');
+            if (!listElement || !emptyElement) {
+                return;
+            }
+
+            const activeTrips = (this.state.tripLogs || [])
+                .filter((trip) => {
+                    const status = String(trip.status || '').toLowerCase();
+                    return status === 'scheduled' || status === 'ongoing';
+                })
+                .sort((a, b) => this.readTimestamp(a.startDate || a.createdAt) - this.readTimestamp(b.startDate || b.createdAt))
+                .slice(0, 6);
+
+            if (activeTrips.length === 0) {
+                listElement.innerHTML = '';
+                emptyElement.style.display = 'block';
+                return;
+            }
+
+            emptyElement.style.display = 'none';
+
+            listElement.innerHTML = activeTrips
+                .map((trip) => {
+                    const status = String(trip.status || 'scheduled').toLowerCase();
+                    const title = trip.tripTitle || `Trip #${trip.tripId || '-'}`;
+                    const travellerName = trip.travellerName || 'Traveller';
+
+                    return `
+                        <div class="admdash-list-item">
+                            <div class="admdash-list-main">
+                                <h4>${this.escapeHtml(title)}</h4>
+                                <p>${this.escapeHtml(`Trip #${trip.tripId || '-'}  |  ${travellerName}  |  ${this.formatDate(trip.startDate)}`)}</p>
+                            </div>
+                            <span class="admdash-status-badge ${this.escapeHtml(status)}">${this.escapeHtml(this.toTitleCase(status))}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+        renderQueueChart() {
+            const labels = ['Accounts', 'Licenses', 'Vehicles', 'Complaints', 'Payouts'];
+            const data = [
+                this.state.pendingAccounts.length,
+                this.state.pendingLicenses.length,
+                this.state.pendingVehicles.length,
+                this.getOpenComplaintsCount(),
+                this.getPendingPayoutCount()
+            ];
+
+            const hasData = data.some((value) => value > 0);
+
+            if (typeof Chart === 'undefined') {
+                this.toggleChartEmpty('admDashQueueChartEmpty', true, 'Chart library unavailable.');
+                return;
+            }
+
+            const canvas = document.getElementById('admDashQueueChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (this.charts.queue) {
+                this.charts.queue.destroy();
+                this.charts.queue = null;
+            }
+
+            if (!hasData) {
+                this.toggleChartEmpty('admDashQueueChartEmpty', true, 'Not enough queue data for chart.');
+                return;
+            }
+
+            this.toggleChartEmpty('admDashQueueChartEmpty', false);
+
+            this.charts.queue = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Queue items',
+                            data,
+                            borderWidth: 0,
+                            borderRadius: 8,
+                            backgroundColor: ['#4f86e8', '#f3ad45', '#41af75', '#df5f75', '#4e9ad7']
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
             });
         }
 
-        formatCount(count) {
-            return Number(count || 0).toLocaleString();
+        renderRevenueTrendChart() {
+            const trend = this.state.revenueTrend || {};
+            const labels = Array.isArray(trend.labels) ? trend.labels : [];
+            const totalRevenue = Array.isArray(trend.totalRevenue) ? trend.totalRevenue : [];
+            const siteProfit = Array.isArray(trend.siteProfit) ? trend.siteProfit : [];
+
+            if (typeof Chart === 'undefined') {
+                this.toggleChartEmpty('admDashRevenueTrendEmpty', true, 'Chart library unavailable.');
+                return;
+            }
+
+            const canvas = document.getElementById('admDashRevenueTrendChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (this.charts.revenue) {
+                this.charts.revenue.destroy();
+                this.charts.revenue = null;
+            }
+
+            if (labels.length === 0) {
+                this.toggleChartEmpty('admDashRevenueTrendEmpty', true, 'No revenue trend data available yet.');
+                return;
+            }
+
+            this.toggleChartEmpty('admDashRevenueTrendEmpty', false);
+
+            this.charts.revenue = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Total Revenue',
+                            data: totalRevenue,
+                            borderColor: '#2f83e4',
+                            backgroundColor: 'rgba(47, 131, 228, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Site Profit',
+                            data: siteProfit,
+                            borderColor: '#1f9a57',
+                            backgroundColor: 'rgba(31, 154, 87, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => `LKR ${Number(value).toLocaleString()}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        renderRegistrationTrendChart() {
+            const trend = this.state.registrationTrend || {};
+            const labels = Array.isArray(trend.labels) ? trend.labels : [];
+            const drivers = Array.isArray(trend.drivers) ? trend.drivers : [];
+            const guides = Array.isArray(trend.guides) ? trend.guides : [];
+            const tourists = Array.isArray(trend.tourists) ? trend.tourists : [];
+
+            if (typeof Chart === 'undefined') {
+                this.toggleChartEmpty('admDashRegistrationTrendEmpty', true, 'Chart library unavailable.');
+                return;
+            }
+
+            const canvas = document.getElementById('admDashRegistrationTrendChart');
+            if (!canvas) {
+                return;
+            }
+
+            if (this.charts.registration) {
+                this.charts.registration.destroy();
+                this.charts.registration = null;
+            }
+
+            if (labels.length === 0) {
+                this.toggleChartEmpty('admDashRegistrationTrendEmpty', true, 'No registration trend data available yet.');
+                return;
+            }
+
+            this.toggleChartEmpty('admDashRegistrationTrendEmpty', false);
+
+            this.charts.registration = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Drivers',
+                            data: drivers,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Guides',
+                            data: guides,
+                            borderColor: '#d97706',
+                            backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Tourists',
+                            data: tourists,
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        getWorkQueueCount() {
+            const pendingVerification = this.state.pendingAccounts.length + this.state.pendingLicenses.length + this.state.pendingVehicles.length;
+            return pendingVerification + this.getOpenComplaintsCount() + this.getPendingPayoutCount();
+        }
+
+        getOpenComplaintsCount() {
+            return (this.state.complaints.pending || []).length + (this.state.complaints.in_progress || []).length;
+        }
+
+        getPendingPayoutCount() {
+            const driverPending = this.toNumber(this.state.driverPayoutStats && this.state.driverPayoutStats.pending_count);
+            const guidePending = this.toNumber(this.state.guidePayoutStats && this.state.guidePayoutStats.pending_count);
+            const totalFromStats = driverPending + guidePending;
+
+            if (totalFromStats > 0) {
+                return totalFromStats;
+            }
+
+            return (this.state.pendingDriverPayouts || []).length + (this.state.pendingGuidePayouts || []).length;
+        }
+
+        getPendingPayoutAmount() {
+            return this.sumAmounts(this.state.pendingDriverPayouts, 'amount') + this.sumAmounts(this.state.pendingGuidePayouts, 'amount');
+        }
+
+        getPaidPayoutCount() {
+            return this.toNumber(this.state.driverPayoutStats && this.state.driverPayoutStats.completed_count)
+                + this.toNumber(this.state.guidePayoutStats && this.state.guidePayoutStats.completed_count);
+        }
+
+        getPaidPayoutAmount() {
+            return this.toNumber(this.state.driverPayoutStats && this.state.driverPayoutStats.total_payout_amount)
+                + this.toNumber(this.state.guidePayoutStats && this.state.guidePayoutStats.total_payout_amount);
+        }
+
+        getActiveTripsCount() {
+            return (this.state.tripLogs || []).filter((trip) => {
+                const status = String(trip.status || '').toLowerCase();
+                return status === 'scheduled' || status === 'ongoing';
+            }).length;
+        }
+
+        mapComplaintSubject(subject) {
+            const labels = {
+                booking: 'Booking issue',
+                payment: 'Payment problem',
+                trip: 'Trip experience issue',
+                guide_driver: 'Guide or driver concern',
+                account: 'Account support',
+                feature: 'Feature request',
+                other: 'General complaint'
+            };
+
+            const normalized = String(subject || '').toLowerCase();
+            return labels[normalized] || this.toTitleCase(normalized || 'Complaint');
+        }
+
+        readArrayPayload(result, key) {
+            if (result.status !== 'fulfilled' || !result.value || result.value.success === false) {
+                return [];
+            }
+
+            const payload = result.value[key];
+            return Array.isArray(payload) ? payload : [];
+        }
+
+        readObjectPayload(result, key) {
+            if (result.status !== 'fulfilled' || !result.value || result.value.success === false) {
+                return null;
+            }
+
+            const payload = result.value[key];
+            return payload && typeof payload === 'object' ? payload : null;
+        }
+
+        readComplaintsPayload(result) {
+            if (result.status !== 'fulfilled' || !result.value || result.value.success === false) {
+                return {
+                    pending: [],
+                    in_progress: [],
+                    completed: []
+                };
+            }
+
+            const payload = result.value.complaints;
+            if (!payload || typeof payload !== 'object') {
+                return {
+                    pending: [],
+                    in_progress: [],
+                    completed: []
+                };
+            }
+
+            return {
+                pending: Array.isArray(payload.pending) ? payload.pending : [],
+                in_progress: Array.isArray(payload.in_progress) ? payload.in_progress : [],
+                completed: Array.isArray(payload.completed) ? payload.completed : []
+            };
+        }
+
+        readUnreadCount(result) {
+            if (result.status !== 'fulfilled' || !result.value) {
+                return 0;
+            }
+
+            const count = Number(result.value.unreadCount);
+            return Number.isFinite(count) && count > 0 ? count : 0;
+        }
+
+        hasRegistrationTrendData(trend) {
+            if (!trend || typeof trend !== 'object') {
+                return false;
+            }
+
+            return Array.isArray(trend.labels) && trend.labels.length > 0;
+        }
+
+        async fetchJson(path) {
+            const response = await fetch(`${this.urlRoot}${path}`);
+            const body = await response.text();
+
+            let data;
+            try {
+                data = body ? JSON.parse(body) : {};
+            } catch (error) {
+                throw new Error(`Invalid JSON response from ${path}`);
+            }
+
+            if (!response.ok) {
+                throw new Error((data && data.message) || `Request failed (${response.status})`);
+            }
+
+            return data;
+        }
+
+        setLoading(isLoading) {
+            if (!this.refreshBtn) {
+                return;
+            }
+
+            this.refreshBtn.disabled = isLoading;
+            this.refreshBtn.classList.toggle('is-loading', isLoading);
+        }
+
+        setText(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = String(value);
+            }
+        }
+
+        setBarWidth(id, percentage) {
+            const element = document.getElementById(id);
+            if (!element) {
+                return;
+            }
+
+            const safe = Math.max(0, Math.min(100, Number(percentage) || 0));
+            element.style.width = `${safe}%`;
+        }
+
+        toggleChartEmpty(id, show, message) {
+            const element = document.getElementById(id);
+            if (!element) {
+                return;
+            }
+
+            if (message) {
+                element.textContent = message;
+            }
+
+            element.style.display = show ? 'flex' : 'none';
+        }
+
+        sumAmounts(items, key) {
+            if (!Array.isArray(items)) {
+                return 0;
+            }
+
+            return items.reduce((sum, item) => sum + this.toNumber(item && item[key]), 0);
+        }
+
+        readTimestamp(value) {
+            if (!value) {
+                return 0;
+            }
+
+            const date = new Date(value);
+            const time = date.getTime();
+            return Number.isNaN(time) ? 0 : time;
+        }
+
+        formatDate(value) {
+            if (!value) {
+                return '-';
+            }
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return '-';
+            }
+
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
         }
 
         formatCurrency(value) {
-            return Number(value || 0).toLocaleString(undefined, {
-                maximumFractionDigits: 0
-            });
+            const amount = this.toNumber(value);
+            return `LKR ${amount.toLocaleString('en-LK', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
         }
 
-        formatCurrencyLabel(value) {
-            return `LKR ${this.formatCurrency(value)}`;
+        toNumber(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : 0;
         }
 
-        destroy() {
-            if (this.refreshButton) {
-                this.refreshButton.removeEventListener('click', this.handleRefreshClick);
+        toTitleCase(value) {
+            if (!value) {
+                return '';
             }
 
-            if (this.timeRangeSelect) {
-                this.timeRangeSelect.removeEventListener('change', this.handleTimeRangeChange);
-            }
+            return String(value)
+                .replace(/[_-]+/g, ' ')
+                .replace(/\b\w/g, (letter) => letter.toUpperCase());
+        }
 
-            this.destroyCharts();
+        escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
     }
 
-    window.AdminDashboardHome = AdminDashboardHome;
-    window.adminDashboardHome = new AdminDashboardHome();
+    window.AdminDashboardManager = AdminDashboardManager;
+    window.adminDashboardManager = new AdminDashboardManager();
 })();

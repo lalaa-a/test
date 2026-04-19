@@ -483,14 +483,7 @@ function shouldOpenOngoingTripView(trip) {
         return false;
     }
 
-    if (normalizeStatus(trip.status) !== 'ongoing') {
-        return false;
-    }
-
-    const tripStartIso = toIsoDate(trip.startDate);
-    const todayIso = toIsoDate(new Date());
-
-    return tripStartIso && todayIso && tripStartIso === todayIso;
+    return normalizeStatus(trip.status) === 'ongoing';
 }
 
 function toIsoDate(value) {

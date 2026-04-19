@@ -18,6 +18,28 @@
             $this->view('UserTemplates/driverDash', $unEncodedResponse);
         }
 
+        public function dashboard(){
+            ob_start();
+            $this->view('Driver/dashboard/dashboard');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/driver/dashboard/dashboard.css';
+            $js = URL_ROOT.'/public/js/driver/dashboard/dashboard.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'dashboard',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/driverDash', $unEncodedResponse);
+        }
+
         public function driverProfile() {
 
             ob_start();

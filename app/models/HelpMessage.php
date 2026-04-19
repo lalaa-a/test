@@ -90,6 +90,45 @@ class HelpMessage {
         return $result ? (int)$result->count : 0;
     }
 
+    public function getUnreadCountForViewerAcrossChats($chatIds, $viewerId) {
+        if (!is_array($chatIds) || count($chatIds) === 0) {
+            return 0;
+        }
+
+        $normalizedIds = [];
+        foreach ($chatIds as $chatId) {
+            $id = (int)$chatId;
+            if ($id > 0) {
+                $normalizedIds[$id] = $id;
+            }
+        }
+
+        if (count($normalizedIds) === 0) {
+            return 0;
+        }
+
+        $placeholders = [];
+        foreach (array_values($normalizedIds) as $index => $chatId) {
+            $key = ':chat_id_' . $index;
+            $placeholders[] = $key;
+        }
+
+        $this->db->query('SELECT COUNT(*) as count FROM help_messages
+            WHERE is_read = 0
+              AND sender_id != :viewer_id
+              AND chat_id IN (' . implode(', ', $placeholders) . ')');
+        $this->db->bind(':viewer_id', (int)$viewerId);
+
+        $index = 0;
+        foreach (array_values($normalizedIds) as $chatId) {
+            $this->db->bind(':chat_id_' . $index, (int)$chatId);
+            $index++;
+        }
+
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
+    }
+
     // Get last message for a chat
     public function getLastMessage($chatId) {
         $this->db->query('SELECT * FROM help_messages WHERE chat_id = :chat_id ORDER BY created_at DESC LIMIT 1');

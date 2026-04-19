@@ -96,13 +96,16 @@ class RegUserModel {
             return null;
         }
 
-        if ($status === 'wConfirmation') {
+        $statusKey = strtolower(trim((string)$status));
+
+        if ($statusKey === 'wconfirmation') {
             $status = $this->promoteTripToScheduledIfReady($userId, $tripId);
-        } elseif ($status === 'awPayment') {
+            $statusKey = strtolower(trim((string)$status));
+        } elseif ($statusKey === 'awpayment') {
             $this->ensurePendingTripPaymentRecords($userId, $tripId);
         }
 
-        if ($status === 'scheduled') {
+        if ($statusKey === 'scheduled') {
             $status = $this->promoteTripToOngoingIfToday($userId, $tripId);
         }
 
@@ -240,43 +243,12 @@ class RegUserModel {
                       AND userId = :userId2
                       AND guideId IS NOT NULL
                       AND status = 'rejected'
-                ) AS rejectedGuideTraveller,
-                (
-                    SELECT COUNT(*)
-                                        FROM traveller_side_t_requests t
-                                        INNER JOIN traveller_side_d_requests d
-                                                ON d.tripId = t.tripId
-                                             AND d.rqUserId = t.rqUserId
-                                             AND d.driverId = t.driverId
-                                        WHERE t.tripId = :tripId3
-                                            AND t.rqUserId = :userId3
-                                            AND t.requestStatus = 'rejected'
-                                            AND d.requestStatus IN ('pending', 'requested', 'accepted', 'rejected')
-                                            AND (d.requestedAt IS NULL OR t.respondedAt IS NULL OR t.respondedAt >= d.requestedAt)
-                ) AS rejectedDriverProvider,
-                (
-                    SELECT COUNT(*)
-                                        FROM guide_side_g_requests g
-                                        INNER JOIN traveller_side_g_requests tg
-                                                ON tg.tripId = g.tripId
-                                             AND tg.eventId = g.eventId
-                                             AND tg.userId = g.userId
-                                             AND ((tg.guideId = g.guideId) OR (tg.guideId IS NULL AND g.guideId IS NULL))
-                                        WHERE g.tripId = :tripId4
-                                            AND g.userId = :userId4
-                                            AND g.status = 'rejected'
-                                            AND tg.status IN ('pending', 'requested', 'accepted', 'rejected')
-                                            AND (tg.requestedAt IS NULL OR g.respondedAt IS NULL OR g.respondedAt >= tg.requestedAt)
-                ) AS rejectedGuideProvider");
+                ) AS rejectedGuideTraveller");
 
         $this->db->bind(':tripId1', $tripId);
         $this->db->bind(':userId1', $userId);
         $this->db->bind(':tripId2', $tripId);
         $this->db->bind(':userId2', $userId);
-        $this->db->bind(':tripId3', $tripId);
-        $this->db->bind(':userId3', $userId);
-        $this->db->bind(':tripId4', $tripId);
-        $this->db->bind(':userId4', $userId);
 
         $row = $this->db->single();
         if (!$row) {
@@ -284,9 +256,7 @@ class RegUserModel {
         }
 
         $rejectedCount = (int)($row->rejectedDriverTraveller ?? 0)
-            + (int)($row->rejectedGuideTraveller ?? 0)
-            + (int)($row->rejectedDriverProvider ?? 0)
-            + (int)($row->rejectedGuideProvider ?? 0);
+            + (int)($row->rejectedGuideTraveller ?? 0);
 
         return $rejectedCount > 0;
     }
@@ -301,7 +271,9 @@ class RegUserModel {
             return null;
         }
 
-        if (!in_array($trip->status, ['wConfirmation', 'awPayment', 'scheduled'], true)) {
+        $tripStatus = strtolower(trim((string)$trip->status));
+
+        if (!in_array($tripStatus, ['wconfirmation', 'awpayment', 'scheduled'], true)) {
             return $trip->status;
         }
 
@@ -314,7 +286,7 @@ class RegUserModel {
                 updatedAt = CURRENT_TIMESTAMP
             WHERE tripId = :tripId
               AND userId = :userId
-              AND status IN (\'wConfirmation\', \'awPayment\', \'scheduled\')');
+              AND status IN (\'wConfirmation\', \'wconfirmation\', \'awPayment\', \'awpayment\', \'scheduled\')');
         $this->db->bind(':nextStatus', 'pending');
         $this->db->bind(':tripId', $tripId);
         $this->db->bind(':userId', $userId);
@@ -387,12 +359,14 @@ class RegUserModel {
             return null;
         }
 
-        if ($trip->status === 'awPayment') {
+        $tripStatus = strtolower(trim((string)$trip->status));
+
+        if ($tripStatus === 'awpayment') {
             $this->ensurePendingTripPaymentRecords((int)$userId, (int)$tripId);
             return 'awPayment';
         }
 
-        if ($trip->status !== 'wConfirmation') {
+        if ($tripStatus !== 'wconfirmation') {
             return $trip->status;
         }
 
@@ -405,11 +379,10 @@ class RegUserModel {
                 updatedAt = CURRENT_TIMESTAMP
             WHERE tripId = :tripId
               AND userId = :userId
-              AND status = :currentStatus');
+              AND status IN (\'wConfirmation\', \'wconfirmation\')');
         $this->db->bind(':nextStatus', 'awPayment');
         $this->db->bind(':tripId', $tripId);
         $this->db->bind(':userId', $userId);
-        $this->db->bind(':currentStatus', 'wConfirmation');
 
         if (!$this->db->execute()) {
             return 'wConfirmation';
@@ -425,7 +398,7 @@ class RegUserModel {
         $this->db->bind(':userId', $userId);
         $updatedTrip = $this->db->single();
 
-        if ($updatedTrip && $updatedTrip->status === 'awPayment') {
+        if ($updatedTrip && strtolower(trim((string)$updatedTrip->status)) === 'awpayment') {
             $this->ensurePendingTripPaymentRecords((int)$userId, (int)$tripId);
         }
 
@@ -487,7 +460,7 @@ class RegUserModel {
     }
 
     private function syncUserTripStatusesByConfirmations($userId) {
-        $this->db->query('SELECT tripId, status FROM created_trips WHERE userId = :userId AND status IN (\'wConfirmation\', \'awPayment\', \'scheduled\')');
+        $this->db->query('SELECT tripId, status FROM created_trips WHERE userId = :userId AND LOWER(status) IN (\'wconfirmation\', \'awpayment\', \'scheduled\')');
         $this->db->bind(':userId', $userId);
         $trips = $this->db->resultSet();
 
@@ -498,9 +471,11 @@ class RegUserModel {
         foreach ($trips as $trip) {
             $tripId = (int)$trip->tripId;
             $status = $this->moveTripToPendingIfRejected((int)$userId, $tripId);
-            if ($status === 'wConfirmation') {
+            $statusKey = strtolower(trim((string)$status));
+
+            if ($statusKey === 'wconfirmation') {
                 $this->promoteTripToScheduledIfReady((int)$userId, $tripId);
-            } elseif ($status === 'awPayment') {
+            } elseif ($statusKey === 'awpayment') {
                 $this->ensurePendingTripPaymentRecords((int)$userId, $tripId);
             }
         }
@@ -664,7 +639,9 @@ class RegUserModel {
             ];
         }
 
-        if (!in_array((string)$trip->status, ['awPayment', 'scheduled'], true)) {
+        $tripStatus = strtolower(trim((string)$trip->status));
+
+        if (!in_array($tripStatus, ['awpayment', 'scheduled'], true)) {
             return [
                 'success' => false,
                 'message' => 'Trip is not awaiting payment',
@@ -813,7 +790,7 @@ class RegUserModel {
             ];
         }
 
-        if ((string)$trip->status === 'awPayment') {
+        if (strtolower(trim((string)$trip->status)) === 'awpayment') {
             $initResult = $this->ensurePendingTripPaymentRecords($userId, $tripId);
             if (empty($initResult['success'])) {
                 return $initResult;
@@ -1608,27 +1585,7 @@ class RegUserModel {
     private function dispatchDriverRequestsToProvider($userId, $tripId, $dispatchTime) {
         $this->db->query("SELECT
                             requestId,
-                            tripId,
-                            rqUserId,
-                            driverId,
-                            driverName,
-                            driverProfilePhoto,
-                            driverRating,
-                            verifyStatus,
-                            vehicleId,
-                            vehicleModel,
-                            vehicleYear,
-                            vehicleType,
-                            vehiclePhoto,
-                            vehicleCapacity,
-                            childSeats,
-                            requestStatus,
-                            chargeType,
-                            totalKm,
-                            totalAmount,
-                            requestedAt,
-                            respondedAt,
-                            completedAt
+                            requestStatus
                         FROM traveller_side_d_requests
                         WHERE tripId = :tripId
                           AND rqUserId = :rqUserId
@@ -1638,19 +1595,7 @@ class RegUserModel {
         $this->db->bind(':rqUserId', $userId);
         $travellerRows = $this->db->resultSet();
 
-        $this->db->query("SELECT
-                            requestId,
-                            requestStatus
-                        FROM traveller_side_t_requests
-                        WHERE tripId = :tripId
-                          AND rqUserId = :rqUserId
-                          AND requestStatus IN ('pending', 'requested', 'accepted', 'rejected')
-                        ORDER BY createdAt ASC, requestId ASC");
-        $this->db->bind(':tripId', $tripId);
-        $this->db->bind(':rqUserId', $userId);
-        $existingProviderRows = $this->db->resultSet();
-
-        foreach ($travellerRows as $index => $row) {
+        foreach ($travellerRows as $row) {
             $sourceStatus = strtolower((string)($row->requestStatus ?? 'pending'));
             $targetStatus = in_array($sourceStatus, ['pending', 'requested'], true) ? 'requested' : $sourceStatus;
 
@@ -1658,18 +1603,11 @@ class RegUserModel {
                 $targetStatus = 'requested';
             }
 
-            $targetRequestedAt = $targetStatus === 'requested'
-                ? $dispatchTime
-                : ($row->requestedAt ?? null);
-            $targetRespondedAt = $targetStatus === 'requested'
-                ? null
-                : ($row->respondedAt ?? null);
-            $targetCompletedAt = $targetStatus === 'requested'
-                ? null
-                : ($row->completedAt ?? null);
+            if ($targetStatus !== 'requested') {
+                continue;
+            }
 
-            if ($targetStatus === 'requested') {
-                $this->db->query("UPDATE traveller_side_d_requests
+            $this->db->query("UPDATE traveller_side_d_requests
                                 SET requestStatus = :requestStatus,
                                     requestedAt = :requestedAt,
                                     respondedAt = NULL,
@@ -1690,108 +1628,6 @@ class RegUserModel {
                         'message' => 'Failed to update traveller driver request before dispatch'
                     ];
                 }
-            }
-
-            $providerRow = $existingProviderRows[$index] ?? null;
-            if ($providerRow) {
-                $this->db->query("UPDATE traveller_side_t_requests SET
-                                    tripId = :tripIdValue,
-                                    rqUserId = :rqUserIdValue,
-                                    driverId = :driverId,
-                                    driverName = :driverName,
-                                    driverProfilePhoto = :driverProfilePhoto,
-                                    driverRating = :driverRating,
-                                    verifyStatus = :verifyStatus,
-                                    vehicleId = :vehicleId,
-                                    vehicleModel = :vehicleModel,
-                                    vehicleYear = :vehicleYear,
-                                    vehicleType = :vehicleType,
-                                    vehiclePhoto = :vehiclePhoto,
-                                    vehicleCapacity = :vehicleCapacity,
-                                    childSeats = :childSeats,
-                                    requestStatus = :requestStatus,
-                                    chargeType = :chargeType,
-                                    totalKm = :totalKm,
-                                    totalAmount = :totalAmount,
-                                    requestedAt = :requestedAt,
-                                    respondedAt = :respondedAt,
-                                    completedAt = :completedAt,
-                                    updatedAt = CURRENT_TIMESTAMP
-                                WHERE requestId = :providerRequestId
-                                  AND tripId = :tripIdScope
-                                  AND rqUserId = :rqUserIdScope");
-
-                $this->db->bind(':providerRequestId', (int)$providerRow->requestId);
-                $this->db->bind(':tripIdScope', $tripId);
-                $this->db->bind(':rqUserIdScope', $userId);
-            } else {
-                $this->db->query("INSERT INTO traveller_side_t_requests
-                                (tripId, rqUserId, driverId, driverName, driverProfilePhoto, driverRating, verifyStatus,
-                                 vehicleId, vehicleModel, vehicleYear, vehicleType, vehiclePhoto, vehicleCapacity, childSeats,
-                                 requestStatus, chargeType, totalKm, totalAmount, requestedAt, respondedAt, completedAt)
-                                VALUES
-                                (:tripIdValue, :rqUserIdValue, :driverId, :driverName, :driverProfilePhoto, :driverRating, :verifyStatus,
-                                 :vehicleId, :vehicleModel, :vehicleYear, :vehicleType, :vehiclePhoto, :vehicleCapacity, :childSeats,
-                                 :requestStatus, :chargeType, :totalKm, :totalAmount, :requestedAt, :respondedAt, :completedAt)");
-            }
-
-            $this->db->bind(':tripIdValue', $tripId);
-            $this->db->bind(':rqUserIdValue', $userId);
-            $this->db->bind(':driverId', (int)$row->driverId);
-            $this->db->bind(':driverName', $row->driverName ?? '');
-            $this->db->bind(':driverProfilePhoto', $row->driverProfilePhoto ?? null);
-            $this->db->bind(':driverRating', $row->driverRating ?? 0);
-            $this->db->bind(':verifyStatus', !empty($row->verifyStatus) ? 1 : 0);
-            $this->db->bind(':vehicleId', (int)$row->vehicleId);
-            $this->db->bind(':vehicleModel', $row->vehicleModel ?? '');
-            $this->db->bind(':vehicleYear', $row->vehicleYear ?? null);
-            $this->db->bind(':vehicleType', $row->vehicleType ?? '');
-            $this->db->bind(':vehiclePhoto', $row->vehiclePhoto ?? null);
-            $this->db->bind(':vehicleCapacity', $row->vehicleCapacity ?? 0);
-            $this->db->bind(':childSeats', $row->childSeats ?? 0);
-            $this->db->bind(':requestStatus', $targetStatus);
-            $this->db->bind(':chargeType', $row->chargeType ?? 'perDay');
-            $this->db->bind(':totalKm', $row->totalKm ?? null);
-            $this->db->bind(':totalAmount', $row->totalAmount ?? 0);
-            $this->db->bind(':requestedAt', $targetRequestedAt);
-            $this->db->bind(':respondedAt', $targetRespondedAt);
-            $this->db->bind(':completedAt', $targetCompletedAt);
-
-            if (!$this->db->execute()) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to dispatch driver request to provider side'
-                ];
-            }
-        }
-
-        if (count($existingProviderRows) > count($travellerRows)) {
-            $staleRows = array_slice($existingProviderRows, count($travellerRows));
-            $staleIds = [];
-
-            foreach ($staleRows as $staleRow) {
-                $staleStatus = strtolower((string)($staleRow->requestStatus ?? ''));
-                if (in_array($staleStatus, ['pending', 'requested'], true)) {
-                    $staleIds[] = (int)$staleRow->requestId;
-                }
-            }
-
-            if (!empty($staleIds)) {
-                $idList = implode(',', array_map('intval', $staleIds));
-                $this->db->query("DELETE FROM traveller_side_t_requests
-                                WHERE tripId = :tripId
-                                  AND rqUserId = :rqUserId
-                                  AND requestId IN ($idList)");
-                $this->db->bind(':tripId', $tripId);
-                $this->db->bind(':rqUserId', $userId);
-
-                if (!$this->db->execute()) {
-                    return [
-                        'success' => false,
-                        'message' => 'Failed to clean stale provider-side driver requests'
-                    ];
-                }
-            }
         }
 
         return [
@@ -1802,22 +1638,7 @@ class RegUserModel {
     private function dispatchGuideRequestsToProvider($userId, $tripId, $dispatchTime) {
         $this->db->query("SELECT
                             id,
-                            userId,
-                            tripId,
-                            eventId,
-                            travelSpotId,
-                            guideId,
-                            status,
-                            guideFullName,
-                            guideProfilePhoto,
-                            guideAverageRating,
-                            guideBio,
-                            chargeType,
-                            numberOfPeople,
-                            totalCharge,
-                            requestedAt,
-                            respondedAt,
-                            completedAt
+                            status
                         FROM traveller_side_g_requests
                         WHERE tripId = :tripId
                           AND userId = :userId
@@ -1828,32 +1649,7 @@ class RegUserModel {
         $this->db->bind(':userId', $userId);
         $travellerRows = $this->db->resultSet();
 
-        $this->db->query("SELECT
-                            id,
-                            eventId,
-                            status
-                        FROM guide_side_g_requests
-                        WHERE tripId = :tripId
-                          AND userId = :userId
-                        ORDER BY createdAt ASC, id ASC");
-        $this->db->bind(':tripId', $tripId);
-        $this->db->bind(':userId', $userId);
-        $existingProviderRows = $this->db->resultSet();
-
-        $existingByEvent = [];
-        foreach ($existingProviderRows as $providerRow) {
-            $eventKey = (int)$providerRow->eventId;
-            if (!isset($existingByEvent[$eventKey])) {
-                $existingByEvent[$eventKey] = $providerRow;
-            }
-        }
-
-        $activeEventIds = [];
-
         foreach ($travellerRows as $row) {
-            $eventId = (int)$row->eventId;
-            $activeEventIds[] = $eventId;
-
             $sourceStatus = strtolower((string)($row->status ?? 'pending'));
             $targetStatus = in_array($sourceStatus, ['pending', 'requested'], true) ? 'requested' : $sourceStatus;
 
@@ -1861,18 +1657,11 @@ class RegUserModel {
                 $targetStatus = 'requested';
             }
 
-            $targetRequestedAt = $targetStatus === 'requested'
-                ? $dispatchTime
-                : ($row->requestedAt ?? null);
-            $targetRespondedAt = $targetStatus === 'requested'
-                ? null
-                : ($row->respondedAt ?? null);
-            $targetCompletedAt = $targetStatus === 'requested'
-                ? null
-                : ($row->completedAt ?? null);
+            if ($targetStatus !== 'requested') {
+                continue;
+            }
 
-            if ($targetStatus === 'requested') {
-                $this->db->query("UPDATE traveller_side_g_requests
+            $this->db->query("UPDATE traveller_side_g_requests
                                 SET status = :status,
                                     requestedAt = :requestedAt,
                                     respondedAt = NULL,
@@ -1894,114 +1683,6 @@ class RegUserModel {
                         'message' => 'Failed to update traveller guide request before dispatch'
                     ];
                 }
-            }
-
-            $providerRow = $existingByEvent[$eventId] ?? null;
-            if ($providerRow) {
-                $this->db->query("UPDATE guide_side_g_requests SET
-                                    userId = :userIdValue,
-                                    tripId = :tripIdValue,
-                                    eventId = :eventId,
-                                    travelSpotId = :travelSpotId,
-                                    guideId = :guideId,
-                                    status = :status,
-                                    guideFullName = :guideFullName,
-                                    guideProfilePhoto = :guideProfilePhoto,
-                                    guideAverageRating = :guideAverageRating,
-                                    guideBio = :guideBio,
-                                    chargeType = :chargeType,
-                                    numberOfPeople = :numberOfPeople,
-                                    totalCharge = :totalCharge,
-                                    requestedAt = :requestedAt,
-                                    respondedAt = :respondedAt,
-                                    completedAt = :completedAt,
-                                    updatedAt = CURRENT_TIMESTAMP
-                                WHERE id = :providerId
-                                  AND tripId = :tripIdScope
-                                  AND userId = :userIdScope");
-
-                $this->db->bind(':providerId', (int)$providerRow->id);
-                $this->db->bind(':tripIdScope', $tripId);
-                $this->db->bind(':userIdScope', $userId);
-            } else {
-                $this->db->query("INSERT INTO guide_side_g_requests
-                                (userId, tripId, eventId, travelSpotId, guideId, status,
-                                 guideFullName, guideProfilePhoto, guideAverageRating, guideBio,
-                                 chargeType, numberOfPeople, totalCharge, requestedAt, respondedAt, completedAt)
-                                VALUES
-                                (:userIdValue, :tripIdValue, :eventId, :travelSpotId, :guideId, :status,
-                                 :guideFullName, :guideProfilePhoto, :guideAverageRating, :guideBio,
-                                 :chargeType, :numberOfPeople, :totalCharge, :requestedAt, :respondedAt, :completedAt)");
-            }
-
-            $this->db->bind(':userIdValue', $userId);
-            $this->db->bind(':tripIdValue', $tripId);
-            $this->db->bind(':eventId', $eventId);
-            $this->db->bind(':travelSpotId', (int)$row->travelSpotId);
-            $this->db->bind(':guideId', (int)$row->guideId);
-            $this->db->bind(':status', $targetStatus);
-            $this->db->bind(':guideFullName', $row->guideFullName ?? null);
-            $this->db->bind(':guideProfilePhoto', $row->guideProfilePhoto ?? null);
-            $this->db->bind(':guideAverageRating', $row->guideAverageRating ?? null);
-            $this->db->bind(':guideBio', $row->guideBio ?? null);
-            $this->db->bind(':chargeType', $row->chargeType ?? 'whole_trip');
-            $this->db->bind(':numberOfPeople', $row->numberOfPeople ?? 1);
-            $this->db->bind(':totalCharge', $row->totalCharge ?? 0);
-            $this->db->bind(':requestedAt', $targetRequestedAt);
-            $this->db->bind(':respondedAt', $targetRespondedAt);
-            $this->db->bind(':completedAt', $targetCompletedAt);
-
-            if (!$this->db->execute()) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to dispatch guide request to provider side'
-                ];
-            }
-        }
-
-        if (empty($activeEventIds)) {
-            $this->db->query("DELETE FROM guide_side_g_requests
-                            WHERE tripId = :tripId
-                              AND userId = :userId
-                              AND status IN ('pending', 'requested')");
-            $this->db->bind(':tripId', $tripId);
-            $this->db->bind(':userId', $userId);
-
-            if (!$this->db->execute()) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to clean stale provider-side guide requests'
-                ];
-            }
-        } else {
-            $activeEventSet = array_fill_keys(array_map('intval', $activeEventIds), true);
-            $staleGuideIds = [];
-
-            foreach ($existingProviderRows as $providerRow) {
-                $providerEventId = (int)$providerRow->eventId;
-                $providerStatus = strtolower((string)($providerRow->status ?? ''));
-
-                if (!isset($activeEventSet[$providerEventId]) && in_array($providerStatus, ['pending', 'requested'], true)) {
-                    $staleGuideIds[] = (int)$providerRow->id;
-                }
-            }
-
-            if (!empty($staleGuideIds)) {
-                $idList = implode(',', array_map('intval', $staleGuideIds));
-                $this->db->query("DELETE FROM guide_side_g_requests
-                                WHERE tripId = :tripId
-                                  AND userId = :userId
-                                  AND id IN ($idList)");
-                $this->db->bind(':tripId', $tripId);
-                $this->db->bind(':userId', $userId);
-
-                if (!$this->db->execute()) {
-                    return [
-                        'success' => false,
-                        'message' => 'Failed to remove stale provider-side guide requests'
-                    ];
-                }
-            }
         }
 
         return [

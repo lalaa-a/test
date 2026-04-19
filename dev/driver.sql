@@ -155,3 +155,16 @@ CREATE TABLE driver_accept_trips (
     FOREIGN KEY (vehicleId) REFERENCES vehicles(vehicleId) ON DELETE CASCADE,
     
 )ENGINE=InnoDB;
+
+-- Add tSideRqId column to traveller_side_g_requests table
+ALTER TABLE traveller_side_t_requests 
+ADD COLUMN tSideRqId INT NULL AFTER requestId;
+
+-- Add index for performance
+ALTER TABLE traveller_side_t_requests 
+ADD INDEX idx_tSideRqId (tSideRqId);
+
+-- Add foreign key constraint linking to the driver requests table
+ALTER TABLE traveller_side_t_requests 
+ADD CONSTRAINT fk_traveller_side_d_requests_tSideRqId 
+FOREIGN KEY (tSideRqId) REFERENCES traveller_side_d_requests(requestId) ON DELETE SET NULL;

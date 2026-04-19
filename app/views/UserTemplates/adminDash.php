@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=monitor_heart" />
     <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;700&family=Roboto:wght@400;600&family=Poppins:wght@400&family=Inter:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/public/css/notification/notification-unit.css">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARS40V0wUMA2Y3wKorMNNof1eD6wixViE&loading=async" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -314,6 +315,7 @@
             border-top: 1px solid #e9ecef;
             background: white;
             margin-bottom: 10px;
+            z-index: 1010;
         }
 
         .sidebar-auth-buttons {
@@ -872,6 +874,8 @@
     <?php
     $adminUser = getLoggedInUser();
     $adminDisplayName = $adminUser['fullname'] ?? 'Admin';
+    $adminNotificationItems = get_notifications_for_user($adminUser['id'] ?? null, 20);
+    $adminUnreadCount = count_unread_notifications($adminNotificationItems);
     ?>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -929,16 +933,18 @@
 
             <!-- Header Actions -->
             <div class="header-actions">
-                <button class="header-action-btn" id="notificationsBtn" title="Notifications">
+                <button type="button" class="header-action-btn" id="notificationsBtn" title="Notifications">
                     <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: <?php echo $adminUnreadCount > 0 ? 'flex' : 'none'; ?>;"><?php echo (int)$adminUnreadCount; ?></span>
                 </button>
-                <button class="header-action-btn" id="messagesBtn" title="Messages">
+                <button type="button" class="header-action-btn" id="messagesBtn" title="Messages" onclick="window.location.href='<?php echo URL_ROOT . '/admin/oversight' ?>';">
                     <i class="fas fa-envelope"></i>
                     <span class="message-badge" id="messageBadge" style="display: none;">0</span>
                 </button>
             </div>
         </div>
+
+        <?php require APP_ROOT . '/views/Notification/panel.php'; ?>
 
         <!-- Dashboard Content -->
         <div class="dashboard-content active" id="dashboard"></div>
@@ -967,7 +973,7 @@
                 encodedData = <?php echo json_encode($loadingContent) ?>;
                 const tabId = <?php echo json_encode($tabId) ?>;
                 // Expose logged-in user's profile photo URL to JS (empty string if none)
-                userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
+                userProfilePhoto = <?php echo json_encode(!empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : ""); ?>;
 
                 updateUI();
                 setActiveTab(tabId);
@@ -1168,48 +1174,66 @@
                 }
             });
 
-            // notification and messages logic with buttons 😅        
-            // Notification button
-            const notificationsBtn = document.getElementById('notificationsBtn');
-            const notificationBadge = document.getElementById('notificationBadge');
-
-            notificationsBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('🔔 Opening Notifications...');
-                // Reset badge count when opened
-                notificationBadge.textContent = '0';
-                notificationBadge.style.display = 'none';
-            });
-
             // Messages button
-            const messagesBtn = document.getElementById('messagesBtn');
+            const messagesBtn = document.geFtElementById('messagesBtn');
             const messageBadge = document.getElementById('messageBadge');
+            let messageBadgePollTimer = null;
 
-            messagesBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('💬 Opening Messages...');
-                // Reset badge count when opened
-                messageBadge.textContent = '0';
-                messageBadge.style.display = 'none';
-            });
+            function updateMessageBadge(unreadCount) {
+                if (!messageBadge) {
+                    return;
+                }
 
-            // Simulate receiving notifications (for demo purposes)
-            function simulateNotifications() {
-                setTimeout(() => {
-                    notificationBadge.textContent = '3';
-                    notificationBadge.style.display = 'flex';
-                }, 3000);
-
-                setTimeout(() => {
-                    messageBadge.textContent = '2';
-                    messageBadge.style.display = 'flex';
-                }, 5000);
+                const count = Number(unreadCount) || 0;
+                messageBadge.textContent = String(count);
+                messageBadge.style.display = count > 0 ? 'flex' : 'none';
             }
 
-            // Start simulation if user is logged in
+            async function refreshUnreadMessagesCount() {
+                try {
+                    const response = await fetch('<?php echo URL_ROOT; ?>/helpc/getUnreadMessageCount');
+                    const data = await response.json();
+
+                    if (!response.ok || !(data && (data.success || data.status === 'success'))) {
+                        return;
+                    }
+
+                    updateMessageBadge(data.unreadCount || 0);
+                } catch (error) {
+                    // Keep silent to avoid noisy dashboard alerts on transient polling failures.
+                }
+            }
+
+            function startUnreadMessagesPolling() {
+                refreshUnreadMessagesCount();
+
+                if (messageBadgePollTimer) {
+                    clearInterval(messageBadgePollTimer);
+                }
+
+                messageBadgePollTimer = setInterval(() => {
+                    refreshUnreadMessagesCount();
+                }, 15000);
+            }
+
+            if (messagesBtn) {
+                messagesBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '<?php echo URL_ROOT . '/admin/oversight' ?>';
+                });
+            }
+
             if (loggedInState) {
-                simulateNotifications();
+                startUnreadMessagesPolling();
             }
+
+            window.driverDashboardNotifications = <?php echo json_encode($adminNotificationItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+            window.driverDashboardNotificationApi = {
+                listUrl: '<?php echo URL_ROOT; ?>/Notification/listItems',
+                markReadUrl: '<?php echo URL_ROOT; ?>/Notification/markRead',
+                markAllReadUrl: '<?php echo URL_ROOT; ?>/Notification/markAllRead',
+                refreshIntervalMs: 15000
+            };
 
 
 
@@ -1288,6 +1312,7 @@
             // Make it globally available
             window.showNotification = showNotification;
         </script>
+        <script src="<?php echo URL_ROOT; ?>/public/js/notification/notification-unit.js"></script>
 
         <style>
             /* Notification Animations */

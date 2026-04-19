@@ -782,7 +782,12 @@ class DriverModel {
         $this->db->bind(':userId', (int)$userId);
         $trip = $this->db->single();
 
-        if (!$trip || $trip->status !== 'wConfirmation') {
+        if (!$trip) {
+            return;
+        }
+
+        $tripStatus = strtolower(trim((string)$trip->status));
+        if ($tripStatus !== 'wconfirmation') {
             return;
         }
 
@@ -794,7 +799,7 @@ class DriverModel {
                                                  SET status = 'awPayment', updatedAt = CURRENT_TIMESTAMP
                          WHERE tripId = :tripId
                            AND userId = :userId
-                           AND status = 'wConfirmation'");
+                                                     AND status IN ('wConfirmation', 'wconfirmation')");
         $this->db->bind(':tripId', (int)$tripId);
         $this->db->bind(':userId', (int)$userId);
         $this->db->execute();
@@ -805,7 +810,7 @@ class DriverModel {
                          SET status = 'pending', updatedAt = CURRENT_TIMESTAMP
                          WHERE tripId = :tripId
                            AND userId = :userId
-                                                                                                         AND status IN ('wConfirmation', 'awPayment', 'scheduled')");
+                                                                                                                                                                                                                 AND status IN ('wConfirmation', 'wconfirmation', 'awPayment', 'awpayment', 'scheduled')");
         $this->db->bind(':tripId', (int)$tripId);
         $this->db->bind(':userId', (int)$userId);
         $this->db->execute();
@@ -827,29 +832,11 @@ class DriverModel {
 
             $res = $this->db->execute();
             if ($res) {
-                try {
-                    $syncQuery = "UPDATE traveller_side_d_requests
-                                  SET requestStatus = :status,
-                                      respondedAt = CURRENT_TIMESTAMP,
-                                      updatedAt = CURRENT_TIMESTAMP
-                                  WHERE tripId = :tripId
-                                    AND rqUserId = :rqUserId
-                                    AND driverId = :driverId
-                                                                        AND requestStatus IN ('pending', 'requested', 'accepted', 'rejected')";
-                    $this->db->query($syncQuery);
-                    $this->db->bind(':status', $status);
-                    $this->db->bind(':tripId', (int)$existing->tripId);
-                    $this->db->bind(':rqUserId', (int)$existing->rqUserId);
-                    $this->db->bind(':driverId', (int)$driverId);
-                    $this->db->execute();
-
-                    if ($status === 'accepted') {
-                        $this->promoteTripToScheduledIfReady((int)$existing->rqUserId, (int)$existing->tripId);
-                    } elseif ($status === 'rejected') {
-                        $this->moveTripToPendingOnRejection((int)$existing->rqUserId, (int)$existing->tripId);
-                    }
-                } catch (Exception $syncError) {
-                    error_log("Driver request sync warning for request $requestId: " . $syncError->getMessage());
+                // traveller_side_t_requests -> traveller_side_d_requests status sync is handled by DB trigger.
+                if ($status === 'accepted') {
+                    $this->promoteTripToScheduledIfReady((int)$existing->rqUserId, (int)$existing->tripId);
+                } elseif ($status === 'rejected') {
+                    $this->moveTripToPendingOnRejection((int)$existing->rqUserId, (int)$existing->tripId);
                 }
 
                 return ['success' => true, 'message' => 'Status updated'];

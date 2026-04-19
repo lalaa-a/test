@@ -449,6 +449,29 @@ class HelpChat {
         return (bool)$this->db->single();
     }
 
+    public function getActiveChatsForUser($userId, $userType) {
+        $this->db->query('SELECT * FROM help_chats
+            WHERE user_id = :user_id
+              AND user_type = :user_type
+              AND status != "Closed"
+            ORDER BY created_at DESC');
+        $this->db->bind(':user_id', (int)$userId);
+        $this->db->bind(':user_type', (string)$userType);
+        return $this->db->resultSet();
+    }
+
+    public function getChatsForProviderSubject($providerType, $providerUserId) {
+        $normalizedType = strtoupper(trim((string)$providerType));
+        $subject = $normalizedType . ':' . (int)$providerUserId;
+
+        $this->db->query('SELECT * FROM help_chats
+            WHERE status != "Closed"
+              AND (CASE WHEN subject IS NULL OR subject = "" THEN "SITE" ELSE UPPER(subject) END) = :subject
+            ORDER BY created_at DESC');
+        $this->db->bind(':subject', $subject);
+        return $this->db->resultSet();
+    }
+
     // Delete a chat by ID (hard delete)
     public function deleteChat($chatId) {
         $this->db->query('DELETE FROM help_chats WHERE id = :id');

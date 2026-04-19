@@ -11,14 +11,14 @@ class Admin extends Controller
 
     public function index()
     {
-        header('Location: ' . URL_ROOT . '/admin/dashboard');
+        header('Location: ' . URL_ROOT . '/admin/dashboard/dashboard');
         exit;
     }
 
     public function dashboard()
     {
         ob_start();
-        $this->view('Admin/dashboard');
+        $this->view('Admin/dashboard/dashboard');
         $html = ob_get_clean();
 
         $loadingContent = [

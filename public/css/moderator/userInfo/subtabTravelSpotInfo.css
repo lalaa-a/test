@@ -128,6 +128,12 @@
 	border: 1px solid #a7f3d0;
 }
 
+.spot-alert.info {
+	background: #eff6ff;
+	color: #1d4ed8;
+	border: 1px solid #bfdbfe;
+}
+
 .result-count {
 	font-size: 13px;
 	color: #475569;
@@ -166,6 +172,12 @@
 	margin: 0;
 	font-size: 13px;
 	color: #64748b;
+}
+
+.spot-overview {
+	margin-top: 6px;
+	line-height: 1.5;
+	color: #475569;
 }
 
 .guides-grid {

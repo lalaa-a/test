@@ -865,7 +865,7 @@
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notificationBadge" style="display: <?php echo $driverUnreadCount > 0 ? 'flex' : 'none'; ?>;"><?php echo (int)$driverUnreadCount; ?></span>
                 </button>
-                <button class="header-action-btn" id="messagesBtn" title="Messages">
+                <button type="button" class="header-action-btn" id="messagesBtn" title="Messages" onclick="window.location.href='<?php echo URL_ROOT.'/Driver/support'?>';">
                     <i class="fas fa-envelope"></i>
                     <span class="message-badge" id="messageBadge" style="display: none;">0</span>
                 </button>
@@ -900,7 +900,7 @@
             encodedData = <?php echo json_encode($loadingContent)?>;
             const tabId = <?php echo json_encode($tabId)?>;
             // Expose logged-in user's profile photo URL to JS (empty string if none)
-            userProfilePhoto = '<?php echo !empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : "" ?>';
+            userProfilePhoto = <?php echo json_encode(!empty(getLoggedInUser()["profile_photo"]) ? URL_ROOT . "/public/uploads/" . getLoggedInUser()["profile_photo"] : ""); ?>;
 
             updateUI();
             setActiveTab(tabId);
@@ -1103,32 +1103,63 @@
             }
         });
 
-        sidebarProfileSettingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('⚙️ Opening Profile Settings...');
-        });
-    // Messages button
+        if (sidebarProfileSettingsBtn) {
+            sidebarProfileSettingsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('⚙️ Opening Profile Settings...');
+            });
+        }
+        // Messages button
         const messagesBtn = document.getElementById('messagesBtn');
         const messageBadge = document.getElementById('messageBadge');
+        let messageBadgePollTimer = null;
 
-        messagesBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('💬 Opening Messages...');
-            // Reset badge count when opened
-            messageBadge.textContent = '0';
-            messageBadge.style.display = 'none';
-        });
+        function updateMessageBadge(unreadCount) {
+            if (!messageBadge) {
+                return;
+            }
 
-        // Simulate message badge (demo only)
-        function simulateMessages() {
-            setTimeout(() => {
-                messageBadge.textContent = '2';
-                messageBadge.style.display = 'flex';
-            }, 5000);
+            const count = Number(unreadCount) || 0;
+            messageBadge.textContent = String(count);
+            messageBadge.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        async function refreshUnreadMessagesCount() {
+            try {
+                const response = await fetch('<?php echo URL_ROOT; ?>/helpc/getUnreadMessageCount');
+                const data = await response.json();
+
+                if (!response.ok || !(data && (data.success || data.status === 'success'))) {
+                    return;
+                }
+
+                updateMessageBadge(data.unreadCount || 0);
+            } catch (error) {
+                // Keep silent to avoid noisy dashboard alerts on transient polling failures.
+            }
+        }
+
+        function startUnreadMessagesPolling() {
+            refreshUnreadMessagesCount();
+
+            if (messageBadgePollTimer) {
+                clearInterval(messageBadgePollTimer);
+            }
+
+            messageBadgePollTimer = setInterval(() => {
+                refreshUnreadMessagesCount();
+            }, 15000);
+        }
+
+        if (messagesBtn) {
+            messagesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '<?php echo URL_ROOT.'/Driver/support'?>';
+            });
         }
 
         if (<?php echo isLoggedIn() ? 'true' : 'false'?>) {
-            simulateMessages();
+            startUnreadMessagesPolling();
         }
 
         window.driverDashboardNotifications = <?php echo json_encode($driverNotificationItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
@@ -1145,7 +1176,7 @@
         //To update the username and profile displaying
         function updateUI() {
 
-            const userNameValue = '<?php echo getLoggedInUser()['fullname']?>';
+            const userNameValue = <?php echo json_encode(getLoggedInUser()['fullname'] ?? ''); ?>;
             const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'?>;
 
             if (isLoggedIn) {

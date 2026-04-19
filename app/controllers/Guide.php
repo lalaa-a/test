@@ -14,6 +14,28 @@
             $this->view('UserTemplates/guideDash', $unEncodedResponse);
         }
 
+        public function dashboard(){
+            ob_start();
+            $this->view('Guide/dashboard/dashboard');
+            $fullcontent = ob_get_clean();
+
+            $html = $fullcontent;
+            $css = URL_ROOT.'/public/css/guide/dashboard/dashboard.css';
+            $js = URL_ROOT.'/public/js/guide/dashboard/dashboard.js';
+
+            $loadingContent = [
+                'html' => $html,
+                'css' => $css,
+                'js' => $js
+            ];
+
+            $unEncodedResponse = [
+                'tabId'=>'dashboard',
+                'loadingContent'=>$loadingContent
+            ];
+            $this->view('UserTemplates/guideDash', $unEncodedResponse);
+        }
+
         public function schedule() {
              ob_start();
             $this->view('Guide/schedule/schedule');

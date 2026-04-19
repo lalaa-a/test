@@ -562,7 +562,12 @@ class GuideModel {
         $this->db->bind(':userId', (int)$userId);
         $trip = $this->db->single();
 
-        if (!$trip || $trip->status !== 'wConfirmation') {
+        if (!$trip) {
+            return;
+        }
+
+        $tripStatus = strtolower(trim((string)$trip->status));
+        if ($tripStatus !== 'wconfirmation') {
             return;
         }
 
@@ -574,7 +579,7 @@ class GuideModel {
                                                  SET status = 'awPayment', updatedAt = CURRENT_TIMESTAMP
                          WHERE tripId = :tripId
                            AND userId = :userId
-                           AND status = 'wConfirmation'");
+                                                     AND status IN ('wConfirmation', 'wconfirmation')");
         $this->db->bind(':tripId', (int)$tripId);
         $this->db->bind(':userId', (int)$userId);
         $this->db->execute();
@@ -585,7 +590,7 @@ class GuideModel {
                          SET status = 'pending', updatedAt = CURRENT_TIMESTAMP
                          WHERE tripId = :tripId
                            AND userId = :userId
-                                                                                                         AND status IN ('wConfirmation', 'awPayment', 'scheduled')");
+                                                                                                                                                                                                                 AND status IN ('wConfirmation', 'wconfirmation', 'awPayment', 'awpayment', 'scheduled')");
         $this->db->bind(':tripId', (int)$tripId);
         $this->db->bind(':userId', (int)$userId);
         $this->db->execute();
@@ -609,31 +614,11 @@ class GuideModel {
 
             $res = $this->db->execute();
             if ($res) {
-                try {
-                    $syncQuery = "UPDATE traveller_side_g_requests
-                                  SET status = :status,
-                                      respondedAt = CURRENT_TIMESTAMP,
-                                      updatedAt = CURRENT_TIMESTAMP
-                                  WHERE tripId = :tripId
-                                    AND eventId = :eventId
-                                    AND userId = :userId
-                                    AND guideId = :guideId
-                                                                        AND status IN ('pending', 'requested', 'accepted', 'rejected')";
-                    $this->db->query($syncQuery);
-                    $this->db->bind(':status', $status);
-                    $this->db->bind(':tripId', (int)$existing->tripId);
-                    $this->db->bind(':eventId', (int)$existing->eventId);
-                    $this->db->bind(':userId', (int)$existing->userId);
-                    $this->db->bind(':guideId', (int)$guideId);
-                    $this->db->execute();
-
-                    if ($status === 'accepted') {
-                        $this->promoteTripToScheduledIfReady((int)$existing->userId, (int)$existing->tripId);
-                    } elseif ($status === 'rejected') {
-                        $this->moveTripToPendingOnRejection((int)$existing->userId, (int)$existing->tripId);
-                    }
-                } catch (Exception $syncError) {
-                    error_log("Guide request sync warning for request $requestId: " . $syncError->getMessage());
+                // guide_side_g_requests -> traveller_side_g_requests sync is handled by DB trigger.
+                if ($status === 'accepted') {
+                    $this->promoteTripToScheduledIfReady((int)$existing->userId, (int)$existing->tripId);
+                } elseif ($status === 'rejected') {
+                    $this->moveTripToPendingOnRejection((int)$existing->userId, (int)$existing->tripId);
                 }
 
                 return ['success' => true, 'message' => 'Status updated'];

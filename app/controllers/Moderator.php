@@ -8,7 +8,22 @@
         }
 
         public function dashboard(){
-            $this->view('UserTemplates/moderatorDash');
+            ob_start();
+            $this->view('Moderator/dashboard/dashboard');
+            $html = ob_get_clean();
+
+            $loadingContent = [
+                'html' => $html,
+                'css'  => URL_ROOT.'/public/css/moderator/dashboard/dashboard.css',
+                'js'   => URL_ROOT.'/public/js/moderator/dashboard/dashboard.js'
+            ];
+
+            $unEncodedResponse = [
+                'tabId' => 'dashboard',
+                'loadingContent' => $loadingContent
+            ];
+
+            $this->view('UserTemplates/moderatorDash', $unEncodedResponse);
         }
         
         public function verification(){

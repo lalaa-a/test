@@ -1,0 +1,549 @@
+/* Guide dashboard overview styles */
+
+.guide-dashboard-page {
+	padding: 0 20px 24px;
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+.guide-hero-card {
+	display: flex;
+	gap: 20px;
+	border-radius: 14px;
+	border: 1px solid #dde4ec;
+	background: linear-gradient(135deg, #ffffff 0%, #f2fbfb 100%);
+	box-shadow: 0 8px 24px rgba(0, 106, 113, 0.08);
+	padding: 22px;
+	margin-bottom: 16px;
+}
+
+.guide-hero-copy {
+	flex: 1;
+	min-width: 0;
+}
+
+.guide-hero-kicker {
+	margin: 0;
+	color: var(--primary, #006a71);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: 700;
+}
+
+.guide-hero-title {
+	margin: 8px 0 8px;
+	font-size: 32px;
+	color: var(--primary, #006a71);
+	line-height: 1.2;
+}
+
+.guide-hero-subtitle {
+	margin: 0;
+	max-width: 720px;
+	color: #64748b;
+	font-size: 15px;
+	font-family: 'Roboto', sans-serif;
+}
+
+.guide-hero-actions {
+	margin-top: 18px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.guide-primary-btn,
+.guide-ghost-btn,
+.guide-refresh-btn {
+	border-radius: 10px;
+	padding: 10px 14px;
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s ease;
+	text-decoration: none;
+}
+
+.guide-primary-btn {
+	border: 1px solid var(--primary, #006a71);
+	background: var(--primary, #006a71);
+	color: #ffffff;
+	box-shadow: 0 8px 18px rgba(0, 106, 113, 0.2);
+}
+
+.guide-primary-btn:hover {
+	background: #01535a;
+	border-color: #01535a;
+}
+
+.guide-ghost-btn {
+	border: 1px solid #d9e5e7;
+	background: #ffffff;
+	color: #134e57;
+}
+
+.guide-ghost-btn:hover {
+	background: #f4fbfb;
+	border-color: #bdd2d6;
+}
+
+.guide-refresh-btn {
+	border: 1px solid #d9e5e7;
+	background: #ffffff;
+	color: #134e57;
+	padding: 10px;
+	justify-content: center;
+}
+
+.guide-refresh-btn:hover {
+	background: #f4fbfb;
+	border-color: #bdd2d6;
+}
+
+.guide-refresh-btn.is-loading {
+	opacity: 0.75;
+}
+
+.guide-refresh-btn:disabled {
+	cursor: not-allowed;
+}
+
+.guide-hero-aside {
+	width: min(320px, 100%);
+	display: grid;
+	gap: 10px;
+}
+
+.guide-hero-chip {
+	border: 1px solid #dceef0;
+	background: rgba(255, 255, 255, 0.88);
+	border-radius: 10px;
+	padding: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+}
+
+.guide-hero-chip .label {
+	font-size: 13px;
+	color: #687684;
+	font-family: 'Roboto', sans-serif;
+}
+
+.guide-hero-chip .value {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--primary, #006a71);
+}
+
+.guide-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+	gap: 14px;
+	margin-bottom: 16px;
+}
+
+.guide-stat-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 16px;
+	border: 1px solid #ecf2f4;
+	box-shadow: 0 4px 18px rgba(0, 106, 113, 0.07);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.guide-stat-icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+.guide-stat-icon.total {
+	background: #e2f3f5;
+	color: #0d666f;
+}
+
+.guide-stat-icon.pending {
+	background: #fff3df;
+	color: #b66900;
+}
+
+.guide-stat-icon.accepted {
+	background: #e8f7ed;
+	color: #1f8a48;
+}
+
+.guide-stat-icon.visits {
+	background: #e8efff;
+	color: #2f5fbb;
+}
+
+.guide-stat-icon.spots {
+	background: #eaf6f1;
+	color: #28735a;
+}
+
+.guide-stat-icon.messages {
+	background: #ffecef;
+	color: #b43853;
+}
+
+.guide-stat-content {
+	min-width: 0;
+}
+
+.guide-stat-number {
+	font-size: 20px;
+	line-height: 1.2;
+	font-weight: 700;
+	color: #0f5560;
+	margin-bottom: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.guide-stat-label {
+	font-size: 12px;
+	color: #607382;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.guide-dashboard-grid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.guide-panel {
+	background: #fff;
+	border: 1px solid #ecf2f4;
+	border-radius: 12px;
+	box-shadow: 0 4px 18px rgba(0, 106, 113, 0.06);
+	padding: 16px;
+}
+
+.request-panel,
+.earnings-panel,
+.upcoming-panel,
+.recent-panel,
+.spots-panel,
+.support-panel {
+	grid-column: span 6;
+}
+
+.actions-panel {
+	grid-column: span 12;
+}
+
+.guide-panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.guide-panel-header h2 {
+	margin: 0;
+	color: #0f5560;
+	font-size: 16px;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.guide-panel-header a {
+	color: #0f5560;
+	font-size: 13px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.guide-panel-header a:hover {
+	text-decoration: underline;
+}
+
+.guide-breakdown-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.guide-breakdown-row .meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
+	color: #4a6370;
+	font-size: 13px;
+}
+
+.guide-breakdown-row .meta strong {
+	color: #0f5560;
+}
+
+.guide-breakdown-row .bar {
+	width: 100%;
+	height: 9px;
+	border-radius: 999px;
+	background: #edf4f6;
+	overflow: hidden;
+}
+
+.guide-breakdown-row .bar span {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: inherit;
+	transition: width 0.3s ease;
+}
+
+#guideDashPendingBar {
+	background: linear-gradient(90deg, #ffc46b, #f8a440);
+}
+
+#guideDashAcceptedBar {
+	background: linear-gradient(90deg, #5ac98a, #2fa55f);
+}
+
+#guideDashRejectedBar {
+	background: linear-gradient(90deg, #ff9aa5, #e45b6d);
+}
+
+.guide-earnings-metrics {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.guide-metric-card {
+	border: 1px solid #edf3f5;
+	border-radius: 10px;
+	padding: 12px;
+	background: #fbfefe;
+}
+
+.guide-metric-card .label {
+	color: #607382;
+	font-size: 12px;
+	display: block;
+	margin-bottom: 5px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.guide-metric-card strong {
+	color: #0f5560;
+	font-size: 16px;
+	line-height: 1.2;
+}
+
+.guide-metric-card .meta {
+	display: block;
+	margin-top: 4px;
+	color: #738896;
+	font-size: 12px;
+}
+
+.guide-list-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.guide-list-item {
+	border: 1px solid #edf3f5;
+	border-radius: 10px;
+	padding: 11px 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	background: #fcfefe;
+}
+
+.guide-list-main {
+	min-width: 0;
+}
+
+.guide-list-main h4 {
+	margin: 0 0 4px;
+	font-size: 14px;
+	color: #15434a;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.guide-list-main p {
+	margin: 0;
+	font-size: 12px;
+	color: #607382;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.guide-status-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.guide-status-badge.pending {
+	background: #fff2dc;
+	color: #a86700;
+}
+
+.guide-status-badge.accepted,
+.guide-status-badge.active,
+.guide-status-badge.ongoing {
+	background: #e8f7ed;
+	color: #1f8a48;
+}
+
+.guide-status-badge.rejected,
+.guide-status-badge.inactive {
+	background: #ffe9ed;
+	color: #ba3752;
+}
+
+.guide-status-badge.upcoming {
+	background: #e8efff;
+	color: #315cc6;
+}
+
+.guide-status-badge.in_progress {
+	background: #e7f5f6;
+	color: #0c6771;
+}
+
+.guide-spots-metrics {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.chip {
+	border: 1px solid #e4eef1;
+	background: #f8fcfd;
+	border-radius: 999px;
+	padding: 5px 10px;
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.chip-label {
+	font-size: 12px;
+	color: #607382;
+}
+
+.chip strong {
+	font-size: 13px;
+	color: #0f5560;
+}
+
+.guide-quick-actions-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 9px;
+}
+
+.guide-quick-action {
+	border: 1px solid #e4eef1;
+	border-radius: 10px;
+	text-decoration: none;
+	color: #184951;
+	background: #f8fcfd;
+	padding: 11px;
+	font-size: 13px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s ease;
+}
+
+.guide-quick-action:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 14px rgba(0, 106, 113, 0.12);
+	border-color: #c9dde1;
+}
+
+.guide-empty-text {
+	margin: 6px 0 0;
+	color: #607382;
+	font-size: 13px;
+}
+
+@media (max-width: 1140px) {
+	.request-panel,
+	.earnings-panel,
+	.upcoming-panel,
+	.recent-panel,
+	.spots-panel,
+	.support-panel,
+	.actions-panel {
+		grid-column: span 12;
+	}
+}
+
+@media (max-width: 768px) {
+	.guide-dashboard-page {
+		padding: 0 14px 18px;
+	}
+
+	.guide-hero-card {
+		flex-direction: column;
+		padding: 16px;
+	}
+
+	.guide-hero-title {
+		font-size: 24px;
+	}
+
+	.guide-hero-aside {
+		width: 100%;
+	}
+
+	.guide-stats-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.guide-earnings-metrics {
+		grid-template-columns: 1fr;
+	}
+
+	.guide-quick-actions-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.guide-list-item {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
